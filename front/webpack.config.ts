@@ -7,7 +7,7 @@ import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 const config: webpack.Configuration = {
-    name: 'sleact',
+    name: '42Board',
     mode: isDevelopment ? 'development' : 'production',
     devtool: isDevelopment ? 'hidden-source-map' : 'inline-source-map',
     resolve: {
@@ -19,6 +19,7 @@ const config: webpack.Configuration = {
             '@pages': path.resolve(__dirname, 'pages'),
             '@utils': path.resolve(__dirname, 'utils'),
             '@typings': path.resolve(__dirname, 'typings'),
+            '@config': path.resolve(__dirname, 'config'),
         },
     },
     entry: {
@@ -72,17 +73,17 @@ const config: webpack.Configuration = {
         filename: '[name].js',
         publicPath: '/dist/',
     },
-devServer: {
-    historyApiFallback: true,
-    port: 3090,
-    publicPath: '/dist/',
-    proxy: {
-        '/api/': {
-            target: 'http://localhost:3095',
-            changeOrigin: true,
+    devServer: {
+        historyApiFallback: true,
+        port: 3090,
+        publicPath: '/dist/',
+        proxy: {
+            '/api/': {
+                target: 'http://localhost:3095',
+                changeOrigin: true,
+            },
         },
     },
-},
 };
 
 if (isDevelopment && config.plugins) {

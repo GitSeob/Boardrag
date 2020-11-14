@@ -6,9 +6,8 @@ import axios from 'axios';
 import App from './layouts/App';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? 'https://api.42board.com' : 'http://localhost:3090';
+axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? 'https://api.42board.com' : 'http://localhost:3095';
 
-console.log('env', process.env.NODE_ENV === 'production');
 render(
     <BrowserRouter>
         <App />
