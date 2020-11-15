@@ -10,6 +10,7 @@
   "author": "anjoy",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.21.0",
     "bcrypt": "^5.0.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",

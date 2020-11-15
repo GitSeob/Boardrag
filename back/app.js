@@ -11,30 +11,30 @@ const passport = require("passport");
 
 dotenv.config();
 
-const { sequelize } = require("./models");
-const passportConfig = require("./passport");
+// const { sequelize } = require("./models");
+// const passportConfig = require("./passport");
 const apiRouter = require("./routes/api");
-const webSocket = require("./socket");
+// const webSocket = require("./socket");
 
 const app = express();
 app.set("PORT", process.env.PORT || 3095);
-sequelize.sync().then(() => {
-    console.log("DB 연결 성공");
-}).catch(console.error);
-passportConfig();
+// sequelize.sync().then(() => {
+//     console.log("DB 연결 성공");
+// }).catch(console.error);
+// passportConfig();
 
 const prod = process.env.NODE_ENV === "production";
 
 app.use(express.static(path.join(__dirname, "public")));
 
 if (prod) {
-        app.enable("trust proxy");
-        app.use(morgan("combined"));
-        app.use(helmet({ contentSecurityPolicy: false }));
-        app.use(hpp());
-    } else {
-        app.use(morgan("dev"));
-        app.use(
+    app.enable("trust proxy");
+    app.use(morgan("combined"));
+    app.use(helmet({ contentSecurityPolicy: false }));
+    app.use(hpp());
+} else {
+    app.use(morgan("dev"));
+    app.use(
         cors({
             origin: true,
             credentials: true,
@@ -67,8 +67,8 @@ app.get("*", (req, res, next) => {
 });
 
 
-const server = app.listen(app.get("PORT"), () => {
+app.listen(app.get("PORT"), () => {
     console.log(`listening on port ${app.get("PORT")}`);
 });
 
-webSocket(server, app);
+// webSocket(server, app);

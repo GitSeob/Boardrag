@@ -21,6 +21,14 @@ module.exports = class User extends Model {
                 is_admin: {
                     type: DataTypes.BOOLEAN,
                     allowNull: false,
+                },
+                refresh_token: {
+                    type: DataTypes.TEXT,
+                    allowNull: true,
+                },
+                access_token: {
+                    type: DataTypes.TEXT,
+                    allowNull: true,
                 }
             },
             {
