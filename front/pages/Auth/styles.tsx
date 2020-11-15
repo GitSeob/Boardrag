@@ -42,6 +42,10 @@ export const LoginButton = styled.a`
     justify-content: center;
     font-weight: 500;
 
+    &:hover {
+        box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.3);
+    }
+
     & > img {
         position: absolute;
         left: 1rem;

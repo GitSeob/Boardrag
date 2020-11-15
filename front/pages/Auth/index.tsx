@@ -12,7 +12,8 @@ const Auth = () => {
     const OAuthURL = `${OAUTH}/authorize?client_id=${FT_UID}&redirect_uri=${FRONT_URL}&response_type=code`
     const tokenValue = url.parse(window.location.href).query?.replace("code=", "");
 
-    console.log(OAuthURL);
+    if (tokenValue)
+        console.log(tokenValue);
 
     return (
         <LoginContainer>
