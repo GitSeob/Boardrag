@@ -6,20 +6,18 @@ import url from 'url';
 
 import fetcher from '@utils/fetcher';
 import { LoginContainer, LoginButton } from '@pages/Auth/styles';
+import { FT_UID, OAUTH, FRONT_URL } from '@config/config';
 
 const Auth = () => {
-    // const OAuthURL = process.env.NODE_ENV === 'production' ?
-    //     `https://api.intra.42.fr/oauth/authorize?client_id=${process.env.DEV_UID}&redirect_uri=${process.env.DEV_URL}&response_type=code` :
-    //     `https://api.intra.42.fr/oauth/authorize?client_id=${process.env.PRODUCT_UID}&redirect_uri=${process.env.PRODUCT_URL}&response_type=code`;
+    const OAuthURL = `${OAUTH}/authorize?client_id=${FT_UID}&redirect_uri=${FRONT_URL}&response_type=code`
+    const tokenValue = url.parse(window.location.href).query?.replace("code=", "");
 
-    // const tokenValue = url.parse(window.location.href).query?.replace("code=", "");
-
-    console.log(process.env.DEV_UID);
+    console.log(OAuthURL);
 
     return (
         <LoginContainer>
             <h1>Login</h1>
-            <LoginButton href={"naver.com"} target="_blank">
+            <LoginButton href={OAuthURL} target="_blank">
                 <img src="/public/42_logo.svg" />
                 Login with 42api
             </LoginButton>

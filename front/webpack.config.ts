@@ -3,6 +3,7 @@ import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import webpack from 'webpack';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
+import Dotenv from 'dotenv-webpack';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -61,12 +62,16 @@ const config: webpack.Configuration = {
     },
     plugins: [
         new ForkTsCheckerWebpackPlugin({
-        async: false,
-        // eslint: {
-        //   files: "./src/**/*",
-        // },
+            async: false,
+            // eslint: {
+            //   files: "./src/**/*",
+            // },
         }),
         new webpack.EnvironmentPlugin({ NODE_ENV: isDevelopment ? 'development' : 'production' }),
+        new Dotenv({
+            path: './.env',
+            safe: true
+        })
     ],
     output: {
         path: path.join(__dirname, 'dist'),
