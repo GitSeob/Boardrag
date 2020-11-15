@@ -17,9 +17,16 @@ router.get('/auth/:codeValue', async (req, res, next) => {
     }
     try {
         const access_token = await axios.post(`${config.api_oauth_url}?code=${req.params.codeValue}&grant_type=authorization_code&client_id=${config.api_client_id}&client_secret=${config.api_client_secret}&redirect_uri=${config.api_redirect_uri}`).then(res => {
-            return res.data;
+            return res.data.access_token;
+        }).catch(e => {
+            next(e);
         });
-        res.send({access_token: access_token});
+        const user_data = await axios.get(`${config.api_url}/me?access_token=${access_token}`).then(res => {
+            return res.data;
+        }).catch(e => {
+            next(e);
+        });
+        res.send(user_data);
     } catch (error) {
         next(error);
     }
