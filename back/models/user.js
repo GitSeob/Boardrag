@@ -14,10 +14,6 @@ module.exports = class User extends Model {
                     type: DataTypes.TEXT(),
                     allowNull: true,
                 },
-                request_url: {
-                    type: DataTypes.TEXT(),
-                    allowNull: false,
-                },
                 is_admin: {
                     type: DataTypes.BOOLEAN,
                     allowNull: false,

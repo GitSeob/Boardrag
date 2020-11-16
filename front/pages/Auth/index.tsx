@@ -12,9 +12,16 @@ const Auth = () => {
     const OAuthURL = `${OAUTH}/authorize?client_id=${FT_UID}&redirect_uri=${FRONT_URL}&response_type=code`
     const codeValue = url.parse(window.location.href).query?.replace("code=", "");
 
+    // const { data:userData } = useSWR('/api/auth', fetcher);
+
     if (codeValue)
     {
-        const data = axios.get(`/api/auth/${codeValue}`).then(res => {
+        const data = axios.post(`/api/auth`, {
+            codeValue: codeValue,
+            trashValue: '123',
+        }, {
+            withCredentials: true
+        }).then(res => {
             console.log(res.data);
             return res.data;
         }).catch(e => {

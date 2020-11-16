@@ -8,11 +8,14 @@ const path = require("path");
 const hpp = require("hpp");
 const helmet = require("helmet");
 const passport = require("passport");
+const axios = require('axios');
 
 dotenv.config();
 
+axios.defaults.withCredentials = true;
+
 const { sequelize } = require("./models");
-const passportConfig = require("./passport");
+const passportConfig = require('./passport');
 const apiRouter = require("./routes/api");
 // const webSocket = require("./socket");
 
@@ -28,6 +31,7 @@ sequelize.sync()
 		console.log('✗ DB connection error. Please make sure DB is running.');
 		process.exit();
 });
+passportConfig();
 
 const prod = process.env.NODE_ENV === "production";
 
@@ -58,11 +62,14 @@ const sessionOption = {
     cookie: {
         httpOnly: true,
     },
+    name: '42-board'
 };
+
 if (prod) {
     sessionOption.cookie.secure = true;
     sessionOption.cookie.proxy = true;
 }
+
 app.use(session(sessionOption));
 app.use(passport.initialize());
 app.use(passport.session());
