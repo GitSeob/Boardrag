@@ -42,9 +42,9 @@ module.exports = class User extends Model {
         );
     }
     static associate(db) {
-        db.User.hasMany(db.Text);
-        db.User.hasMany(db.Component);
-        // db.User.hasMany(db.Draw);
-        db.User.hasMany(db.Comment);
+        // db.User.hasMany(db.Text);
+        // db.User.hasMany(db.Component);
+        // // db.User.hasMany(db.Draw);
+        // db.User.hasMany(db.Comment);
     }
-}
+};

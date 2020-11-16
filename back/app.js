@@ -11,17 +11,17 @@ const passport = require("passport");
 
 dotenv.config();
 
-// const { sequelize } = require("./models");
-// const passportConfig = require("./passport");
+const { sequelize } = require("./models");
+const passportConfig = require("./passport");
 const apiRouter = require("./routes/api");
 // const webSocket = require("./socket");
 
 const app = express();
 app.set("PORT", process.env.PORT || 3095);
-// sequelize.sync().then(() => {
-//     console.log("DB 연결 성공");
-// }).catch(console.error);
-// passportConfig();
+sequelize.sync().then(() => {
+    console.log("DB 연결 성공");
+}).catch(console.error);
+passportConfig();
 
 const prod = process.env.NODE_ENV === "production";
 
