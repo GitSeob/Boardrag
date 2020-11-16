@@ -1,20 +1,24 @@
+// module.exports = (sequelize, DataTypes) => {
+//     const TextContent
+// }
+
 const DataTypes = require('sequelize');
 const { Model } = DataTypes;
 
-module.exports = class Text extends Model {
+module.exports = class TextConent extends Model {
     static init(sequelize) {
         return super.init(
             {
                 x_pos: {
-                    type: DataTypes.NUMBER,
+                    type: DataTypes.INTEGER,
                     allowNull: false,
                 },
                 y_pos: {
-                    type: DataTypes.NUMBER,
+                    type: DataTypes.INTEGER,
                     allowNull: false,
                 },
                 content: {
-                    type: DataTypes.TEXT(100),
+                    type: DataTypes.TEXT,
                     allowNull: false,
                 },
                 expiry_date: {
@@ -23,8 +27,8 @@ module.exports = class Text extends Model {
                 }
             },
             {
-                modelName: "Text",
-                tableName: "Texts",
+                modelName: "TextContent",
+                tableName: "textContents",
                 paranoid: true,
                 charset: "utf8mb4",
                 collate: "utf8mb4_general_ci",
@@ -33,6 +37,6 @@ module.exports = class Text extends Model {
         );
     }
     static associate(db) {
-        db.Text.belongsTo(db.User);
+        db.TextContent.belongsTo(db.User);
     }
 }

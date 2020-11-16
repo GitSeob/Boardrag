@@ -18,10 +18,16 @@ const apiRouter = require("./routes/api");
 
 const app = express();
 app.set("PORT", process.env.PORT || 3095);
-sequelize.sync().then(() => {
-    console.log("DB 연결 성공");
-}).catch(console.error);
-passportConfig();
+sequelize.sync()
+	.then(() => {
+		console.log('✓ DB connection success.');
+		console.log('  Press CTRL-C to stop\n');
+	})
+	.catch(err => {
+		console.error(err);
+		console.log('✗ DB connection error. Please make sure DB is running.');
+		process.exit();
+});
 
 const prod = process.env.NODE_ENV === "production";
 

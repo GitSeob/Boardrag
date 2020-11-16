@@ -1,3 +1,46 @@
+// module.exports = (sequelize, DataTypes) => {
+//     const User = sequelize.define('User', {
+//         username: {
+//             type: DataTypes.STRING(100),
+//             allowNull: false,
+//             unique: true,
+//         },
+//         profile_img: {
+//             type: DataTypes.TEXT(),
+//             allowNull: true,
+//         },
+//         request_url: {
+//             type: DataTypes.TEXT(),
+//             allowNull: false,
+//         },
+//         is_admin: {
+//             type: DataTypes.BOOLEAN,
+//             allowNull: false,
+//         },
+//         refresh_token: {
+//             type: DataTypes.TEXT(),
+//             allowNull: true,
+//         },
+//         access_token: {
+//             type: DataTypes.TEXT(),
+//             allowNull: true,
+//         },
+//     }, {
+// 		charset: 'utf8',
+// 		collate: 'utf8_general_ci'
+//     })
+
+//     User.associate = (db) => {
+//         db.User.hasMany(db.Text);
+//         db.User.hasMany(db.Component);
+//         // db.User.hasMany(db.Draw);
+//         db.User.hasMany(db.Comment);
+//     }
+
+//     return User;
+// }
+
+
 const DataTypes = require('sequelize');
 const { Model } = DataTypes;
 
@@ -6,16 +49,16 @@ module.exports = class User extends Model {
         return super.init(
             {
                 username: {
-                    type: DataTypes.STRING(30),
+                    type: DataTypes.STRING(100),
                     allowNull: false,
                     unique: true,
                 },
                 profile_img: {
-                    type: DataTypes.TEXT,
-                    allowNull: false,
+                    type: DataTypes.TEXT(),
+                    allowNull: true,
                 },
                 request_url: {
-                    type: DataTypes.TEXT,
+                    type: DataTypes.TEXT(),
                     allowNull: false,
                 },
                 is_admin: {
@@ -23,28 +66,28 @@ module.exports = class User extends Model {
                     allowNull: false,
                 },
                 refresh_token: {
-                    type: DataTypes.TEXT,
+                    type: DataTypes.TEXT(),
                     allowNull: true,
                 },
                 access_token: {
-                    type: DataTypes.TEXT,
+                    type: DataTypes.TEXT(),
                     allowNull: true,
-                }
+                },
             },
             {
                 modelName: "User",
                 tableName: "users",
                 paranoid: true,
-                charset: "utf8",
-                collate: "utf8_general_ci", // 한글 저장
+                charset: "utf8mb4",
+                collate: "utf8mb4_general_ci", // 한글 저장
                 sequelize,
             }
         );
     }
-    static associate(db) {
-        // db.User.hasMany(db.Text);
-        // db.User.hasMany(db.Component);
-        // // db.User.hasMany(db.Draw);
-        // db.User.hasMany(db.Comment);
-    }
+    // static associate(db) {
+    //     db.User.hasMany(db.TextContent);
+    //     db.User.hasMany(db.Component);
+    //     // // db.User.hasMany(db.Draw);
+    //     db.User.hasMany(db.Comment);
+    // }
 };

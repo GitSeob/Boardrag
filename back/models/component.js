@@ -1,3 +1,39 @@
+// module.exports = (sequelize, DataTypes) => {
+//     const Component = sequelize.define('Component', {
+//         x_pos: {
+//             type: DataTypes.NUMBER,
+//             allowNull: false,
+//         },
+//         y_pos: {
+//             type: DataTypes.NUMBER,
+//             allowNull: false,
+//         },
+//         head: {
+//             type: DataTypes.STRING(30),
+//             allowNull: false,
+//         },
+//         paragraph: {
+//             type: DataTypes.TEXT,
+//             allowNull: false,
+//         },
+//         background_img: {
+//             type: DataTypes.TEXT,
+//             allowNull: true,
+//         },
+//         expiry_date: {
+//             type: DataTypes.DATE,
+//             allowNull: false,
+//         }
+//     }, {
+//         charset: "utf8mb4",
+//         collate: "utf8mb4_general_ci",
+//     });
+
+//     Component.associate = (db) => {
+//         db.Component.belongsTo(db.User);
+//     }
+// }
+
 const DataTypes = require('sequelize');
 const { Model } = DataTypes;
 
@@ -6,11 +42,11 @@ module.exports = class Component extends Model {
         return super.init(
             {
                 x_pos: {
-                    type: DataTypes.NUMBER,
+                    type: DataTypes.INTEGER,
                     allowNull: false,
                 },
                 y_pos: {
-                    type: DataTypes.NUMBER,
+                    type: DataTypes.INTEGER,
                     allowNull: false,
                 },
                 head: {
