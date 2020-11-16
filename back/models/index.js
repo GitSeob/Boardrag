@@ -19,7 +19,6 @@ const sequelize = new Sequelize(
 
 
 //////// DB Models require
-// const user = require('./user')(sequelize, Sequelize);
 const user = require('./user');
 const textContent = require('./textContent');
 const component = require('./component');
