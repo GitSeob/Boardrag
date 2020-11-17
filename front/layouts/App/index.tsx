@@ -3,6 +3,7 @@ import loadable from '@loadable/component';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 const Auth = loadable(() => import('@pages/Auth'));
+const Board = loadable(() => import('@layouts/Board'));
 
 const App: FC = () => (
     <Switch>
@@ -10,6 +11,7 @@ const App: FC = () => (
             <Redirect to="/auth"/>
         </Route>
         <Route path="/auth" component={Auth} />
+        <Route path="/board" component={Board} />
     </Switch>
 )
 

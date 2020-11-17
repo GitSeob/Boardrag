@@ -1,18 +1,20 @@
-import React from 'react';
+import React, {FC} from 'react';
 import useSWR from 'swr';
-
 import url from 'url';
-
 import fetcher from '@utils/fetcher';
 import { LoginContainer, LoginButton } from '@pages/Auth/styles';
 import { FT_UID, OAUTH, FRONT_URL } from '@config/config';
 import axios from 'axios';
+import { Redirect } from 'react-router-dom';
 
-const Auth = () => {
-    const OAuthURL = `${OAUTH}/authorize?client_id=${FT_UID}&redirect_uri=${FRONT_URL}&response_type=code`
+const Auth:FC = () => {
+    const { data:userData, revalidate } = useSWR('/api/auth', fetcher);
+    const OAuthURL:string = `${OAUTH}/authorize?client_id=${FT_UID}&redirect_uri=${FRONT_URL}&response_type=code`
     const codeValue = url.parse(window.location.href).query?.replace("code=", "");
 
-    // const { data:userData } = useSWR('/api/auth', fetcher);
+    if (userData) {
+        return <Redirect to="/board" />
+    }
 
     if (codeValue)
     {

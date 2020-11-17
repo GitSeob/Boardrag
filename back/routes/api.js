@@ -14,14 +14,11 @@ const db = require("../models");
 
 const { isNotLoggedIn, isLoggedIn } = require("./middleware");
 
-router.get('auth', async (req, res, next) => {
-    res.status(400).send({
-        message: "Bad Request: codeValue is not defined"
-    });
+router.get('/auth', isNotLoggedIn, async (req, res, next) => {
+    console.log(req.user);
 })
 
 router.post('/auth', isNotLoggedIn, async (req, res, next) => {
-    console.log(req.body);
     passport.authenticate('local', (e, user, info) => {
         console.log(info);
         if (e) {
