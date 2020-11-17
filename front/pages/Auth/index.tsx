@@ -8,15 +8,15 @@ import axios from 'axios';
 import { Redirect } from 'react-router-dom';
 
 const Auth:FC = () => {
-    const { data:userData, revalidate } = useSWR('/api/auth', fetcher);
     const OAuthURL:string = `${OAUTH}/authorize?client_id=${FT_UID}&redirect_uri=${FRONT_URL}&response_type=code`
     const codeValue = url.parse(window.location.href).query?.replace("code=", "");
+    const { data:userData } = useSWR('/api/auth', fetcher);
 
     if (userData) {
         return <Redirect to="/board" />
     }
 
-    if (codeValue)
+    if (!userData && codeValue)
     {
         const data = axios.post(`/api/auth`, {
             codeValue: codeValue,
@@ -30,6 +30,11 @@ const Auth:FC = () => {
             console.log(e);
         });
     }
+
+    if (userData || codeValue)
+        return (
+            <div>loading</div>
+        );
 
     return (
         <LoginContainer>

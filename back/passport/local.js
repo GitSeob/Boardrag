@@ -11,9 +11,7 @@ module.exports = () => {
         usernameField: "codeValue",
         passwordField: "trashValue",
     }, async (codeValue, trashValue, done) => {
-        console.log(codeValue, trashValue);
         try {
-            console.log(codeValue, trashValue);
             const access_token = await axios.post(`${config.api_oauth_url}?code=${codeValue}&grant_type=authorization_code&client_id=${config.api_client_id}&client_secret=${config.api_client_secret}&redirect_uri=${config.api_redirect_uri}`).then(res => {
                 return res.data.access_token;
             }).catch(e => {

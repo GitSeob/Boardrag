@@ -8,19 +8,36 @@ const axios = require("axios");
 const env = process.env.NODE_ENV || "development";
 const config = require("../config/config")[env];
 
+const get_token_url = `${config.api_url}/me?access_token=`
+
 // const { sequelize } = require("../models");
 const router = require(".");
 const db = require("../models");
 
 const { isNotLoggedIn, isLoggedIn } = require("./middleware");
 
-router.get('/auth', isNotLoggedIn, async (req, res, next) => {
-    console.log(req.user);
+router.get('/auth', isLoggedIn, async (req, res, next) => {
+    try {
+        if (!req.user)
+            res.status(202).send({ reason: "before created cookie" });
+        const userInfo = await db.User.findOne({
+            where: {id: req.user.id},
+            attributes: ['id', 'username', 'profile_img', 'is_admin', 'access_token']
+        });
+        const get_user_42api = await axios.get(get_token_url + userInfo.access_token).then(res => {
+            return res.data;
+        }).catch(e => {
+            res.status(401).send({ reason: "만료된 토큰입니다." });
+        })
+        res.send(userInfo);
+    } catch (e) {
+        console.error(e);
+        next(e);
+    }
 })
 
-router.post('/auth', isNotLoggedIn, async (req, res, next) => {
+router.post('/auth', async (req, res, next) => {
     passport.authenticate('local', (e, user, info) => {
-        console.log(info);
         if (e) {
             return next(e);
         }
