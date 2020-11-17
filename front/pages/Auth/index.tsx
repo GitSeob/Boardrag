@@ -6,14 +6,21 @@ import { LoginContainer, LoginButton } from '@pages/Auth/styles';
 import { FT_UID, OAUTH, FRONT_URL } from '@config/config';
 import axios from 'axios';
 import { Redirect } from 'react-router-dom';
+import LoadingCircle from '@components/LoadingCircle';
 
 const Auth:FC = () => {
     const OAuthURL:string = `${OAUTH}/authorize?client_id=${FT_UID}&redirect_uri=${FRONT_URL}&response_type=code`
     const codeValue = url.parse(window.location.href).query?.replace("code=", "");
-    const { data:userData } = useSWR('/api/auth', fetcher);
+    const { data:userData, revalidate } = useSWR('/api/auth', fetcher);
 
     if (userData) {
         return <Redirect to="/board" />
+    }
+
+    if (!userData && document && document.cookie) {
+        return (
+            <LoadingCircle />
+        );
     }
 
     if (!userData && codeValue)
@@ -24,16 +31,19 @@ const Auth:FC = () => {
         }, {
             withCredentials: true
         }).then(res => {
-            console.log(res.data);
+            revalidate();
             return res.data;
         }).catch(e => {
             console.log(e);
         });
+
+        if (data)
+            return <Redirect to="/board" />
     }
 
     if (userData || codeValue)
         return (
-            <div>loading</div>
+            <LoadingCircle />
         );
 
     return (

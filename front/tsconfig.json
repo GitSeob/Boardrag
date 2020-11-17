@@ -17,7 +17,8 @@
             "@pages/*": ["pages/*"],
             "@utils/*": ["utils/*"],
             "@typings/*": ["typings/*"],
-            "@config/*": ["config/*"]
+            "@config/*": ["config/*"],
+            "@leonSans/*": ["leonSans/*"]
         }
     }
 }

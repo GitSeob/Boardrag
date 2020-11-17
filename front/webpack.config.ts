@@ -21,6 +21,7 @@ const config: webpack.Configuration = {
             '@utils': path.resolve(__dirname, 'utils'),
             '@typings': path.resolve(__dirname, 'typings'),
             '@config': path.resolve(__dirname, 'config'),
+            '@leonSans': path.resolve(__dirname, 'leonSans')
         },
     },
     entry: {

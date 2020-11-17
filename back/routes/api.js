@@ -1,9 +1,8 @@
-
-// const { Op } = require("sequelize");
 const express = require("express");
 const passport = require("passport");
 const bcrypt = require("bcrypt");
 const axios = require("axios");
+// const { Op } = require("sequelize");
 
 const env = process.env.NODE_ENV || "development";
 const config = require("../config/config")[env];
@@ -36,7 +35,7 @@ router.get('/auth', isLoggedIn, async (req, res, next) => {
     }
 })
 
-router.post('/auth', async (req, res, next) => {
+router.post('/auth', isNotLoggedIn, async (req, res, next) => {
     passport.authenticate('local', (e, user, info) => {
         if (e) {
             return next(e);
