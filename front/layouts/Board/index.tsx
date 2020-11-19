@@ -6,11 +6,18 @@ import { Redirect } from 'react-router-dom';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
+import { MenuBox, KonvaContainer,BoardFooter } from './style';
 
 type Position = {
     x: number,
     y: number
 };
+
+type MenuPosition = {
+    x: number,
+    y: number,
+    flg: boolean,
+}
 
 const WorkSpace:FC = () => {
     const layerRef = React.useRef() as React.MutableRefObject<Konva.Layer>;
@@ -22,10 +29,14 @@ const WorkSpace:FC = () => {
         x: 0,
         y: 0
     })
-    const height = window.innerHeight;
-    const width = height * 16 / 10;
-
+    const [menuState, setMenu] = React.useState<MenuPosition>({
+        x: 0,
+        y: 0,
+        flg: false
+    });
+    const width = window.innerWidth;
     const rectSize = width / 20;
+    const height = (width * 10 / 16) - (width * 10 / 16) % rectSize;
 
     const RectOnCanvas = ({x = rectSize, y = rectSize}) => {
         return <Rect
@@ -46,8 +57,17 @@ const WorkSpace:FC = () => {
     }, [mPos]);
 
     return (
-        <>
+        <KonvaContainer>
+            <MenuBox clicked={menuState.flg} x={menuState.x} y={menuState.y}>
+                <div style={{width: '100px', height: '100px'}}>
+                    hi
+                </div>
+            </MenuBox>
             <Stage
+                style={{
+                    height: height,
+                    zIndex: 1,
+                }}
                 width={width}
                 height={height}
                 onMouseMove={(e) => {
@@ -59,12 +79,22 @@ const WorkSpace:FC = () => {
                         y: pos?.y as number,
                     })
                 }}
+                onMouseDown={(e) => {
+                    setMenu({
+                        x: mPos.x,
+                        y: mPos.y,
+                        flg: true
+                    });
+                }}
             >
                 <Layer ref={layerRef}>
                     <RectOnCanvas x={rPos.x} y={rPos.y}/>
                 </Layer>
             </Stage>
-        </>
+            <BoardFooter>
+                designed by @han
+            </BoardFooter>
+        </KonvaContainer>
     )
 }
 
