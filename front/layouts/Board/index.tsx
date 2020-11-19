@@ -6,7 +6,7 @@ import { Redirect } from 'react-router-dom';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { MenuBox, KonvaContainer,BoardFooter, MenuAttr } from './style';
+import { MenuBox, KonvaContainer,BoardFooter, MenuAttr, AddComponent } from './style';
 
 type Position = {
     x: number,
@@ -55,6 +55,7 @@ const WorkSpace:FC = () => {
         flg: false,
         disp: false,
     });
+    const [addState, setAdd] = React.useState(0);
 
     const width = window.innerWidth;
     const defaultRectSize = width / 32;
@@ -122,23 +123,43 @@ const WorkSpace:FC = () => {
     }
 
     React.useEffect(() => {
-        if (isDragged.dragged )
-            getRectSize();
-        else {
-            setRPos({
-                x: mPos.x - mPos.x % defaultRectSize,
-                y: mPos.y - mPos.y % defaultRectSize
-            })
+        if (addState == 0)
+        {
+            if (isDragged.dragged)
+                getRectSize();
+            else {
+                setRPos({
+                    x: mPos.x - mPos.x % defaultRectSize,
+                    y: mPos.y - mPos.y % defaultRectSize
+                })
+            }
         }
-    }, [mPos, isDragged]);
+    }, [mPos, isDragged, addState]);
+
+    React.useEffect(() => {
+        if (addState !== 0)
+            setMenu({
+                ...menuState, flg: false
+            });
+    }, [addState]);
 
     return (
         <KonvaContainer>
             <MenuBox clicked={menuState.flg} x={menuState.x} y={menuState.y} disp={menuState.disp}>
-                <MenuAttr>Text</MenuAttr>
-                <MenuAttr>Component</MenuAttr>
-                <MenuAttr>Image</MenuAttr>
+                <MenuAttr onClick={() => setAdd(1)}>Text</MenuAttr>
+                <MenuAttr onClick={() => setAdd(2)}>Component</MenuAttr>
+                <MenuAttr onClick={() => setAdd(3)}>Image</MenuAttr>
             </MenuBox>
+            { addState !== 0 &&
+                <AddComponent
+                    width={rectSize.width}
+                    height={rectSize.height}
+                    x={rPos.x}
+                    y={rPos.y}
+                >
+                    hi
+                </AddComponent>
+            }
             <Stage
                 style={{
                     height: height,
@@ -159,14 +180,15 @@ const WorkSpace:FC = () => {
                     }
                 }}
                 onMouseDown={(e) => {
-                    setDragged({
-                        x: mPos.x,
-                        y: mPos.y,
-                        dragged: true,
-                    })
+                    if (addState === 0)
+                        setDragged({
+                            x: mPos.x,
+                            y: mPos.y,
+                            dragged: true,
+                        })
                 }}
                 onMouseUp={(e) => {
-                    if (!menuState.flg)
+                    if (!menuState.flg && addState == 0)
                     {
                         setMenu({
                             x: mPos.x,
@@ -185,6 +207,7 @@ const WorkSpace:FC = () => {
                         setMenu({
                             ...menuState, flg: false,
                         })
+                        setAdd(0);
                     }
                 }}
             >

@@ -9,6 +9,13 @@ type MenuPosition = {
     disp: boolean
 }
 
+type ComponentInfo = {
+    width: number,
+    height: number,
+    x: number,
+    y: number,
+}
+
 const apperMenu = keyframes`
     from {
         max-width: 0;
@@ -35,6 +42,7 @@ export const KonvaContainer = styled.div`
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
 `
 
 export const MenuBox = styled('div')<MenuPosition>`
@@ -76,5 +84,21 @@ export const BoardFooter = styled.div`
     text-align: center;
     display: flex;
     padding: 1rem;
-    height: -webkit-fill-available;
+    height: 100%;
+    // margin: auto;
+    background: rgba(0, 0, 0, .1);
 `
+
+export const AddComponent = styled('div')<ComponentInfo>`
+    position: absolute;
+    width: ${props => props.width};
+    height: ${props => props.height};
+    top: ${props => props.y};
+    left: ${props => props.x};
+    border-radius: 5px;
+    background: rgba(255, 255, 255, .8);
+    box-shadow: 0 0 4px 1px rgba(255, 255, 255, .5);
+    color: #000;
+    padding: 5px;
+    z-index: 4;
+`;
