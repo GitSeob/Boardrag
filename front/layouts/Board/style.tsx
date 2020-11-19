@@ -5,7 +5,8 @@ import { relative } from 'path';
 type MenuPosition = {
     x: number,
     y: number,
-    clicked: boolean
+    clicked: boolean,
+    disp: boolean
 }
 
 const apperMenu = keyframes`
@@ -37,18 +38,33 @@ export const KonvaContainer = styled.div`
 `
 
 export const MenuBox = styled('div')<MenuPosition>`
-        position: absolute;
-        background: rgba(0, 0, 0, .7);
-        color: #fff;
-        border-radius: 5px;
-        box-shadow: 0 0 8px 1px rgb(0, 0, 0);
-        cursor: pointer;
-        display: ${props => props.clicked ? 'block' : 'none'};
-        top: ${ props => props.y };
-        left: ${ props => props.x };
-        animation: ${ props => props.clicked ? apperMenu : disapperMenu } .3s ease-in-out 1;
-        z-index: 3;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    background: rgba(0, 0, 0, .7);
+    display: ${props => props.disp ? 'block' : 'none'};
+    overflow: hidden;
+    color: #efefef;
+    border-radius: 5px;
+    box-shadow: 0 0 8px 1px rgb(0, 0, 0);
+    max-width: ${props => props.clicked ? '200px' : '0px'};
+    max-height: ${props => props.clicked ? '200px' : '0px'};
+    top: ${ props => props.y };
+    left: ${ props => props.x };
+    animation: ${ props => props.clicked ? apperMenu : disapperMenu } .3s ease-in-out 1;
+    z-index: 3;
 )`
+
+export const MenuAttr = styled.div`
+    width: 140px;
+    padding: 1rem;
+    cursor: pointer;
+    position: relative;
+
+    &:hover {
+        background: rgba(20, 20, 20, .5);
+    }
+`
 
 export const BoardFooter = styled.div`
     width: 100%;
@@ -59,5 +75,6 @@ export const BoardFooter = styled.div`
     font-size: 12px;
     text-align: center;
     display: flex;
+    padding: 1rem;
     height: -webkit-fill-available;
 `
