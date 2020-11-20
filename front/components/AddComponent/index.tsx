@@ -1,11 +1,12 @@
 import React, {FC} from 'react';
-import { AddComponent, boxProps } from './style';
+import { AddComponent, boxProps, offset } from './style';
 
 interface Props {
-    category: number
+    category: number,
+    offset: offset
 }
 
-const InputForm:FC<Props> = ({ category }) => {
+const InputForm:FC<Props> = ({ category, offset }) => {
     if (category === 1)
         return (
             <div>Text</div>
@@ -19,18 +20,19 @@ const InputForm:FC<Props> = ({ category }) => {
     )
 }
 
-const TextAddComponent = (data: boxProps) => {
+const TextAddComponent:FC<boxProps> = ({x, y, width, height, category, offset}) => {
     return (
         <AddComponent
             style={{
-                top: data.y,
-                left: data.x,
-                width: data.width,
-                height: data.height,
+                top: y,
+                left: x,
+                width: width,
+                height: height,
             }}
         >
             <InputForm
-                category={data.category}
+                category={category}
+                offset={offset}
             />
         </AddComponent>
     );

@@ -1,11 +1,19 @@
 import styled from '@emotion/styled';
 
-export type boxProps = {
+export type offset = {
+    width: number,
+    height: number,
+    x: number,
+    y: number
+};
+
+export interface boxProps {
     x: number,
     y: number,
     width: number,
     height: number,
     category: number,
+    offset: offset
 }
 
 export const AddComponent = styled('div')`

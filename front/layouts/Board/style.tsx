@@ -104,3 +104,17 @@ export const TextComponent = styled('div')`
     padding: 5px;
     z-index: 4;
 `;
+
+export const WarnMessage = styled.div`
+    position: absolute;
+    background: rgba(0, 0, 0, .6);
+    z-index: 5;
+    border-radius: 5px;
+    color: #ff5555;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 1rem 2rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+`;

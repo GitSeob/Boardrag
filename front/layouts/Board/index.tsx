@@ -6,7 +6,7 @@ import { Redirect } from 'react-router-dom';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { MenuBox, KonvaContainer,BoardFooter, MenuAttr, TextComponent } from './style';
+import { MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import TextAddComponent from '@components/AddComponent';
 
 const dummyTest = [{
@@ -42,6 +42,13 @@ type RectSize = {
     height: number,
 }
 
+type offset = {
+    width: number,
+    height: number,
+    x: number,
+    y: number
+}
+
 const WorkSpace:FC = () => {
     const layerRef = React.useRef() as React.MutableRefObject<Konva.Layer>;
     const [isDragged, setDragged] = React.useState<DraggedRect>({
@@ -66,8 +73,14 @@ const WorkSpace:FC = () => {
         flg: false,
         disp: false,
     });
+    const [offset, setOffset] = React.useState<offset>({
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+    });
     const [addState, setAdd] = React.useState<number>(0);
-
+    const [warning, setWarning] = React.useState<boolean>(false);
     const [width, setWidth] = React.useState<number>(window.innerWidth);
     const [defaultRectSize, setDefaultRectSize] = React.useState<number>(width / 32);
 
@@ -147,6 +160,21 @@ const WorkSpace:FC = () => {
             />
     }
 
+    const openAddComponent = React.useCallback((number) => {
+        if ((rectSize.width + rectSize.height) / defaultRectSize > 4)
+        {
+            setAdd(number);
+            setOffset({
+                width: rectSize.width / defaultRectSize,
+                height: rectSize.height / defaultRectSize,
+                x: rPos.x / defaultRectSize,
+                y: rPos.y / defaultRectSize
+            })
+        }
+        else
+            setWarning(true);
+    }, [rectSize, rPos, defaultRectSize]);
+
     React.useEffect(() => {
         if (addState == 0)
         {
@@ -170,10 +198,15 @@ const WorkSpace:FC = () => {
 
     return (
         <KonvaContainer>
+            {warning &&
+                <WarnMessage>
+                    최소 4칸의 Board Tile을 선택해야합니다.
+                </WarnMessage>
+            }
             <MenuBox clicked={menuState.flg} x={menuState.x} y={menuState.y} disp={menuState.disp}>
-                <MenuAttr onClick={() => setAdd(1)}>Text</MenuAttr>
-                <MenuAttr onClick={() => setAdd(2)}>Note</MenuAttr>
-                <MenuAttr onClick={() => setAdd(3)}>Image</MenuAttr>
+                <MenuAttr onClick={() => openAddComponent(1)}>Text</MenuAttr>
+                <MenuAttr onClick={() => openAddComponent(2)}>Note</MenuAttr>
+                <MenuAttr onClick={() => openAddComponent(3)}>Image</MenuAttr>
             </MenuBox>
             { addState !== 0 &&
                 <TextAddComponent
@@ -182,6 +215,7 @@ const WorkSpace:FC = () => {
                     x={rPos.x}
                     y={rPos.y}
                     category={addState}
+                    offset={offset}
                 />
             }
             { dummyTest.map((c, i) => {
@@ -217,7 +251,7 @@ const WorkSpace:FC = () => {
                         })
                     }
                 }}
-                onMouseDown={(e) => {
+                onMouseDown={() => {
                     if (addState === 0)
                         setDragged({
                             x: mPos.x,
@@ -225,7 +259,7 @@ const WorkSpace:FC = () => {
                             dragged: true,
                         })
                 }}
-                onMouseUp={(e) => {
+                onMouseUp={() => {
                     if (!menuState.flg && addState == 0)
                     {
                         setMenu({
@@ -246,6 +280,7 @@ const WorkSpace:FC = () => {
                             ...menuState, flg: false,
                         })
                         setAdd(0);
+                        setWarning(false);
                     }
                 }}
             >
