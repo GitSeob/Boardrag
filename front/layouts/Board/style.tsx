@@ -92,8 +92,12 @@ export const BoardFooter = styled.div`
 export const TextComponent = styled('div')`
     position: absolute;
     border-radius: 5px;
-    box-shadow: 0 0 4px 1px rgba(255, 255, 255, .5);
-    color: #000;
+    box-shadow: 0 0 4px 1px rgba(255, 255, 255, .3);
+    background: rgba(0, 0, 0, .75);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 4;
 `;
 

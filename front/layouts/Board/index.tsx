@@ -115,13 +115,16 @@ const WorkSpace:FC = () => {
     }, [window.innerWidth, defaultRectSize]);
 
     const viewAddComponent = React.useCallback((number:number) => {
-        const selectSize = (rectSize.width / defaultRectSize) * (rectSize.height / defaultRectSize);
-        if (selectSize < 4)
+        const selectWidth = rectSize.width / defaultRectSize;
+        const selectHeight = rectSize.height / defaultRectSize;
+        if ((selectHeight * selectWidth) < 4)
             setWarning('최소 4칸의 영역을 선택해야합니다.');
-        else if (number === 3 && selectSize < 6)
+        else if (number === 3 && (selectHeight * selectWidth) < 6)
             setWarning('이미지는 최소 6칸의 영역을 선택해야합니다.');
-        else if (number === 2 && selectSize < 20)
-            setWarning('노트는 최소 20칸의 영역을 선택해야합니다.');
+        else if (number === 2 && (selectHeight * selectWidth) < 20)
+            setWarning('노트는 최소 20칸이상의 영역을 선택해야합니다.');
+        else if (number === 2 && (selectHeight < 3 || selectWidth < 4))
+            setWarning('노트는 4x3이상의 영역을 선택해야합니다.');
         else {
             setOffset({
                 x: rPos.x / defaultRectSize,
@@ -134,8 +137,6 @@ const WorkSpace:FC = () => {
     }, [rectSize, defaultRectSize]);
 
     const getRectSize = React.useCallback(() => {
-
-
         if (isDragged)
         {
             let w = defaultRectSize * Math.floor((Math.abs( mPos.x - mPos.x % defaultRectSize - isDragged.x) / defaultRectSize ) + 1);
@@ -267,9 +268,10 @@ const WorkSpace:FC = () => {
                             height: defaultRectSize * c.height - 10,
                             left: defaultRectSize * c.x + 5,
                             top: defaultRectSize * c.y + 5,
-                            backgroundColor:"#7990ff"
                         }}
-                    />
+                    >
+                        {c.content}
+                    </TextComponent>
                 );
             })}
             <Stage

@@ -33,6 +33,10 @@ type RectSize = {
     size: number
 }
 
+type ImageProps = {
+    src: string | null,
+}
+
 const enlarge = keyframes`
     0% {
         width: 0;
@@ -58,6 +62,7 @@ export const AddContainer = styled('div')<Container>`
     left: ${props => props.x + 5};
     width: ${props => props.width - 10};
     height: ${props => props.height - 10};
+    z-index: 3;
 `;
 
 export const AddBox = styled('div')`
@@ -140,3 +145,34 @@ export const ImageAddBox = styled.div`
         height: 100%;
     }
 `;
+
+export const NoteAddBox = styled('div')<ImageProps>`
+    width: 100%;
+    heigth: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: ${props => props.src ? props.src : 'transparent'};
+    overflow: hidden;
+
+    & > div {
+        background: transparent;
+        color: ${props => props.src ? '#fff' : '000'};
+        font-weight: 500;
+    }
+`;
+
+export const InputBox = styled('div')<RectSize>`
+    width: 100%;
+    height: ${props => props.size}
+`;
+
+export const InputArea = styled.input`
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+    font-size: 20px;
+    font-weight: 600;
+    background: inherit !important;
+`
