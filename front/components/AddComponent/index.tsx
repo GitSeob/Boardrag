@@ -1,15 +1,27 @@
 import React, {FC} from 'react';
-import { AddComponent, boxProps, offset } from './style';
+import { AddBox, AddComponent, boxProps, offset } from './style';
 
-interface Props {
+interface SwitchProps {
     category: number,
     offset: offset
 }
 
-const InputForm:FC<Props> = ({ category, offset }) => {
+interface InputProps {
+    offset: offset
+}
+
+const TextComponent:FC<InputProps> = ({ offset }) => {
+    return (
+        <div>text</div>
+    );
+}
+
+const InputForm:FC<SwitchProps> = ({ category, offset }) => {
     if (category === 1)
         return (
-            <div>Text</div>
+            <TextComponent
+                offset={offset}
+            />
         )
     else if (category === 2)
         return (
@@ -23,17 +35,17 @@ const InputForm:FC<Props> = ({ category, offset }) => {
 const TextAddComponent:FC<boxProps> = ({x, y, width, height, category, offset}) => {
     return (
         <AddComponent
-            style={{
-                top: y,
-                left: x,
-                width: width,
-                height: height,
-            }}
+            y= {y}
+            x= {x}
+            width= {width}
+            height= {height}
         >
-            <InputForm
-                category={category}
-                offset={offset}
-            />
+            <AddBox>
+                <InputForm
+                    category={category}
+                    offset={offset}
+                />
+            </AddBox>
         </AddComponent>
     );
 }

@@ -9,13 +9,6 @@ type MenuPosition = {
     disp: boolean
 }
 
-type ComponentInfo = {
-    width: number,
-    height: number,
-    x: number,
-    y: number,
-}
-
 type AddedComponentInfo = {
     width: number,
     height: number,
