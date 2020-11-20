@@ -1,5 +1,5 @@
 import React, {FC} from 'react';
-import { AddBox, AddComponent, boxProps, offset } from './style';
+import { AddBox, AddComponent, boxProps, offset, SubmitButton } from './style';
 
 interface SwitchProps {
     category: number,
@@ -45,6 +45,11 @@ const TextAddComponent:FC<boxProps> = ({x, y, width, height, category, offset}) 
                     category={category}
                     offset={offset}
                 />
+                <SubmitButton
+                    size={width / offset.width}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </SubmitButton>
             </AddBox>
         </AddComponent>
     );

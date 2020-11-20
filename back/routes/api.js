@@ -25,11 +25,11 @@ router.get('/auth', isLoggedIn, async (req, res, next) => {
 
         // if (new Date().getTime() > userInfo.updatedAt.getTime() + 7200 )
         //     res.status(401).send({ reason: "만료된 토큰입니다." });
-        const get_user_42api = await axios.get(get_token_url + userInfo.access_token).then(res => {
-            return res.data;
-        }).catch(e => {
-            res.status(401).send({ reason: "만료된 토큰입니다." });
-        })
+        // const get_user_42api = await axios.get(get_token_url + userInfo.access_token).then(res => {
+        //     return res.data;
+        // }).catch(e => {
+        //     res.status(401).send({ reason: "만료된 토큰입니다." });
+        // })
         res.send(userInfo);
     } catch (e) {
         console.error(e);

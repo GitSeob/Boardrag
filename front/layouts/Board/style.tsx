@@ -61,7 +61,7 @@ export const MenuBox = styled('div')<MenuPosition>`
     top: ${ props => props.y };
     left: ${ props => props.x };
     animation: ${ props => props.clicked ? apperMenu : disapperMenu } .3s ease-in-out 1;
-    z-index: 3;
+    z-index: 10;
 )`
 
 export const MenuAttr = styled.div`
@@ -94,7 +94,6 @@ export const TextComponent = styled('div')`
     border-radius: 5px;
     box-shadow: 0 0 4px 1px rgba(255, 255, 255, .5);
     color: #000;
-    padding: 5px;
     z-index: 4;
 `;
 

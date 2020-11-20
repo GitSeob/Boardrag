@@ -10,14 +10,24 @@ import { MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextCompone
 import TextAddComponent from '@components/AddComponent';
 
 const dummyTest = [{
-    x: 2,
-    y: 1,
+    x: 10,
+    y: 7,
     width: 3,
     height: 2,
     content: 'Hello 42Board',
     userId: 1,
     expiryDate: '2020-12-31'
 }];
+
+type DummyType = {
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    userId: number,
+    content: string,
+    expiryDate: string
+}
 
 type Position = {
     x: number,
@@ -80,7 +90,7 @@ const WorkSpace:FC = () => {
         height: 0
     });
     const [addState, setAdd] = React.useState<number>(0);
-    const [warning, setWarning] = React.useState<boolean>(false);
+    const [warning, setWarning] = React.useState<string>('');
     const [width, setWidth] = React.useState<number>(window.innerWidth);
     const [defaultRectSize, setDefaultRectSize] = React.useState<number>(width / 32);
 
@@ -89,6 +99,20 @@ const WorkSpace:FC = () => {
         height: defaultRectSize,
     });
     const [height, setHeight] = React.useState(defaultRectSize * 20);
+
+    const initStates = React.useCallback(() => {
+        setDragged({
+            x: 0, y: 0, dragged: false
+        })
+        setRectSize({
+            width: window.innerWidth / 32,
+            height: window.innerWidth / 32
+        })
+        setRPos({
+            x: 0,
+            y: 0
+        })
+    }, []);
 
     React.useEffect(() => {
         setRPos({
@@ -105,6 +129,8 @@ const WorkSpace:FC = () => {
     }, [window.innerWidth, defaultRectSize]);
 
     const getRectSize = React.useCallback(() => {
+
+
         if (isDragged)
         {
             let w = defaultRectSize * Math.floor((Math.abs( mPos.x - mPos.x % defaultRectSize - isDragged.x) / defaultRectSize ) + 1);
@@ -160,19 +186,41 @@ const WorkSpace:FC = () => {
             />
     }
 
+    const checkVertexInRect = React.useCallback((v:number, left:number, right: number) => {
+        if (v > left && v < right)
+            return (true);
+        return (false);
+    }, []);
+
     const openAddComponent = React.useCallback((number) => {
         if ((rectSize.width + rectSize.height) / defaultRectSize > 4)
         {
-            setAdd(number);
-            setOffset({
-                width: rectSize.width / defaultRectSize,
-                height: rectSize.height / defaultRectSize,
-                x: rPos.x / defaultRectSize,
-                y: rPos.y / defaultRectSize
-            })
+            if (dummyTest.find(e =>
+                (
+                    checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
+                    ||
+                    checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width))
+                &&
+                (
+                    checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+                    ||
+                    checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+                )
+            ))
+                setWarning('곂치는 영역이 존재합니다.');
+            else
+            {
+                setAdd(number);
+                setOffset({
+                    width: rectSize.width / defaultRectSize,
+                    height: rectSize.height / defaultRectSize,
+                    x: rPos.x / defaultRectSize,
+                    y: rPos.y / defaultRectSize
+                })
+            }
         }
         else
-            setWarning(true);
+            setWarning('최소 4칸의 영역을 선택해야합니다.');
     }, [rectSize, rPos, defaultRectSize]);
 
     React.useEffect(() => {
@@ -198,9 +246,9 @@ const WorkSpace:FC = () => {
 
     return (
         <KonvaContainer>
-            {warning &&
+            {warning !== ''&&
                 <WarnMessage>
-                    최소 4칸의 Board Tile을 선택해야합니다.
+                    {warning}
                 </WarnMessage>
             }
             <MenuBox clicked={menuState.flg} x={menuState.x} y={menuState.y} disp={menuState.disp}>
@@ -223,10 +271,10 @@ const WorkSpace:FC = () => {
                     <TextComponent
                         key={(i)}
                         style={{
-                            width: defaultRectSize * c.width,
-                            height: defaultRectSize * c.height,
-                            left: defaultRectSize * c.x,
-                            top: defaultRectSize * c.y,
+                            width: defaultRectSize * c.width - 10,
+                            height: defaultRectSize * c.height - 10,
+                            left: defaultRectSize * c.x + 5,
+                            top: defaultRectSize * c.y + 5,
                             backgroundColor:"#7990ff"
                         }}
                     />
@@ -280,7 +328,7 @@ const WorkSpace:FC = () => {
                             ...menuState, flg: false,
                         })
                         setAdd(0);
-                        setWarning(false);
+                        setWarning('');
                     }
                 }}
             >
