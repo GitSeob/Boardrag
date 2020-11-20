@@ -6,7 +6,8 @@ import { Redirect } from 'react-router-dom';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { MenuBox, KonvaContainer,BoardFooter, MenuAttr, AddComponent, TextComponent } from './style';
+import { MenuBox, KonvaContainer,BoardFooter, MenuAttr, TextComponent } from './style';
+import TextAddComponent from '@components/AddComponent';
 
 const dummyTest = [{
     x: 2,
@@ -65,7 +66,7 @@ const WorkSpace:FC = () => {
         flg: false,
         disp: false,
     });
-    const [addState, setAdd] = React.useState(0);
+    const [addState, setAdd] = React.useState<number>(0);
 
     const [width, setWidth] = React.useState<number>(window.innerWidth);
     const [defaultRectSize, setDefaultRectSize] = React.useState<number>(width / 32);
@@ -171,24 +172,22 @@ const WorkSpace:FC = () => {
         <KonvaContainer>
             <MenuBox clicked={menuState.flg} x={menuState.x} y={menuState.y} disp={menuState.disp}>
                 <MenuAttr onClick={() => setAdd(1)}>Text</MenuAttr>
-                <MenuAttr onClick={() => setAdd(2)}>Component</MenuAttr>
+                <MenuAttr onClick={() => setAdd(2)}>Note</MenuAttr>
                 <MenuAttr onClick={() => setAdd(3)}>Image</MenuAttr>
             </MenuBox>
             { addState !== 0 &&
-                <AddComponent
-                    style={{
-                        width: rectSize.width,
-                        height: rectSize.height,
-                        left: rPos.x,
-                        top: rPos.y
-                    }}
-                >
-                    hi
-                </AddComponent>
+                <TextAddComponent
+                    width={rectSize.width}
+                    height={rectSize.height}
+                    x={rPos.x}
+                    y={rPos.y}
+                    category={addState}
+                />
             }
             { dummyTest.map((c, i) => {
                 return (
                     <TextComponent
+                        key={(i)}
                         style={{
                             width: defaultRectSize * c.width,
                             height: defaultRectSize * c.height,
