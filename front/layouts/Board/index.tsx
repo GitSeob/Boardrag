@@ -6,7 +6,17 @@ import { Redirect } from 'react-router-dom';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { MenuBox, KonvaContainer,BoardFooter, MenuAttr, AddComponent } from './style';
+import { MenuBox, KonvaContainer,BoardFooter, MenuAttr, AddComponent, TextComponent } from './style';
+
+const dummyTest = [{
+    x: 2,
+    y: 1,
+    width: 3,
+    height: 2,
+    content: 'Hello 42Board',
+    userId: 1,
+    expiryDate: '2020-12-31'
+}];
 
 type Position = {
     x: number,
@@ -57,14 +67,28 @@ const WorkSpace:FC = () => {
     });
     const [addState, setAdd] = React.useState(0);
 
-    const width = window.innerWidth;
-    const defaultRectSize = width / 32;
+    const [width, setWidth] = React.useState<number>(window.innerWidth);
+    const [defaultRectSize, setDefaultRectSize] = React.useState<number>(width / 32);
 
     const [rectSize, setRectSize] = React.useState<RectSize>({
         width: defaultRectSize,
         height: defaultRectSize,
     });
-    const height = defaultRectSize * 20;
+    const [height, setHeight] = React.useState(defaultRectSize * 20);
+
+    React.useEffect(() => {
+        setRPos({
+            x: rPos.x / defaultRectSize * window.innerWidth / 32,
+            y: rPos.y / defaultRectSize * window.innerWidth / 32
+        });
+        setRectSize({
+            width: rectSize.width / defaultRectSize * window.innerWidth / 32,
+            height: rectSize.height / defaultRectSize * window.innerWidth / 32,
+        })
+        setWidth(window.innerWidth);
+        setDefaultRectSize(window.innerWidth/32);
+        setHeight(window.innerWidth/32*20);
+    }, [window.innerWidth, defaultRectSize]);
 
     const getRectSize = React.useCallback(() => {
         if (isDragged)
@@ -109,7 +133,7 @@ const WorkSpace:FC = () => {
                 height: h
             })
         }
-    }, [mPos, isDragged, rPos])
+    }, [mPos, isDragged, rPos, defaultRectSize])
 
     const RectOnCanvas = ({x = 0, y = 0}) => {
         return <Rect
@@ -152,14 +176,29 @@ const WorkSpace:FC = () => {
             </MenuBox>
             { addState !== 0 &&
                 <AddComponent
-                    width={rectSize.width}
-                    height={rectSize.height}
-                    x={rPos.x}
-                    y={rPos.y}
+                    style={{
+                        width: rectSize.width,
+                        height: rectSize.height,
+                        left: rPos.x,
+                        top: rPos.y
+                    }}
                 >
                     hi
                 </AddComponent>
             }
+            { dummyTest.map((c, i) => {
+                return (
+                    <TextComponent
+                        style={{
+                            width: defaultRectSize * c.width,
+                            height: defaultRectSize * c.height,
+                            left: defaultRectSize * c.x,
+                            top: defaultRectSize * c.y,
+                            backgroundColor:"#7990ff"
+                        }}
+                    />
+                );
+            })}
             <Stage
                 style={{
                     height: height,

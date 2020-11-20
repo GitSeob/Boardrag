@@ -16,6 +16,14 @@ type ComponentInfo = {
     y: number,
 }
 
+type AddedComponentInfo = {
+    width: number,
+    height: number,
+    x: number,
+    y: number,
+    color: string
+}
+
 const apperMenu = keyframes`
     from {
         max-width: 0;
@@ -89,14 +97,19 @@ export const BoardFooter = styled.div`
     background: rgba(0, 0, 0, .1);
 `
 
-export const AddComponent = styled('div')<ComponentInfo>`
+export const AddComponent = styled('div')`
     position: absolute;
-    width: ${props => props.width};
-    height: ${props => props.height};
-    top: ${props => props.y};
-    left: ${props => props.x};
     border-radius: 5px;
-    background: rgba(255, 255, 255, .8);
+    background: rgba(255, 255, 255, .6);
+    box-shadow: 0 0 4px 1px rgba(255, 255, 255, .5);
+    color: #000;
+    padding: 5px;
+    z-index: 4;
+`;
+
+export const TextComponent = styled('div')`
+    position: absolute;
+    border-radius: 5px;
     box-shadow: 0 0 4px 1px rgba(255, 255, 255, .5);
     color: #000;
     padding: 5px;

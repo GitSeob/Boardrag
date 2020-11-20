@@ -28,7 +28,7 @@ module.exports = () => {
                 return done(null, false, { reason: '다시 로그인해주시기바랍니다.' });
             }
 
-            const user_in_db = await db.User.findOne({
+            let user_in_db = await db.User.findOne({
                 where: {
                     username: user_data.login
                 }
