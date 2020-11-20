@@ -7,7 +7,7 @@ import { Redirect } from 'react-router-dom';
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
 import { MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
-import TextAddComponent from '@components/AddComponent';
+import AddComponent from '@components/AddComponent';
 
 const dummyTest = [{
     x: 10,
@@ -100,20 +100,6 @@ const WorkSpace:FC = () => {
     });
     const [height, setHeight] = React.useState(defaultRectSize * 20);
 
-    const initStates = React.useCallback(() => {
-        setDragged({
-            x: 0, y: 0, dragged: false
-        })
-        setRectSize({
-            width: window.innerWidth / 32,
-            height: window.innerWidth / 32
-        })
-        setRPos({
-            x: 0,
-            y: 0
-        })
-    }, []);
-
     React.useEffect(() => {
         setRPos({
             x: rPos.x / defaultRectSize * window.innerWidth / 32,
@@ -127,6 +113,25 @@ const WorkSpace:FC = () => {
         setDefaultRectSize(window.innerWidth/32);
         setHeight(window.innerWidth/32*20);
     }, [window.innerWidth, defaultRectSize]);
+
+    const viewAddComponent = React.useCallback((number:number) => {
+        const selectSize = (rectSize.width / defaultRectSize) * (rectSize.height / defaultRectSize);
+        if (selectSize < 4)
+            setWarning('최소 4칸의 영역을 선택해야합니다.');
+        else if (number === 3 && selectSize < 6)
+            setWarning('이미지는 최소 6칸의 영역을 선택해야합니다.');
+        else if (number === 2 && selectSize < 20)
+            setWarning('노트는 최소 20칸의 영역을 선택해야합니다.');
+        else {
+            setOffset({
+                x: rPos.x / defaultRectSize,
+                y: rPos.y / defaultRectSize,
+                width: rectSize.width / defaultRectSize,
+                height: rectSize.height / defaultRectSize
+            })
+            setAdd(number);
+        }
+    }, [rectSize, defaultRectSize]);
 
     const getRectSize = React.useCallback(() => {
 
@@ -192,35 +197,22 @@ const WorkSpace:FC = () => {
         return (false);
     }, []);
 
-    const openAddComponent = React.useCallback((number) => {
-        if ((rectSize.width + rectSize.height) / defaultRectSize > 4)
-        {
-            if (dummyTest.find(e =>
-                (
-                    checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
-                    ||
-                    checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width))
-                &&
-                (
-                    checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height)
-                    ||
-                    checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height)
-                )
-            ))
-                setWarning('곂치는 영역이 존재합니다.');
-            else
-            {
-                setAdd(number);
-                setOffset({
-                    width: rectSize.width / defaultRectSize,
-                    height: rectSize.height / defaultRectSize,
-                    x: rPos.x / defaultRectSize,
-                    y: rPos.y / defaultRectSize
-                })
-            }
-        }
+    const openAddComponent = React.useCallback((number:number) => {
+        if (dummyTest.find(e =>
+            (
+                checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
+                ||
+                checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width))
+            &&
+            (
+                checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+                ||
+                checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+            )
+        ))
+            setWarning('곂치는 영역이 존재합니다.');
         else
-            setWarning('최소 4칸의 영역을 선택해야합니다.');
+            viewAddComponent(number);
     }, [rectSize, rPos, defaultRectSize]);
 
     React.useEffect(() => {
@@ -257,7 +249,7 @@ const WorkSpace:FC = () => {
                 <MenuAttr onClick={() => openAddComponent(3)}>Image</MenuAttr>
             </MenuBox>
             { addState !== 0 &&
-                <TextAddComponent
+                <AddComponent
                     width={rectSize.width}
                     height={rectSize.height}
                     x={rPos.x}

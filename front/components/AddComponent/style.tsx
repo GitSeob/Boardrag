@@ -48,7 +48,7 @@ const enlarge = keyframes`
     }
 `
 
-export const AddComponent = styled('div')<Container>`
+export const AddContainer = styled('div')<Container>`
     position: absolute;
     z-index: 4;
     display: flex;
@@ -90,5 +90,53 @@ export const SubmitButton = styled('div')<RectSize>`
 
     & > svg {
         fill: #fff;
+    }
+`;
+
+export const ImageInputButton = styled('div')<RectSize>`
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    right: -10px;
+    top: ${props => props.size + 10};
+    transform: translateX(100%);
+    width: ${props => props.size};
+    height: ${props => props.size};
+    border-radius: 5px;
+    cursor: pointer;
+    background: #34568B;
+    box-shadow: 0 0 4px 1px rgba(52, 86, 139, .7);
+
+    & > svg {
+        fill: #fff;
+    }
+`
+
+export const TextArea = styled.textarea`
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, .6);
+    resize: none;
+    padding: 5px;
+`;
+
+export const ImageAddBox = styled.div`
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 500;
+    overflow: hidden;
+    text-align: center;
+    word-break: keep-all;
+
+    & > img {
+        width: 100%;
+        height: 100%;
     }
 `;
