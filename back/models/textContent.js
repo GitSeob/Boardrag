@@ -5,11 +5,19 @@ module.exports = class TextConent extends Model {
     static init(sequelize) {
         return super.init(
             {
-                x_pos: {
+                x: {
                     type: DataTypes.INTEGER,
                     allowNull: false,
                 },
-                y_pos: {
+                y: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                },
+                width: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                },
+                height: {
                     type: DataTypes.INTEGER,
                     allowNull: false,
                 },

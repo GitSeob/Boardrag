@@ -29,7 +29,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset }) => {
                         />
                     </InputBox>
                     <InputBox
-                        size={height - height / offset.height - 20}
+                        size={height - (height / offset.height) - 20}
                     >
                         <TextArea
                             value={value}

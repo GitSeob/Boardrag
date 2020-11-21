@@ -63,4 +63,23 @@ router.post('/auth', isNotLoggedIn, async (req, res, next) => {
     })(req, res, next);
 });
 
+router.post('/write/text', isLoggedIn, async (req, res, next) => {
+    try {
+        const now = new Date();
+        const newText = await db.TextContent.create({
+            userId: req.user.id,
+            x: req.body.x,
+            y: req.body.y,
+            width: req.body.width,
+            height: req.body.height,
+            content: req.body.content,
+            expiry_date: now.setDate(now.getTime() + 7200),
+        })
+        res.send(newText);
+    } catch (e) {
+        console.error(e);
+        next(e);
+    }
+})
+
 module.exports = router;

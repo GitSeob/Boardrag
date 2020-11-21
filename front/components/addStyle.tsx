@@ -163,6 +163,7 @@ export const NoteAddBox = styled('div')<ImageProps>`
     flex-direction: column;
     background: ${props => props.src ? props.src : 'transparent'};
     overflow: hidden;
+    animation: ${enlarge} .3s ease-in-out 1;
 
     & > div {
         background: transparent;
@@ -173,7 +174,8 @@ export const NoteAddBox = styled('div')<ImageProps>`
 
 export const InputBox = styled('div')<RectSize>`
     width: 100%;
-    height: ${props => props.size}
+    height: ${props => props.size};
+    overflow: hidden;
 `;
 
 export const InputArea = styled.input`
