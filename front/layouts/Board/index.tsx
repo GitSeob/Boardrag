@@ -7,7 +7,9 @@ import { Redirect } from 'react-router-dom';
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
 import { MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
-import AddComponent from '@components/AddComponent';
+import ImageAdd from '@components/ImageAdd';
+import TextAdd from '@components/TextAdd';
+import NoteAdd from '@components/NoteAdd';
 
 const dummyTest = [{
     x: 10,
@@ -249,13 +251,30 @@ const WorkSpace:FC = () => {
                 <MenuAttr onClick={() => openAddComponent(2)}>Note</MenuAttr>
                 <MenuAttr onClick={() => openAddComponent(3)}>Image</MenuAttr>
             </MenuBox>
-            { addState !== 0 &&
-                <AddComponent
+            { addState === 1 &&
+                <TextAdd
                     width={rectSize.width}
                     height={rectSize.height}
                     x={rPos.x}
                     y={rPos.y}
-                    category={addState}
+                    offset={offset}
+                />
+            }
+            { addState === 2 &&
+                <NoteAdd
+                    width={rectSize.width}
+                    height={rectSize.height}
+                    x={rPos.x}
+                    y={rPos.y}
+                    offset={offset}
+                />
+            }
+            { addState === 3 &&
+                <ImageAdd
+                    width={rectSize.width}
+                    height={rectSize.height}
+                    x={rPos.x}
+                    y={rPos.y}
                     offset={offset}
                 />
             }
@@ -353,4 +372,4 @@ const Board:FC = () => {
     );
 }
 
-export default Board;
+export default React.memo(Board);

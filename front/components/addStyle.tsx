@@ -13,6 +13,12 @@ export interface boxProps {
     y: number,
     width: number,
     height: number,
+    offset: offset
+}
+
+export interface SwitchProps {
+    width: number,
+    height: number,
     category: number,
     offset: offset
 }
@@ -65,15 +71,15 @@ export const AddContainer = styled('div')<Container>`
     z-index: 3;
 `;
 
-export const AddBox = styled('div')`
+export const AddBox = styled.div`
     position: relative;
     padding: 5px;
     border-radius: 5px;
     background: rgba(255, 255, 255, .6);
     box-shadow: 0 0 4px 1px rgba(255, 255, 255, .5);
     color: #000;
-    animation: ${enlarge} .3s ease-in-out 1;
     width: 100%;
+    animation: ${enlarge} .3s ease-in-out 1;
     height: 100%;
 `;
 
@@ -94,6 +100,7 @@ export const SubmitButton = styled('div')<RectSize>`
     cursor: pointer;
 
     & > svg {
+        height: 20px;
         fill: #fff;
     }
 `;
@@ -115,6 +122,7 @@ export const ImageInputButton = styled('div')<RectSize>`
 
     & > svg {
         fill: #fff;
+        height: 20px;
     }
 `
 

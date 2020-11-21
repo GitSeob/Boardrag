@@ -43,15 +43,13 @@ module.exports = () => {
                 })
                 return done(null, newUser);
             }
-            else {
-                if (user_in_db.access_token !== access_token)
-                    user_in_db = await db.User.update({
-                        access_token: access_token
-                    },{
-                        where: {id : user_in_db.id}
-                    })
-                return done(null, user_in_db);
-            }
+            if (user_in_db.access_token !== access_token)
+                user_in_db = await db.User.update({
+                    access_token: access_token
+                },{
+                    where: {id : user_in_db.id}
+                })
+            return done(null, user_in_db);
         } catch (e) {
             return done(e);
         }
