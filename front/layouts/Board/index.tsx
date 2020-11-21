@@ -61,7 +61,23 @@ type offset = {
     y: number
 }
 
-const WorkSpace:FC = () => {
+interface TextDataType {
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    content: string,
+    userId: number,
+    createdAt: Date,
+    updatedAt: Date,
+    expiry_date: Date
+}
+
+interface WorkSpaceProps {
+    ttext?: TextDataType[] | undefined
+}
+
+const WorkSpace:FC<WorkSpaceProps> = ({ ttext }) => {
     const layerRef = React.useRef() as React.MutableRefObject<Konva.Layer>;
     const [isDragged, setDragged] = React.useState<DraggedRect>({
         x: 0,
@@ -202,7 +218,7 @@ const WorkSpace:FC = () => {
     }, []);
 
     const openAddComponent = React.useCallback((number:number) => {
-        if (dummyTest.find(e =>
+        if (ttext && ttext.find(e =>
             (
                 checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
                 ||
@@ -302,7 +318,7 @@ const WorkSpace:FC = () => {
                     setSend={setSend}
                 />
             }
-            { dummyTest.map((c, i) => {
+            { ttext && ttext.map((c, i) => {
                 return (
                     <TextComponent
                         key={(i)}
@@ -370,17 +386,22 @@ const WorkSpace:FC = () => {
 }
 
 const Board:FC = () => {
-    const { data:userData, revalidate, error:error } = useSWR('/api/auth', fetcher);
+    const { data:userData, revalidate:USERRevalidate, error:USERError } = useSWR('/api/auth', fetcher);
+    const { data:testTexts, revalidate:TEXTRevalidate, error:TEXTerror } = useSWR<TextDataType[]>(userData ? '/api/test/text' : null, fetcher);
 
-    if (error)
+    if (USERError)
         return <Redirect to="/auth" />
 
     if (!userData)
         return <LoadingCircle />
 
+    if (testTexts)
+        console.log(testTexts);
     return (
         <>
-        <WorkSpace />
+        <WorkSpace
+            ttext={testTexts}
+        />
         </>
     );
 }

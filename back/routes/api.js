@@ -82,4 +82,14 @@ router.post('/write/text', isLoggedIn, async (req, res, next) => {
     }
 })
 
+router.get('/test/text', async (req, res, next) => {
+    try {
+        const allTexts = await db.TextContent.findAll();
+        res.send(allTexts);
+    } catch (e) {
+        console.error(e);
+        next(e);
+    }
+})
+
 module.exports = router;
