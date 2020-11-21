@@ -16,7 +16,7 @@ type PostState = {
     warning: string,
 }
 
-const TextAdd: FC<boxProps> = ({ x, y, width, height, offset }) => {
+const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, setSend }) => {
     const [value, OCValue] = useInput('');
     const [postState, setPostState] = useState<PostState>({
         loading: false,
@@ -35,6 +35,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset }) => {
             height: offset.height,
         }).then(() => {
             setPostState({...postState, loading: false, success: true});
+            setSend(true);
         }).catch((e) => {
             setPostState({...postState, loading: false, warning: e.data.reason});
         });

@@ -93,6 +93,7 @@ const WorkSpace:FC = () => {
     });
     const [addState, setAdd] = React.useState<number>(0);
     const [warning, setWarning] = React.useState<string>('');
+    const [isSend, setSend] = React.useState<boolean>(false);
     const [width, setWidth] = React.useState<number>(window.innerWidth);
     const [defaultRectSize, setDefaultRectSize] = React.useState<number>(width / 32);
 
@@ -218,6 +219,21 @@ const WorkSpace:FC = () => {
             viewAddComponent(number);
     }, [rectSize, rPos, defaultRectSize]);
 
+    const initStates = React.useCallback(() => {
+        setRectSize({
+            width: defaultRectSize,
+            height: defaultRectSize,
+        })
+        setDragged({
+            ...isDragged, dragged: false
+        })
+        setMenu({
+            ...menuState, flg: false,
+        })
+        setAdd(0);
+        setWarning('');
+    }, [defaultRectSize, isDragged, menuState]);
+
     React.useEffect(() => {
         if (addState == 0)
         {
@@ -239,6 +255,11 @@ const WorkSpace:FC = () => {
             });
     }, [addState]);
 
+    React.useEffect(() => {
+        if (isSend)
+            initStates();
+    }, [isSend]);
+
     return (
         <KonvaContainer>
             {warning !== ''&&
@@ -258,6 +279,7 @@ const WorkSpace:FC = () => {
                     x={rPos.x}
                     y={rPos.y}
                     offset={offset}
+                    setSend={setSend}
                 />
             }
             { addState === 2 &&
@@ -267,6 +289,7 @@ const WorkSpace:FC = () => {
                     x={rPos.x}
                     y={rPos.y}
                     offset={offset}
+                    setSend={setSend}
                 />
             }
             { addState === 3 &&
@@ -276,6 +299,7 @@ const WorkSpace:FC = () => {
                     x={rPos.x}
                     y={rPos.y}
                     offset={offset}
+                    setSend={setSend}
                 />
             }
             { dummyTest.map((c, i) => {
@@ -330,18 +354,7 @@ const WorkSpace:FC = () => {
                             disp: true,
                         });
                     } else {
-                        setRectSize({
-                            width: defaultRectSize,
-                            height: defaultRectSize,
-                        })
-                        setDragged({
-                            ...isDragged, dragged: false
-                        })
-                        setMenu({
-                            ...menuState, flg: false,
-                        })
-                        setAdd(0);
-                        setWarning('');
+                        initStates();
                     }
                 }}
             >

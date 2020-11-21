@@ -13,7 +13,8 @@ export interface boxProps {
     y: number,
     width: number,
     height: number,
-    offset: offset
+    offset: offset,
+    setSend: (send: boolean) => void
 }
 
 export interface SwitchProps {
