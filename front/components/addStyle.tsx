@@ -69,7 +69,7 @@ export const AddContainer = styled('div')<Container>`
     left: ${props => props.x + 5};
     width: ${props => props.width - 10};
     height: ${props => props.height - 10};
-    z-index: 3;
+    z-index: 6;
 `;
 
 export const AddBox = styled.div`

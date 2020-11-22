@@ -1,29 +1,29 @@
 const DataTypes = require('sequelize');
 const { Model } = DataTypes;
 
-module.exports = class Component extends Model {
+module.exports = class Image extends Model {
     static init(sequelize) {
         return super.init(
             {
-                x_pos: {
+                url: {
+                    type: DataTypes.TEXT,
+                    allowNull: false
+                },
+                x: {
                     type: DataTypes.INTEGER,
                     allowNull: false,
                 },
-                y_pos: {
+                y: {
                     type: DataTypes.INTEGER,
                     allowNull: false,
                 },
-                head: {
-                    type: DataTypes.STRING(30),
+                width: {
+                    type: DataTypes.INTEGER,
                     allowNull: false,
                 },
-                paragraph: {
-                    type: DataTypes.TEXT,
+                height: {
+                    type: DataTypes.INTEGER,
                     allowNull: false,
-                },
-                background_img: {
-                    type: DataTypes.TEXT,
-                    allowNull: true,
                 },
                 expiry_date: {
                     type: DataTypes.DATE,
@@ -31,8 +31,8 @@ module.exports = class Component extends Model {
                 }
             },
             {
-                modelName: "Component",
-                tableName: "components",
+                modelName: "Image",
+                tableName: "images",
                 paranoid: true,
                 charset: "utf8mb4",
                 collate: "utf8mb4_general_ci",
@@ -41,6 +41,8 @@ module.exports = class Component extends Model {
         );
     }
     static associate(db) {
-        db.Component.belongsTo(db.User);
+        db.Image.belongsTo(db.User);
+        db.Image.belongsTo(db.Board);
+        db.Image.hasMany(db.Comment);
     }
 }

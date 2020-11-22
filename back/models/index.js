@@ -21,14 +21,20 @@ const sequelize = new Sequelize(
 //////// DB Models require
 const user = require('./user');
 const textContent = require('./textContent');
-const component = require('./component');
+const note = require('./note');
 const comment = require('./comment');
+const image = require('./image');
+const board = require('./board');
+const boardMember = require('./boardMember');
 
 //////// DB that import from require connect to db var
 db.User = user;
 db.TextContent = textContent;
-db.Component = component;
+db.Note = note;
 db.Comment = comment;
+db.Image = image;
+db.Board = board;
+db.BoardMember = boardMember;
 
 Object.keys(db).forEach(async (modelName) => {
 	await db[modelName].init(sequelize);

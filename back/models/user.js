@@ -26,6 +26,11 @@ module.exports = class User extends Model {
                     type: DataTypes.TEXT(),
                     allowNull: true,
                 },
+                avail_blocks: {
+                    type: DataTypes.TEXT(),
+                    allowNull: true,
+                    defaultValue: 30,
+                }
             },
             {
                 modelName: "User",
@@ -38,8 +43,14 @@ module.exports = class User extends Model {
         );
     }
     static associate(db) {
+        db.User.hasMany(db.Board, { as: "Admin", foreignKey: "AdminId" });
         db.User.hasMany(db.TextContent);
-        db.User.hasMany(db.Component);
+        db.User.hasMany(db.Note);
+        db.User.belongsToMany(db.Board, {
+            through: db.BoardMember,
+            as: "Boards",
+        });
+        db.User.hasMany(db.Image);
         // // db.User.hasMany(db.Draw);
         db.User.hasMany(db.Comment);
     }

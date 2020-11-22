@@ -99,6 +99,12 @@ export const TextComponent = styled('div')`
     align-items: center;
     justify-content: center;
     z-index: 4;
+    cursor: pointer;
+
+    &:hover {
+        box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
+        z-index: 5;
+    }
 `;
 
 export const WarnMessage = styled.div`

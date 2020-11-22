@@ -1,7 +1,7 @@
 const DataTypes = require('sequelize');
 const { Model } = DataTypes;
 
-module.exports = class TextContent extends Model {
+module.exports = class Note extends Model {
     static init(sequelize) {
         return super.init(
             {
@@ -21,9 +21,17 @@ module.exports = class TextContent extends Model {
                     type: DataTypes.INTEGER,
                     allowNull: false,
                 },
-                content: {
+                head: {
+                    type: DataTypes.STRING(30),
+                    allowNull: false,
+                },
+                paragraph: {
                     type: DataTypes.TEXT,
                     allowNull: false,
+                },
+                background_img: {
+                    type: DataTypes.TEXT,
+                    allowNull: true,
                 },
                 expiry_date: {
                     type: DataTypes.DATE,
@@ -31,8 +39,8 @@ module.exports = class TextContent extends Model {
                 }
             },
             {
-                modelName: "TextContent",
-                tableName: "textContents",
+                modelName: "Note",
+                tableName: "notes",
                 paranoid: true,
                 charset: "utf8mb4",
                 collate: "utf8mb4_general_ci",
@@ -41,8 +49,8 @@ module.exports = class TextContent extends Model {
         );
     }
     static associate(db) {
-        db.TextContent.belongsTo(db.User);
-        db.TextContent.belongsTo(db.Board);
-        db.TextContent.hasMany(db.Comment);
+        db.Note.belongsTo(db.User);
+        db.Note.belongsTo(db.Board);
+        db.Note.hasMany(db.Comment);
     }
 }
