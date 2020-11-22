@@ -97,9 +97,13 @@ router.post('/write/text', isLoggedIn, async (req, res, next) => {
                 height: req.body.height,
                 content: req.body.content,
                 expiry_date: now.setDate(now.getTime() + 7200),
+                UserId: req.user.id,
+                BoardId: 42
             })
             await db.User.update({
                 avail_blocks: availBlocks
+            }, {
+                where: {id: req.user.id}
             });
             res.send(newText);
         }
@@ -111,8 +115,21 @@ router.post('/write/text', isLoggedIn, async (req, res, next) => {
 
 router.get('/test/text', async (req, res, next) => {
     try {
-        const allTexts = await db.TextContent.findAll();
+        const allTexts = await db.TextContent.findAll({
+            where: {BoardId: 42}
+        });
         res.send(allTexts);
+    } catch (e) {
+        console.error(e);
+        next(e);
+    }
+})
+
+router.post('/uploadImage', isLoggedIn, upload.single('image'), async (req, res, next) => {
+    try {
+        res.json({
+            url: `${env === "development" ? 'http://localhost:3095' : 'https://42board.kr'}/${req.file.filename}`
+        })
     } catch (e) {
         console.error(e);
         next(e);
