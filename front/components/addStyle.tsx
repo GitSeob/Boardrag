@@ -14,7 +14,8 @@ export interface boxProps {
     width: number,
     height: number,
     offset: offset,
-    setSend: (send: boolean) => void
+    initStates: () => void
+    dataReval: () => void
 }
 
 export interface SwitchProps {
@@ -83,6 +84,10 @@ export const AddBox = styled.div`
     animation: ${enlarge} .3s ease-in-out 1;
     height: 100%;
 
+    &.note {
+        padding: 0;
+        border-radius: 5px;
+    }
     & > img {
         width: 100%;
         height: 100%;
@@ -136,8 +141,7 @@ export const TextArea = styled.textarea`
     width: 100%;
     height: 100%;
     border: none;
-    border-radius: 5px;
-    background: rgba(255, 255, 255, .6);
+    border-radius: 0 0 5px 5px;
     resize: none;
     padding: 5px;
 `;
@@ -167,14 +171,22 @@ export const NoteAddBox = styled('div')<ImageProps>`
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    background: ${props => props.src ? props.src : 'transparent'};
+    background: ${props => props.src ? 'url(\''+props.src+'\') no-repeat center' : '#fff'};
+    background-size: cover;
     overflow: hidden;
     animation: ${enlarge} .3s ease-in-out 1;
+    padding: 5px;
+    border-radius: 5px;
+    color: ${props => props.src ? '#fff' : '000'} !important;
 
     & > div {
         background: transparent;
-        color: ${props => props.src ? '#fff' : '000'};
         font-weight: 500;
+    }
+
+    input[type="text"], textarea {
+        color: ${props => props.src ? '#fff' : '#000'} !important;
+        text-shadow: ${props => props.src ? '0 3px 10px #000' : 'none'};
     }
 `;
 
@@ -182,6 +194,12 @@ export const InputBox = styled('div')<RectSize>`
     width: 100%;
     height: ${props => props.size};
     overflow: hidden;
+    & > textarea {
+        background: none;
+    }
+    &:nth-child(2) {
+        margin-top: 2px;
+    }
 `;
 
 export const InputArea = styled.input`
@@ -191,4 +209,5 @@ export const InputArea = styled.input`
     font-size: 20px;
     font-weight: 600;
     background: inherit !important;
+    color: inherit !important;
 `

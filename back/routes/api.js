@@ -85,7 +85,7 @@ router.post('/auth', isNotLoggedIn, async (req, res, next) => {
 router.post('/write/text', isLoggedIn, async (req, res, next) => {
     try {
         const now = new Date();
-        const availBlocks = req.user.avail_blocks - (req.body.width * req.body.height);
+        const availBlocks = await req.user.avail_blocks - (req.body.width * req.body.height);
         if (availBlocks < 0)
             res.status(202).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
         else
@@ -96,6 +96,39 @@ router.post('/write/text', isLoggedIn, async (req, res, next) => {
                 width: req.body.width,
                 height: req.body.height,
                 content: req.body.content,
+                expiry_date: now.setDate(now.getDate() + 7),
+                UserId: req.user.id,
+                BoardId: 42
+            })
+            await db.User.update({
+                avail_blocks: availBlocks
+            }, {
+                where: {id: req.user.id}
+            });
+            res.send(newText);
+        }
+    } catch (e) {
+        console.error(e);
+        next(e);
+    }
+})
+
+router.post('/write/note', isLoggedIn, async (req, res, next) => {
+    try {
+        const now = new Date();
+        const availBlocks = await req.user.avail_blocks - (req.body.width * req.body.height);
+        if (availBlocks < 0)
+            res.status(202).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
+        else
+        {
+            const newText = await db.Note.create({
+                x: req.body.x,
+                y: req.body.y,
+                width: req.body.width,
+                height: req.body.height,
+                head: req.body.head,
+                paragraph: req.body.paragraph,
+                background_img: req.body.background_img,
                 expiry_date: now.setDate(now.getDate() + 7),
                 UserId: req.user.id,
                 BoardId: 42
@@ -159,7 +192,7 @@ router.post('/uploadImage', isLoggedIn, upload.single('image'), async (req, res,
 router.post('/write/image', isLoggedIn, async (req, res, next) => {
     try {
         const now = new Date();
-        const availBlocks = req.user.avail_blocks - (req.body.width * req.body.height);
+        const availBlocks = await req.user.avail_blocks - (req.body.width * req.body.height);
         if (availBlocks < 0)
             res.status(202).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
 

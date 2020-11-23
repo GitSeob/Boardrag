@@ -99,10 +99,6 @@ interface INote {
     expiry_date: Date
 }
 
-interface WorkSpaceProps {
-    ttext?: IText[] | undefined
-}
-
 interface IBoard {
     id: number,
     name: string,
@@ -113,9 +109,10 @@ interface IBoard {
 
 interface IBoardProps {
     boardData: IBoard | undefined
+    dataReval: () => void
 }
 
-const WorkSpace:FC<IBoardProps> = ({ boardData }) => {
+const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval }) => {
     const layerRef = React.useRef() as React.MutableRefObject<Konva.Layer>;
     const [isDragged, setDragged] = React.useState<DraggedRect>({
         x: 0,
@@ -147,7 +144,6 @@ const WorkSpace:FC<IBoardProps> = ({ boardData }) => {
     });
     const [addState, setAdd] = React.useState<number>(0);
     const [warning, setWarning] = React.useState<string>('');
-    const [isSend, setSend] = React.useState<boolean>(false);
     const [width, setWidth] = React.useState<number>(window.innerWidth);
     const [defaultRectSize, setDefaultRectSize] = React.useState<number>(width / 32);
 
@@ -309,11 +305,6 @@ const WorkSpace:FC<IBoardProps> = ({ boardData }) => {
             });
     }, [addState]);
 
-    React.useEffect(() => {
-        if (isSend)
-            initStates();
-    }, [isSend]);
-
     return (
         <KonvaContainer>
             {warning !== ''&&
@@ -333,7 +324,8 @@ const WorkSpace:FC<IBoardProps> = ({ boardData }) => {
                     x={rPos.x}
                     y={rPos.y}
                     offset={offset}
-                    setSend={setSend}
+                    initStates={initStates}
+                    dataReval={dataReval}
                 />
             }
             { addState === 2 &&
@@ -343,7 +335,8 @@ const WorkSpace:FC<IBoardProps> = ({ boardData }) => {
                     x={rPos.x}
                     y={rPos.y}
                     offset={offset}
-                    setSend={setSend}
+                    initStates={initStates}
+                    dataReval={dataReval}
                 />
             }
             { addState === 3 &&
@@ -353,19 +346,18 @@ const WorkSpace:FC<IBoardProps> = ({ boardData }) => {
                     x={rPos.x}
                     y={rPos.y}
                     offset={offset}
-                    setSend={setSend}
+                    initStates={initStates}
+                    dataReval={dataReval}
                 />
             }
             { boardData?.TextContents  && boardData?.TextContents.map((c, i) => {
                 return (
                     <TextComponent
                         key={(i)}
-                        style={{
-                            width: defaultRectSize * c.width - 10,
-                            height: defaultRectSize * c.height - 10,
-                            left: defaultRectSize * c.x + 5,
-                            top: defaultRectSize * c.y + 5,
-                        }}
+                        width= {defaultRectSize * c.width - 10}
+                        height= {defaultRectSize * c.height - 10}
+                        x= {defaultRectSize * c.x + 5}
+                        y= {defaultRectSize * c.y + 5}
                     >
                         {c.content}
                     </TextComponent>
@@ -374,12 +366,11 @@ const WorkSpace:FC<IBoardProps> = ({ boardData }) => {
             {boardData?.Images && boardData?.Images.map((c, i) => {
                 return (
                     <ImageComponent
-                    style={{
-                        width: defaultRectSize * c.width - 10,
-                        height: defaultRectSize * c.height - 10,
-                        left: defaultRectSize * c.x + 5,
-                        top: defaultRectSize * c.y + 5,
-                    }}
+                        key={(i)}
+                        width= {defaultRectSize * c.width - 10}
+                        height= {defaultRectSize * c.height - 10}
+                        x= {defaultRectSize * c.x + 5}
+                        y= {defaultRectSize * c.y + 5}
                     >
                         <img src={c.url} />
                     </ImageComponent>
@@ -453,6 +444,7 @@ const Board:FC = () => {
         <>
         <WorkSpace
             boardData={boardData}
+            dataReval={BOARDRevalidate}
         />
         </>
     );

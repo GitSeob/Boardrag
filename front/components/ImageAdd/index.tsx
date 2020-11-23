@@ -16,7 +16,7 @@ interface UploadProps {
     message: string,
 }
 
-const TextAdd: FC<boxProps> = ({ x, y, width, height, offset }) => {
+const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataReval }) => {
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
     const [uploading, setUploading] = useState<UploadProps>({
         loading: false,
@@ -63,13 +63,14 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset }) => {
             y: offset.y,
             width: offset.width,
             height: offset.height,
-
         }).then(() => {
             setUploading({
                 ...uploading,
                 loading: false,
                 success: true
-            })
+            });
+            initStates();
+            dataReval();
         }).catch((e) => {
             setUploading({
                 ...uploading,

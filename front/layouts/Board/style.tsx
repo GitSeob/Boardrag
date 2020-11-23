@@ -17,6 +17,13 @@ type AddedComponentInfo = {
     color: string
 }
 
+type BoxPosition = {
+    width: number,
+    height: number,
+    x: number,
+    y: number
+}
+
 const apperMenu = keyframes`
     from {
         max-width: 0;
@@ -36,6 +43,21 @@ const disapperMenu = keyframes`
     to {
         max-width: 0px;
         max-height: 0px
+    }
+`
+
+const enlarge = keyframes`
+    0% {
+        max-width: 0;
+        max-height: 0;
+    }
+    50% {
+        max-width: 50px;
+        max-height: 50px;
+    }
+    100% {
+        max-width: 100%;
+        max-height: 100%;
     }
 `
 
@@ -89,7 +111,7 @@ export const BoardFooter = styled.div`
     background: rgba(0, 0, 0, .1);
 `
 
-export const TextComponent = styled('div')`
+export const TextComponent = styled('div')<BoxPosition>`
     position: absolute;
     border-radius: 5px;
     box-shadow: 0 0 4px 1px rgba(255, 255, 255, .3);
@@ -100,6 +122,11 @@ export const TextComponent = styled('div')`
     justify-content: center;
     z-index: 4;
     cursor: pointer;
+    animation: ${enlarge} .3s ease-in-out 1;
+    width: ${props => props.width};
+    height: ${props => props.height};
+    left: ${props => props.x};
+    top: ${props => props.y};
 
     &:hover {
         box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
@@ -107,7 +134,7 @@ export const TextComponent = styled('div')`
     }
 `;
 
-export const ImageComponent = styled('div')`
+export const ImageComponent = styled('div')<BoxPosition>`
     position: absolute;
     border-radius: 5px;
     box-shadow: 0 0 4px 1px rgba(255, 255, 255, .3);
@@ -118,6 +145,11 @@ export const ImageComponent = styled('div')`
     cursor: pointer;
     border-radius: 5px;
     overflow: hidden;
+    width: ${props => props.width};
+    height: ${props => props.height};
+    left: ${props => props.x};
+    top: ${props => props.y};
+    animation: ${enlarge} .3s ease-in-out 1;
 
     & > img {
         width: 100%;
