@@ -6,7 +6,7 @@ import { Redirect } from 'react-router-dom';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
@@ -374,6 +374,25 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval }) => {
                     >
                         <img src={c.url} />
                     </ImageComponent>
+                )
+            })}
+            {boardData?.Notes && boardData?.Notes.map((c, i) => {
+                return (
+                    <NoteComponent
+                        key={(i)}
+                        width= {defaultRectSize * c.width - 10}
+                        height= {defaultRectSize * c.height - 10}
+                        x= {defaultRectSize * c.x + 5}
+                        y= {defaultRectSize * c.y + 5}
+                        src={c.background_img ? c.background_img : ''}
+                    >
+                        <div className="head" style={{height: defaultRectSize}}>
+                            {c.head}
+                        </div>
+                        <div style={{height: (defaultRectSize * c.height - 10)}}>
+                            {c.paragraph}
+                        </div>
+                    </NoteComponent>
                 )
             })}
             <Stage

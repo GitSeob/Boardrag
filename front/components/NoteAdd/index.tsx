@@ -20,8 +20,9 @@ interface UploadProps {
     message: string,
 }
 
-const TextAdd: FC<boxProps> = ({ x, y, width, height, offset }) => {
-    const [value, OCValue] = useInput('');
+const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataReval }) => {
+    const [head, OCHead] = useInput('');
+    const [para, OCPara] = useInput('');
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
     const [uploading, setUploading] = useState<UploadProps>({
         loading: false,
@@ -55,7 +56,37 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset }) => {
                 message: e.response.message
             });
         })
-	}, [uploading]);
+    }, [uploading]);
+
+    const submitNote = useCallback(async () => {
+        setUploading({
+            ...uploading,
+            loading: true,
+        })
+        await axios.post(`/api/write/note`, {
+            background_img: uploading.imageURL,
+            head: head,
+            paragraph: para,
+            x: offset.x,
+            y: offset.y,
+            width: offset.width,
+            height: offset.height,
+        }).then(() => {
+            setUploading({
+                ...uploading,
+                loading: false,
+                success: true
+            });
+            initStates();
+            dataReval();
+        }).catch((e) => {
+            setUploading({
+                ...uploading,
+                loading: false,
+                message: e.response.message
+            })
+        });
+    }, [uploading, para, head]);
 
     return (
         <AddContainer y={y} x={x} width={width} height={height}>
@@ -70,20 +101,25 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset }) => {
                             key="headerInput"
                             type="text"
                             placeholder="타이틀을 입력해주세요."
+                            value={head}
+                            onChange={OCHead}
                         />
                     </InputBox>
                     <InputBox
                         size={height - (height / offset.height) - 20}
                     >
                         <TextArea
-                            value={value}
-                            onChange={OCValue}
+                            value={para}
+                            onChange={OCPara}
                             autoFocus={true}
                             placeholder="본문 내용을 입력해주세요."
                         />
                     </InputBox>
                 </NoteAddBox>
-                <SubmitButton size={width / offset.width}>
+                <SubmitButton
+                    size={width / offset.width}
+                    onClick={submitNote}
+                >
                     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
                         <path d="M0 0h24v24H0z" fill="none" />
                         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />

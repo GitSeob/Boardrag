@@ -21,7 +21,15 @@ type BoxPosition = {
     width: number,
     height: number,
     x: number,
-    y: number
+    y: number,
+}
+
+type NoteProps = {
+    width: number,
+    height: number,
+    x: number,
+    y: number,
+    src: string
 }
 
 const apperMenu = keyframes`
@@ -127,6 +135,7 @@ export const TextComponent = styled('div')<BoxPosition>`
     height: ${props => props.height};
     left: ${props => props.x};
     top: ${props => props.y};
+    overflow: hidden;
 
     &:hover {
         box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
@@ -174,4 +183,43 @@ export const WarnMessage = styled.div`
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+`;
+
+export const NoteComponent = styled('div')<NoteProps>`
+    position: absolute;
+    border-radius: 5px;
+    box-shadow: 0 0 4px 1px rgba(255, 255, 255, .3);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+    cursor: pointer;
+    animation: ${enlarge} .3s ease-in-out 1;
+    width: ${props => props.width};
+    height: ${props => props.height};
+    left: ${props => props.x};
+    top: ${props => props.y};
+    background: ${props => props.src ? 'url(\''+props.src+'\') no-repeat center' : 'rgba(0, 0, 0, .75)'};
+    background-size: cover;
+    padding: 5px;
+
+    &:hover {
+        box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
+        z-index: 5;
+    }
+
+    & > div {
+        text-shadow: ${props => props.src ? '0 3px 10px #000' : 'none'};
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.head {
+            white-space: nowrap;
+            font-size: 20px;
+            font-weight: 600;
+        }
+    }
 `;
