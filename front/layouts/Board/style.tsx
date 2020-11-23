@@ -54,6 +54,24 @@ const disapperMenu = keyframes`
     }
 `
 
+const padeIn = keyframes`
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+`
+
+const leftToRight = keyframes`
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0%);
+    }
+`
+
 const enlarge = keyframes`
     0% {
         max-width: 0;
@@ -222,4 +240,27 @@ export const NoteComponent = styled('div')<NoteProps>`
             font-weight: 600;
         }
     }
+`;
+
+export const DetailBackground = styled('div')`
+    width: 100%;
+    height: 100%;
+    z-index: 12;
+    position: absolute;
+    top: 0;
+    left: 0;
+    animation: ${padeIn} .5s ease-in-out 1;
+    background: rgba(0, 0, 0, .6);
+`;
+
+export const DetailWindow = styled('div')`
+    position: absolute;
+    min-height: 100vh;
+    height: 100%;
+    width: 400px;
+    background: #fafafa;
+    top: 0;
+    left: 0;
+    z-index: 13;
+    animation: ${leftToRight} .5s ease-in-out 1;
 `;

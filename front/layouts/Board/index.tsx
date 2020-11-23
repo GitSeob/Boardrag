@@ -6,7 +6,7 @@ import { Redirect } from 'react-router-dom';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
@@ -62,6 +62,7 @@ type offset = {
 }
 
 interface IText {
+    id: number,
     x: number,
     y: number,
     width: number,
@@ -74,6 +75,7 @@ interface IText {
 }
 
 interface IImage {
+    id: number,
     x: number,
     y: number,
     width: number,
@@ -86,6 +88,7 @@ interface IImage {
 }
 
 interface INote {
+    id: number,
     x: number,
     y: number,
     width: number,
@@ -143,10 +146,15 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval }) => {
         height: 0
     });
     const [addState, setAdd] = React.useState<number>(0);
+    const [openDetail, setOpenDetail] = React.useState({
+        category: 0,
+        id: 0,
+        flg: false,
+        loadComment: false,
+    })
     const [warning, setWarning] = React.useState<string>('');
     const [width, setWidth] = React.useState<number>(window.innerWidth);
     const [defaultRectSize, setDefaultRectSize] = React.useState<number>(width / 32);
-
     const [rectSize, setRectSize] = React.useState<RectSize>({
         width: defaultRectSize,
         height: defaultRectSize,
@@ -284,6 +292,15 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval }) => {
         setWarning('');
     }, [defaultRectSize, isDragged, menuState]);
 
+    const openDetailWindow = React.useCallback((category, id) => {
+        setOpenDetail({
+            ...openDetail,
+            flg: true,
+            category: category,
+            id: id,
+        });
+    }, [openDetail]);
+
     React.useEffect(() => {
         if (addState == 0)
         {
@@ -311,6 +328,21 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval }) => {
                 <WarnMessage>
                     {warning}
                 </WarnMessage>
+            }
+            {openDetail.flg &&
+                <>
+                    <DetailBackground
+                        onClick={() => setOpenDetail({
+                            category: 0,
+                            id: 0,
+                            flg: false,
+                            loadComment: false
+                        })}
+                    />
+                    <DetailWindow>
+                        hi
+                    </DetailWindow>
+                </>
             }
             <MenuBox clicked={menuState.flg} x={menuState.x} y={menuState.y} disp={menuState.disp}>
                 <MenuAttr onClick={() => openAddComponent(1)}>Text</MenuAttr>
@@ -358,6 +390,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval }) => {
                         height= {defaultRectSize * c.height - 10}
                         x= {defaultRectSize * c.x + 5}
                         y= {defaultRectSize * c.y + 5}
+                        onClick={() => openDetailWindow(1, c.id)}
                     >
                         {c.content}
                     </TextComponent>
