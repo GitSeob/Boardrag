@@ -54,15 +54,4 @@ module.exports = () => {
             return done(e);
         }
     }))
-    //         const result = await axios.get(`${config.api_url}/me?access_token=${access_token}`).then(res => {
-    //             return res.data;
-    //         }).catch(e => {
-    //             return done(null, false, { reason: '유효하지않은 토큰입니다.' });
-    //         });
-    //         return done(null, result);
-    //     } catch (e) {
-    //         console.error(e);
-    //         return done(e);
-    //     }
-    // }))
 }

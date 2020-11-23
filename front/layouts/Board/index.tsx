@@ -6,7 +6,7 @@ import { Redirect } from 'react-router-dom';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
@@ -61,7 +61,7 @@ type offset = {
     y: number
 }
 
-interface TextDataType {
+interface IText {
     x: number,
     y: number,
     width: number,
@@ -73,11 +73,49 @@ interface TextDataType {
     expiry_date: Date
 }
 
-interface WorkSpaceProps {
-    ttext?: TextDataType[] | undefined
+interface IImage {
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    url: string,
+    userId: number,
+    createdAt: Date,
+    updatedAt: Date,
+    expiry_date: Date
 }
 
-const WorkSpace:FC<WorkSpaceProps> = ({ ttext }) => {
+interface INote {
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    head: string,
+    paragraph: string,
+    background_img: string,
+    userId: number,
+    createdAt: Date,
+    updatedAt: Date,
+    expiry_date: Date
+}
+
+interface WorkSpaceProps {
+    ttext?: IText[] | undefined
+}
+
+interface IBoard {
+    id: number,
+    name: string,
+    TextContents: IText[] | undefined,
+    Images: IImage[] | undefined,
+    Notes: INote[] | undefined,
+}
+
+interface IBoardProps {
+    boardData: IBoard | undefined
+}
+
+const WorkSpace:FC<IBoardProps> = ({ boardData }) => {
     const layerRef = React.useRef() as React.MutableRefObject<Konva.Layer>;
     const [isDragged, setDragged] = React.useState<DraggedRect>({
         x: 0,
@@ -218,7 +256,7 @@ const WorkSpace:FC<WorkSpaceProps> = ({ ttext }) => {
     }, []);
 
     const openAddComponent = React.useCallback((number:number) => {
-        if (ttext && ttext.find(e =>
+        if (boardData?.TextContents && boardData.TextContents.find(e =>
             (
                 checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
                 ||
@@ -318,7 +356,7 @@ const WorkSpace:FC<WorkSpaceProps> = ({ ttext }) => {
                     setSend={setSend}
                 />
             }
-            { ttext && ttext.map((c, i) => {
+            { boardData?.TextContents  && boardData?.TextContents.map((c, i) => {
                 return (
                     <TextComponent
                         key={(i)}
@@ -332,6 +370,20 @@ const WorkSpace:FC<WorkSpaceProps> = ({ ttext }) => {
                         {c.content}
                     </TextComponent>
                 );
+            })}
+            {boardData?.Images && boardData?.Images.map((c, i) => {
+                return (
+                    <ImageComponent
+                    style={{
+                        width: defaultRectSize * c.width - 10,
+                        height: defaultRectSize * c.height - 10,
+                        left: defaultRectSize * c.x + 5,
+                        top: defaultRectSize * c.y + 5,
+                    }}
+                    >
+                        <img src={c.url} />
+                    </ImageComponent>
+                )
             })}
             <Stage
                 style={{
@@ -387,7 +439,7 @@ const WorkSpace:FC<WorkSpaceProps> = ({ ttext }) => {
 
 const Board:FC = () => {
     const { data:userData, revalidate:USERRevalidate, error:USERError } = useSWR('/api/auth', fetcher);
-    const { data:testTexts, revalidate:TEXTRevalidate, error:TEXTerror } = useSWR<TextDataType[]>(userData ? '/api/test/text' : null, fetcher);
+    const { data:boardData, revalidate:BOARDRevalidate, error:BOARDError } = useSWR<IBoard>(userData ? `/api/board/${42}` : null, fetcher);
 
     if (USERError)
         return <Redirect to="/auth" />
@@ -395,12 +447,12 @@ const Board:FC = () => {
     if (!userData)
         return <LoadingCircle />
 
-    if (testTexts)
-        console.log(testTexts);
+    if (boardData)
+        console.log(boardData);
     return (
         <>
         <WorkSpace
-            ttext={testTexts}
+            boardData={boardData}
         />
         </>
     );

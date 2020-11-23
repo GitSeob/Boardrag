@@ -107,6 +107,29 @@ export const TextComponent = styled('div')`
     }
 `;
 
+export const ImageComponent = styled('div')`
+    position: absolute;
+    border-radius: 5px;
+    box-shadow: 0 0 4px 1px rgba(255, 255, 255, .3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+    cursor: pointer;
+    border-radius: 5px;
+    overflow: hidden;
+
+    & > img {
+        width: 100%;
+        height: 100%;
+    }
+
+    &:hover {
+        box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
+        z-index: 5;
+    }
+`;
+
 export const WarnMessage = styled.div`
     position: absolute;
     background: rgba(0, 0, 0, .6);

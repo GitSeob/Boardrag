@@ -31,7 +31,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset }) => {
 
     const onChangeImg = useCallback( async (e) => {
 		const imageFormData = new FormData();
-        imageFormData.append('img', e.target.files[0]);
+        imageFormData.append('image', e.target.files[0]);
         await setUploading({
             ...uploading,
             loading: true
@@ -41,7 +41,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset }) => {
                 ...uploading,
                 success: true,
                 loading: false,
-                imageURL: res.data
+                imageURL: res.data.url
             });
         }).catch(e => {
             setUploading({
@@ -52,6 +52,33 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset }) => {
         })
 	}, []);
 
+    const submitImage = useCallback(async () => {
+        setUploading({
+            ...uploading,
+            loading: true,
+        })
+        await axios.post(`/api/write/image`, {
+            url: uploading.imageURL,
+            x: offset.x,
+            y: offset.y,
+            width: offset.width,
+            height: offset.height,
+
+        }).then(() => {
+            setUploading({
+                ...uploading,
+                loading: false,
+                success: true
+            })
+        }).catch((e) => {
+            setUploading({
+                ...uploading,
+                loading: false,
+                message: e.response.message
+            })
+        });
+    }, [uploading]);
+
     return (
         <AddContainer y={y} x={x} width={width} height={height}>
             <AddBox>
@@ -60,7 +87,10 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset }) => {
                     :
                     <img src={uploading.imageURL} />
                 }
-                <SubmitButton size={width / offset.width}>
+                <SubmitButton
+                    size={width / offset.width}
+                    onClick={submitImage}
+                >
                     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
                         <path d="M0 0h24v24H0z" fill="none" />
                         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />

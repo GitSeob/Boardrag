@@ -3,6 +3,7 @@ const passport = require("passport");
 const bcrypt = require("bcrypt");
 const axios = require("axios");
 const multer = require('multer');
+const path = require('path');
 // const { Op } = require("sequelize");
 
 const env = process.env.NODE_ENV || "development";
@@ -29,7 +30,6 @@ const upload = multer({
 			done(null, savename);
 		}
 	}),
-	limits: {fileSize: 20*1024*1024},
 });
 
 router.get('/auth', isLoggedIn, async (req, res, next) => {
@@ -42,12 +42,12 @@ router.get('/auth', isLoggedIn, async (req, res, next) => {
 
         // if (new Date().getTime() > userInfo.updatedAt.getTime() + 7200 )
         //     res.status(401).send({ reason: "만료된 토큰입니다." });
-        const get_user_42api = await axios.get(get_token_url + userInfo.access_token).then(res => {
-            return res.data;
-        }).catch(e => {
-            res.status(401).send({ reason: "만료된 토큰입니다." });
-        })
-        if (get_user_42api)
+        // const get_user_42api = await axios.get(get_token_url + userInfo.access_token).then(res => {
+        //     return res.data;
+        // }).catch(e => {
+        //     res.status(401).send({ reason: "만료된 토큰입니다." });
+        // })
+        // if (get_user_42api)
             res.send(userInfo);
     } catch (e) {
         console.error(e);
@@ -64,6 +64,7 @@ router.post('/auth', isNotLoggedIn, async (req, res, next) => {
             console.error(info);
             return res.status(401).send(info.reason);
         }
+        console.log(user);
         return req.login(user, async (loginErr) => {
             try {
                 if (loginErr)
@@ -90,13 +91,12 @@ router.post('/write/text', isLoggedIn, async (req, res, next) => {
         else
         {
             const newText = await db.TextContent.create({
-                userId: req.user.id,
                 x: req.body.x,
                 y: req.body.y,
                 width: req.body.width,
                 height: req.body.height,
                 content: req.body.content,
-                expiry_date: now.setDate(now.getTime() + 7200),
+                expiry_date: now.setDate(now.getDate() + 7),
                 UserId: req.user.id,
                 BoardId: 42
             })
@@ -125,6 +125,26 @@ router.get('/test/text', async (req, res, next) => {
     }
 })
 
+router.get(`/board/:boardId`, async (req, res, next) => {
+    try {
+        const boardData = await db.Board.findOne({
+            where: {id: req.params.boardId},
+            attributes: ['id', 'name'],
+            include: [{
+                model: db.TextContent,
+            }, {
+                model: db.Image
+            }, {
+                model: db.Note
+            }]
+        });
+        res.send(boardData);
+    } catch (e) {
+        console.error(e);
+        next(e);
+    }
+})
+
 router.post('/uploadImage', isLoggedIn, upload.single('image'), async (req, res, next) => {
     try {
         res.json({
@@ -135,5 +155,34 @@ router.post('/uploadImage', isLoggedIn, upload.single('image'), async (req, res,
         next(e);
     }
 })
+
+router.post('/write/image', isLoggedIn, async (req, res, next) => {
+    try {
+        const now = new Date();
+        const availBlocks = req.user.avail_blocks - (req.body.width * req.body.height);
+        if (availBlocks < 0)
+            res.status(202).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
+
+        const newImage = await db.Image.create({
+            url: req.body.url,
+            x: req.body.x,
+            y: req.body.y,
+            width: req.body.width,
+            height: req.body.height,
+            expiry_date: now.setDate(now.getDate() + 7),
+            UserId: req.user.id,
+            BoardId: 42,
+        });
+        await db.User.update({
+            avail_blocks: availBlocks
+        }, {
+            where: {id: req.user.id}
+        });
+        res.send(newImage);
+    } catch(e) {
+        console.error(e);
+        next(e);
+    }
+});
 
 module.exports = router;

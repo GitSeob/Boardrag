@@ -31,7 +31,6 @@ const Auth:FC = () => {
         }, {
             withCredentials: true
         }).then(res => {
-            revalidate();
             return res.data;
         }).catch(e => {
             console.log(e);

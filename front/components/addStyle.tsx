@@ -82,6 +82,11 @@ export const AddBox = styled.div`
     width: 100%;
     animation: ${enlarge} .3s ease-in-out 1;
     height: 100%;
+
+    & > img {
+        width: 100%;
+        height: 100%;
+    }
 `;
 
 export const SubmitButton = styled('div')<RectSize>`
