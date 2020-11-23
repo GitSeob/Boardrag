@@ -3,10 +3,11 @@ import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import LoadingCircle from '@components/LoadingCircle';
 import { Redirect } from 'react-router-dom';
+import moment from 'moment';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { UDButtonBox, UserInfo, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
@@ -68,7 +69,7 @@ interface IText {
     width: number,
     height: number,
     content: string,
-    userId: number,
+    UserId: number,
     createdAt: Date,
     updatedAt: Date,
     expiry_date: Date
@@ -81,7 +82,7 @@ interface IImage {
     width: number,
     height: number,
     url: string,
-    userId: number,
+    UserId: number,
     createdAt: Date,
     updatedAt: Date,
     expiry_date: Date
@@ -96,7 +97,7 @@ interface INote {
     head: string,
     paragraph: string,
     background_img: string,
-    userId: number,
+    UserId: number,
     createdAt: Date,
     updatedAt: Date,
     expiry_date: Date
@@ -110,12 +111,28 @@ interface IBoard {
     Notes: INote[] | undefined,
 }
 
-interface IBoardProps {
-    boardData: IBoard | undefined
-    dataReval: () => void
+interface IUser {
+    id: number,
+    username: string,
+    profile_img: string,
+    is_admin: boolean
 }
 
-const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval }) => {
+interface IBoardProps {
+    boardData: IBoard | undefined,
+    userData: IUser,
+    dataReval: () => void,
+}
+
+interface IDetailContent {
+    category: number,
+    id: number,
+    flg: boolean,
+    loadComment: boolean,
+    content: any
+}
+
+const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     const layerRef = React.useRef() as React.MutableRefObject<Konva.Layer>;
     const [isDragged, setDragged] = React.useState<DraggedRect>({
         x: 0,
@@ -151,6 +168,16 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval }) => {
         id: 0,
         flg: false,
         loadComment: false,
+        content: {
+            UserId: 0,
+            createdAt: '',
+            updatedAt: '',
+            expiry_date: '',
+            content: '',
+            head: '',
+            paragraph: '',
+            url: '',
+        },
     })
     const [warning, setWarning] = React.useState<string>('');
     const [width, setWidth] = React.useState<number>(window.innerWidth);
@@ -292,12 +319,14 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval }) => {
         setWarning('');
     }, [defaultRectSize, isDragged, menuState]);
 
-    const openDetailWindow = React.useCallback((category, id) => {
+    const openDetailWindow = React.useCallback((category, id, content) => {
+        console.log(content);
         setOpenDetail({
             ...openDetail,
             flg: true,
             category: category,
             id: id,
+            content: content,
         });
     }, [openDetail]);
 
@@ -336,11 +365,58 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval }) => {
                             category: 0,
                             id: 0,
                             flg: false,
-                            loadComment: false
+                            loadComment: false,
+                            content: {
+                                UserId: 0,
+                                createdAt: '',
+                                updatedAt: '',
+                                expiry_date: '',
+                                content: '',
+                                head: '',
+                                paragraph: '',
+                                url: '',
+                            },
                         })}
                     />
                     <DetailWindow>
-                        hi
+                        <DetailBox>
+                            <TopFixContent>
+                                <UserInfo>
+                                    <img src={userData.profile_img} />
+                                    <p>{userData.username}</p>
+                                    {(openDetail.content && openDetail.content.UserId === userData.id ) &&
+                                        <UDButtonBox>
+                                            <button>
+                                                <img src="/public/edit.svg" />
+                                            </button>
+                                            <button>
+                                                <img src="/public/delete." />
+                                            </button>
+                                        </UDButtonBox>
+                                    }
+                                </UserInfo>
+                                <div>작성일 : {moment(openDetail.content.createdAt).format('YYYY년 MM월 DD일')}</div>
+                                <div>만료일 : {moment(openDetail.content.expiry_date).format('YYYY년 MM월 DD일')}</div>
+                                {openDetail.category === 1 &&
+                                    <div>
+                                        {openDetail.content.content}
+                                    </div>
+                                }
+                                {openDetail.category === 2 &&
+                                    <div>노트</div>
+                                }
+                                {openDetail.category === 3 &&
+                                    <div>이미지</div>
+                                }
+                            </TopFixContent>
+                            <div>comment</div>
+                            <BottomFixContent>
+                                <input type="text" />
+                                <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                                </div>
+                            </BottomFixContent>
+                        </DetailBox>
                     </DetailWindow>
                 </>
             }
@@ -390,7 +466,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval }) => {
                         height= {defaultRectSize * c.height - 10}
                         x= {defaultRectSize * c.x + 5}
                         y= {defaultRectSize * c.y + 5}
-                        onClick={() => openDetailWindow(1, c.id)}
+                        onClick={() => openDetailWindow(1, c.id, c)}
                     >
                         {c.content}
                     </TextComponent>
@@ -481,7 +557,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval }) => {
 }
 
 const Board:FC = () => {
-    const { data:userData, revalidate:USERRevalidate, error:USERError } = useSWR('/api/auth', fetcher);
+    const { data:userData, revalidate:USERRevalidate, error:USERError } = useSWR<IUser>('/api/auth', fetcher);
     const { data:boardData, revalidate:BOARDRevalidate, error:BOARDError } = useSWR<IBoard>(userData ? `/api/board/${42}` : null, fetcher);
 
     if (USERError)
@@ -490,13 +566,12 @@ const Board:FC = () => {
     if (!userData)
         return <LoadingCircle />
 
-    if (boardData)
-        console.log(boardData);
     return (
         <>
         <WorkSpace
             boardData={boardData}
             dataReval={BOARDRevalidate}
+            userData={userData}
         />
         </>
     );

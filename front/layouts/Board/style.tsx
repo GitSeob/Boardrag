@@ -249,8 +249,8 @@ export const DetailBackground = styled('div')`
     position: absolute;
     top: 0;
     left: 0;
+    background: transparent;
     animation: ${padeIn} .5s ease-in-out 1;
-    background: rgba(0, 0, 0, .6);
 `;
 
 export const DetailWindow = styled('div')`
@@ -258,9 +258,98 @@ export const DetailWindow = styled('div')`
     min-height: 100vh;
     height: 100%;
     width: 400px;
-    background: #fafafa;
+    background: rgba(0, 0, 0, .7);
     top: 0;
     left: 0;
     z-index: 13;
     animation: ${leftToRight} .5s ease-in-out 1;
+    color: #fff;
+    overflow: auto;
+`;
+
+export const DetailBox = styled.div`
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    & > div {
+        padding: 1rem;
+    }
+`;
+
+export const TopFixContent = styled('div')`
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+`;
+
+export const BottomFixContent = styled('div')`
+    position: fixed;
+    bottom: 0;
+    width: 400px;
+    display: flex;
+    overflow: hidden;
+    height: 5rem;
+    padding: 1rem .5rem;
+
+    & > input {
+        width: calc(400px - 3rem);
+        padding: 5px;
+        box-shadow: 0 0 4px 1px #ffffff;
+        font-size: 14px;
+    }
+
+    & > div {
+        width: 4rem;
+        background: #radial-gradient(ellipse at bottom, #002534 0%, #090a0f 100%) no-repeat;
+        cursor: pointer;
+        color: #fff;
+        transition: .3s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        svg {
+            fill: #fff;
+        }
+
+        &:hover {
+            box-shadow: 0 0 8px 1px #ffffff;
+        }
+    }
+`;
+
+export const UserInfo = styled.div`
+    width: 100%;
+    height: 6rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+
+    & > img {
+        width: 5rem;
+        height: 5rem;
+        border-radius: 20px;
+        margin-right: 1rem;
+    }
+
+    & > p {
+        font-size: 18px;
+        font-weight: 700;
+        width: 100%;
+    }
+`;
+
+export const UDButtonBox = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    & > button {
+        background: transparent !important;
+        cursor: pointer;
+
+        &:nth-child(1) {
+            margin-right: .5rem;
+        }
+    }
 `;
