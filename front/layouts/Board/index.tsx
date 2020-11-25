@@ -634,9 +634,6 @@ const Board:FC = () => {
     if (!userData)
         return <LoadingCircle />
 
-    // useEffect(() => {
-    //     console.log(boardData);
-    // }, [boardData]);
     return (
         <>
         <WorkSpace

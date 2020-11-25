@@ -38,6 +38,7 @@ router.get('/auth', isLoggedIn, async (req, res, next) => {
             res.status(202).send({ reason: "before created cookie" });
         const userInfo = await db.User.findOne({
             where: {id: req.user.id},
+            attributes: ['id', 'username', 'profile_img', 'is_admin']
         });
 
         // if (new Date().getTime() > userInfo.updatedAt.getTime() + 7200 )
@@ -71,7 +72,7 @@ router.post('/auth', isNotLoggedIn, async (req, res, next) => {
                     return next(loginErr);
                 const userInfo = await db.User.findOne({
                     where: { id: user.id },
-                    attributes: ['id', 'username', 'profile_img', 'is_admin', 'access_token']
+                    attributes: ['id', 'username', 'profile_img', 'is_admin']
                 });
                 return res.json(userInfo);
             } catch (e) {
@@ -165,10 +166,34 @@ router.get(`/board/:boardId`, async (req, res, next) => {
             attributes: ['id', 'name'],
             include: [{
                 model: db.TextContent,
+                include: [{
+                    model: db.Comment,
+                    include: [{
+                        model: db.User
+                    }],
+                    order: [["createdAt", "DESC"]],
+                }],
+                order: [["createdAt", "DESC"]],
             }, {
-                model: db.Image
+                model: db.Image,
+                include: [{
+                    model: db.Comment,
+                    include: [{
+                        model: db.User
+                    }],
+                    order: [["createdAt", "DESC"]],
+                }],
+                order: [["createdAt", "DESC"]],
             }, {
-                model: db.Note
+                model: db.Note,
+                include: [{
+                    model: db.Comment,
+                    include: [{
+                        model: db.User
+                    }],
+                    order: [["createdAt", "DESC"]],
+                }],
+                order: [["createdAt", "DESC"]],
             }]
         });
         res.send(boardData);
@@ -176,7 +201,7 @@ router.get(`/board/:boardId`, async (req, res, next) => {
         console.error(e);
         next(e);
     }
-})
+});
 
 router.post('/uploadImage', isLoggedIn, upload.single('image'), async (req, res, next) => {
     try {
@@ -217,5 +242,75 @@ router.post('/write/image', isLoggedIn, async (req, res, next) => {
         next(e);
     }
 });
+
+router.post('/comment/:category/:id', isLoggedIn, async (req, res, next) => {
+    try {
+        const cid = await req.params.category;
+        const id = await req.params.id;
+
+        let query = {};
+        if (cid === '1') {
+            query = {
+                TextContentId: id
+            }
+        } else if (cid === '2') {
+            query = {
+                NoteId: id
+            }
+        } else if (cid === '3') {
+            query = {
+                ImageId: id
+            }
+        } else {
+            res.status(401).send({reason: 'category parameter is wrong.'});
+            return ;
+        }
+        const newComment = await db.Comment.create({
+            content_category: cid,
+            content_id: id,
+            content: req.body.content,
+            BoardId: 42,
+            UserId: req.user.id,
+            ...query,
+        })
+        res.send(newComment);
+    } catch(e) {
+        console.error(e);
+        next(e);
+    }
+});
+
+router.get('/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
+    try {
+        let query = {};
+        if (req.params.cid === '1') {
+            query = {
+                TextContentId: parseInt(req.params.id)
+            }
+        } else if (req.params.cid === '2') {
+            query = {
+                NoteId: parseInt(req.params.id)
+            }
+        } else if (req.params.cid === '3') {
+            query = {
+                ImageId: parseInt(req.params.id)
+            }
+        } else {
+            res.status(401).send({reason: 'category parameter is wrong.'});
+            return ;
+        }
+        const comments = await db.Comment.findAll({
+            where: query,
+            order: [["createdAt", "ASC"]],
+            include: [{
+                model: db.User
+            }]
+        })
+        res.send(comments);
+    } catch(e) {
+        console.error(e);
+        next(e);
+    }
+})
 
 module.exports = router;
