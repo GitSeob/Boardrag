@@ -255,7 +255,7 @@ export const DetailBackground = styled('div')`
 `;
 
 export const DetailWindow = styled('div')`
-    position: absolute;
+    position: fixed;
     min-height: 100vh;
     height: 100%;
     width: 400px;
@@ -265,7 +265,6 @@ export const DetailWindow = styled('div')`
     z-index: 13;
     transition: .3s;
     color: #fff;
-    overflow: auto;
 `;
 
 export const DetailBox = styled.div`
@@ -273,6 +272,8 @@ export const DetailBox = styled.div`
     width: 100%;
     height: 100%;
     padding: 1rem;
+    padding-bottom: 4rem;
+    overflow: auto;
 
     & > div {
         margin: 1rem 0;
@@ -288,14 +289,14 @@ export const TopFixContent = styled('div')`
 export const BottomFixContent = styled('div')`
     position: fixed;
     bottom: 0;
-    width: 400px;
     display: flex;
     overflow: hidden;
-    height: 4rem;
-    padding: 1rem .5rem;
+    height: 3rem;
+    background: #000;
+    padding-top: 1rem;
 
     & > input {
-        width: calc(400px - 3rem);
+        width: calc(400px - 4rem);
         padding: 5px;
         border-radius: 5px;
         box-shadow: 0 0 4px 1px #ffffff;
@@ -347,10 +348,6 @@ export const UDButtonBox = styled.div`
     & > button {
         background: transparent !important;
         cursor: pointer;
-
-        &:nth-child(1) {
-            margin-right: .5rem;
-        }
     }
 `;
 
@@ -363,10 +360,6 @@ export const MomentBox = styled.div`
         display: flex;
         align-items: center;
         color: #d5d5d5;
-
-        &:nth-child(1) {
-            margin-bottom: .5rem;
-        }
 
         p {
             margin-left: .5rem;
@@ -384,12 +377,12 @@ export const DetailContentBox = styled.div`
 `;
 
 export const CommentBox = styled.div`
-    overflow: auto;
 `;
 
 export const Comment = styled.div`
     display: flex;
     min-height: 3rem;
+    margin-bottom: .5rem;
 
     & > img {
         width: 3rem;

@@ -1,9 +1,10 @@
-import React, {FC} from 'react';
+import React, {FC, useEffect, useCallback, useState} from 'react';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import LoadingCircle from '@components/LoadingCircle';
 import { Redirect } from 'react-router-dom';
 import moment from 'moment';
+import axios from 'axios';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
@@ -11,6 +12,7 @@ import { Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserI
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
+import useInput from '@hooks/useInput';
 
 const dummyComments = [{
     id: 1,
@@ -116,67 +118,96 @@ interface IBoardProps {
     dataReval: () => void,
 }
 
+interface Comment {
+    id: number,
+    createdAt: Date,
+    updatedAt: Date,
+    TextContentId: null | number,
+    ImageId: null | number,
+    NoteId: null | number,
+    BoardId: number,
+    deletedAt: Date,
+    content: string,
+    content_category: number,
+    content_id: number,
+    User: IUser,
+}
+
+interface DetailProps {
+    id: number,
+    createdAt: Date,
+    updatedAt: Date,
+    expiry_date: Date,
+    UserId: number,
+    content: null | string,
+    head: null | string,
+    paragraph: null | string,
+    url: null | string,
+    Comments: Comment[]
+}
+
+interface IDetail {
+    category: number,
+    id: number,
+    flg: boolean,
+    loadComment: boolean,
+    content: DetailProps | null
+}
+
 const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     const layerRef = React.useRef() as React.MutableRefObject<Konva.Layer>;
-    const [isDragged, setDragged] = React.useState<DraggedRect>({
+    const [isDragged, setDragged] = useState<DraggedRect>({
         x: 0,
         y: 0,
         dragged: false,
     });
 
-    const [mPos, setMPost] = React.useState<Position>({
+    const [mPos, setMPost] = useState<Position>({
         x: 0,
         y: 0,
     });
 
-    const [rPos, setRPos] = React.useState<Position>({
+    const [rPos, setRPos] = useState<Position>({
         x: 0,
         y: 0
     });
 
-    const [menuState, setMenu] = React.useState<MenuPosition>({
+    const [menuState, setMenu] = useState<MenuPosition>({
         x: 0,
         y: 0,
         flg: false,
         disp: false,
     });
-    const [offset, setOffset] = React.useState<offset>({
+    const [offset, setOffset] = useState<offset>({
         x: 0,
         y: 0,
         width: 0,
         height: 0
     });
-    const [addState, setAdd] = React.useState<number>(0);
-    const [openDetail, setOpenDetail] = React.useState({
+    const [addState, setAdd] = useState<number>(0);
+    const [openDetail, setOpenDetail] = useState<IDetail>({
         category: 0,
         id: 0,
         flg: false,
         loadComment: false,
-        content: {
-            UserId: 0,
-            createdAt: '',
-            updatedAt: '',
-            expiry_date: '',
-            content: '',
-            head: '',
-            paragraph: '',
-            url: '',
-        },
+        content: null,
     })
-    const [warning, setWarning] = React.useState<string>('');
-    const [width, setWidth] = React.useState<number>(window.innerWidth);
-    const [defaultRectSize, setDefaultRectSize] = React.useState<number>(width / 32);
-    const [rectSize, setRectSize] = React.useState<RectSize>({
+    const [warning, setWarning] = useState<string>('');
+    const [width, setWidth] = useState<number>(window.innerWidth);
+    const [defaultRectSize, setDefaultRectSize] = useState<number>(width / 32);
+    const [rectSize, setRectSize] = useState<RectSize>({
         width: defaultRectSize,
         height: defaultRectSize,
     });
-    const [height, setHeight] = React.useState(defaultRectSize * 20);
+    const [commentContent, OCCC, setCC] = useInput('');
+    const [height, setHeight] = useState(defaultRectSize * 20);
+    const [comments, setComments] = useState<Comment[] | null>();
 
     const detailWindowStyle = {
         transform: openDetail.flg ? 'translateX(0%)' : 'translateX(-100%)',
     }
 
-    React.useEffect(() => {
+    useEffect(() => {
         setRPos({
             x: rPos.x / defaultRectSize * window.innerWidth / 32,
             y: rPos.y / defaultRectSize * window.innerWidth / 32
@@ -190,7 +221,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         setHeight(window.innerWidth/32*20);
     }, [window.innerWidth, defaultRectSize]);
 
-    const viewAddComponent = React.useCallback((number:number) => {
+    const viewAddComponent = useCallback((number:number) => {
         const selectWidth = rectSize.width / defaultRectSize;
         const selectHeight = rectSize.height / defaultRectSize;
         if ((selectHeight * selectWidth) < 4)
@@ -212,7 +243,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         }
     }, [rectSize, defaultRectSize]);
 
-    const getRectSize = React.useCallback(() => {
+    const getRectSize = useCallback(() => {
         if (isDragged)
         {
             let w = defaultRectSize * Math.floor((Math.abs( mPos.x - mPos.x % defaultRectSize - isDragged.x) / defaultRectSize ) + 1);
@@ -268,13 +299,13 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             />
     }
 
-    const checkVertexInRect = React.useCallback((v:number, left:number, right: number) => {
+    const checkVertexInRect = useCallback((v:number, left:number, right: number) => {
         if (v > left && v < right)
             return (true);
         return (false);
     }, []);
 
-    const openAddComponent = React.useCallback((number:number) => {
+    const openAddComponent = useCallback((number:number) => {
         if (boardData?.TextContents && boardData.TextContents.find(e =>
             (
                 checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
@@ -292,7 +323,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             viewAddComponent(number);
     }, [rectSize, rPos, defaultRectSize]);
 
-    const initStates = React.useCallback(() => {
+    const initStates = useCallback(() => {
         setRectSize({
             width: defaultRectSize,
             height: defaultRectSize,
@@ -307,7 +338,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         setWarning('');
     }, [defaultRectSize, isDragged, menuState]);
 
-    const openDetailWindow = React.useCallback((category, id, content) => {
+    const openDetailWindow = useCallback((category, id, content) => {
         console.log(content);
         setOpenDetail({
             ...openDetail,
@@ -316,9 +347,29 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             id: id,
             content: content,
         });
+        setComments(content.Comments);
     }, [openDetail]);
 
-    React.useEffect(() => {
+    const submitComment = useCallback((e) => {
+        e.preventDefault();
+        if (commentContent !== '') {
+            axios.post(`/api/comment/${openDetail.category}/${openDetail.id}`, {
+                content: commentContent
+            }).then((res) => {
+                setCC('');
+                axios.get(`api/comment/${openDetail.category}/${openDetail.id}`).then(res => {
+                    setComments(res.data);
+                }).catch((e) => {
+                    console.error(e);
+                })
+                dataReval();
+            }). catch((e) => {
+                console.error(e);
+            })
+        }
+    }, [commentContent, openDetail]);
+
+    useEffect(() => {
         if (addState == 0)
         {
             if (isDragged.dragged)
@@ -332,7 +383,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         }
     }, [mPos, isDragged, addState]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (addState !== 0)
             setMenu({
                 ...menuState, flg: false
@@ -353,16 +404,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                             id: 0,
                             flg: false,
                             loadComment: false,
-                            content: {
-                                UserId: 0,
-                                createdAt: '',
-                                updatedAt: '',
-                                expiry_date: '',
-                                content: '',
-                                head: '',
-                                paragraph: '',
-                                url: '',
-                            },
+                            content: null,
                         })}
                     />
             }
@@ -386,14 +428,14 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                             }
                         </UserInfo>
                         <MomentBox>
-                            <div>작성일 : <p>{moment(openDetail.content.createdAt).format('YYYY년 MM월 DD일')}</p></div>
-                            <div>만료일 : <p>{moment(openDetail.content.expiry_date).format('YYYY년 MM월 DD일')}</p></div>
+                            <div>작성일 : <p>{moment(openDetail.content?.createdAt).format('YYYY년 MM월 DD일')}</p></div>
+                            <div>만료일 : <p>{moment(openDetail.content?.expiry_date).format('YYYY년 MM월 DD일')}</p></div>
                         </MomentBox>
                         Content :
                         <DetailContentBox>
                             {openDetail.category === 1 &&
                                 <div>
-                                    {openDetail.content.content}
+                                    {openDetail.content?.content}
                                 </div>
                             }
                             {openDetail.category === 2 &&
@@ -408,7 +450,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                         style={{borderBottom: '1px solid #444', padding: '.5rem 0'}}
                     >Comment:</div>
                     <CommentBox>
-                        {dummyComments.map((c, i) => {
+                        {comments?.map((c, i) => {
                             return (
                                 <Comment
                                     key={(i)}
@@ -425,15 +467,17 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                             );
                         })}
                     </CommentBox>
-                    <BottomFixContent>
-                        <input type="text" />
-                        <div>
-                        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                        </div>
-                    </BottomFixContent>
                     </>
                 }
                 </DetailBox>
+                <BottomFixContent
+                    onClick={submitComment}
+                >
+                    <input type="text" value={commentContent} onChange={OCCC}/>
+                    <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                    </div>
+                </BottomFixContent>
             </DetailWindow>
             <MenuBox clicked={menuState.flg} x={menuState.x} y={menuState.y} disp={menuState.disp}>
                 <MenuAttr onClick={() => openAddComponent(1)}>Text</MenuAttr>
@@ -590,6 +634,9 @@ const Board:FC = () => {
     if (!userData)
         return <LoadingCircle />
 
+    // useEffect(() => {
+    //     console.log(boardData);
+    // }, [boardData]);
     return (
         <>
         <WorkSpace
