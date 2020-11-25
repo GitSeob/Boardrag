@@ -49,7 +49,7 @@ router.get('/auth', isLoggedIn, async (req, res, next) => {
         //     res.status(401).send({ reason: "만료된 토큰입니다." });
         // })
         // if (get_user_42api)
-            res.send(userInfo);
+        return res.send(userInfo);
     } catch (e) {
         console.error(e);
         next(e);
@@ -65,7 +65,6 @@ router.post('/auth', isNotLoggedIn, async (req, res, next) => {
             console.error(info);
             return res.status(401).send(info.reason);
         }
-        console.log(user);
         return req.login(user, async (loginErr) => {
             try {
                 if (loginErr)
@@ -88,26 +87,24 @@ router.post('/write/text', isLoggedIn, async (req, res, next) => {
         const now = new Date();
         const availBlocks = await req.user.avail_blocks - (req.body.width * req.body.height);
         if (availBlocks < 0)
-            res.status(202).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
-        else
-        {
-            const newText = await db.TextContent.create({
-                x: req.body.x,
-                y: req.body.y,
-                width: req.body.width,
-                height: req.body.height,
-                content: req.body.content,
-                expiry_date: now.setDate(now.getDate() + 7),
-                UserId: req.user.id,
-                BoardId: 42
-            })
-            await db.User.update({
-                avail_blocks: availBlocks
-            }, {
-                where: {id: req.user.id}
-            });
-            res.send(newText);
-        }
+            return res.status(202).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
+
+        const newText = await db.TextContent.create({
+            x: req.body.x,
+            y: req.body.y,
+            width: req.body.width,
+            height: req.body.height,
+            content: req.body.content,
+            expiry_date: now.setDate(now.getDate() + 7),
+            UserId: req.user.id,
+            BoardId: 42
+        })
+        await db.User.update({
+            avail_blocks: availBlocks
+        }, {
+            where: {id: req.user.id}
+        });
+        return res.send(newText);
     } catch (e) {
         console.error(e);
         next(e);
@@ -119,28 +116,26 @@ router.post('/write/note', isLoggedIn, async (req, res, next) => {
         const now = new Date();
         const availBlocks = await req.user.avail_blocks - (req.body.width * req.body.height);
         if (availBlocks < 0)
-            res.status(202).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
-        else
-        {
-            const newText = await db.Note.create({
-                x: req.body.x,
-                y: req.body.y,
-                width: req.body.width,
-                height: req.body.height,
-                head: req.body.head,
-                paragraph: req.body.paragraph,
-                background_img: req.body.background_img,
-                expiry_date: now.setDate(now.getDate() + 7),
-                UserId: req.user.id,
-                BoardId: 42
-            })
-            await db.User.update({
-                avail_blocks: availBlocks
-            }, {
-                where: {id: req.user.id}
-            });
-            res.send(newText);
-        }
+            return res.status(202).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
+
+        const newText = await db.Note.create({
+            x: req.body.x,
+            y: req.body.y,
+            width: req.body.width,
+            height: req.body.height,
+            head: req.body.head,
+            paragraph: req.body.paragraph,
+            background_img: req.body.background_img,
+            expiry_date: now.setDate(now.getDate() + 7),
+            UserId: req.user.id,
+            BoardId: 42
+        })
+        await db.User.update({
+            avail_blocks: availBlocks
+        }, {
+            where: {id: req.user.id}
+        });
+        return res.send(newText);
     } catch (e) {
         console.error(e);
         next(e);
@@ -152,7 +147,7 @@ router.get('/test/text', async (req, res, next) => {
         const allTexts = await db.TextContent.findAll({
             where: {BoardId: 42}
         });
-        res.send(allTexts);
+        return res.send(allTexts);
     } catch (e) {
         console.error(e);
         next(e);
@@ -196,7 +191,7 @@ router.get(`/board/:boardId`, async (req, res, next) => {
                 order: [["createdAt", "DESC"]],
             }]
         });
-        res.send(boardData);
+        return res.send(boardData);
     } catch (e) {
         console.error(e);
         next(e);
@@ -218,8 +213,9 @@ router.post('/write/image', isLoggedIn, async (req, res, next) => {
     try {
         const now = new Date();
         const availBlocks = await req.user.avail_blocks - (req.body.width * req.body.height);
+
         if (availBlocks < 0)
-            res.status(202).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
+            return res.status(202).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
 
         const newImage = await db.Image.create({
             url: req.body.url,
@@ -231,12 +227,14 @@ router.post('/write/image', isLoggedIn, async (req, res, next) => {
             UserId: req.user.id,
             BoardId: 42,
         });
+
         await db.User.update({
             avail_blocks: availBlocks
         }, {
             where: {id: req.user.id}
         });
-        res.send(newImage);
+
+        return res.send(newImage);
     } catch(e) {
         console.error(e);
         next(e);
@@ -262,8 +260,7 @@ router.post('/comment/:category/:id', isLoggedIn, async (req, res, next) => {
                 ImageId: id
             }
         } else {
-            res.status(401).send({reason: 'category parameter is wrong.'});
-            return ;
+            return res.status(401).send({reason: 'category parameter is wrong.'});
         }
         const newComment = await db.Comment.create({
             content_category: cid,
@@ -273,7 +270,7 @@ router.post('/comment/:category/:id', isLoggedIn, async (req, res, next) => {
             UserId: req.user.id,
             ...query,
         })
-        res.send(newComment);
+        return res.send(newComment);
     } catch(e) {
         console.error(e);
         next(e);
@@ -296,8 +293,7 @@ router.get('/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
                 ImageId: parseInt(req.params.id)
             }
         } else {
-            res.status(401).send({reason: 'category parameter is wrong.'});
-            return ;
+            return res.status(401).send({reason: 'category parameter is wrong.'});
         }
         const comments = await db.Comment.findAll({
             where: query,
@@ -306,7 +302,61 @@ router.get('/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
                 model: db.User
             }]
         })
-        res.send(comments);
+        return res.send(comments);
+    } catch(e) {
+        console.error(e);
+        next(e);
+    }
+})
+
+router.delete('/delete/text/:id', isLoggedIn, async (req, res, next) => {
+    try {
+        const content = await db.TextContent.findOne({
+            where: {id: req.params.id}
+        });
+        if (!content)
+            return res.status(404).send('콘텐츠가 존재하지 않습니다.');
+        if (req.user.id !== content.UserId)
+            return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
+        await db.TextContent.destroy({ where: {id: req.params.id }});
+        await db.Comment.destroy({ where: { TextContentId: req.params.id }});
+        return res.send(req.params.id);
+    } catch(e) {
+        console.error(e);
+        next(e);
+    }
+})
+
+router.delete('/delete/image/:id', isLoggedIn, async (req, res, next) => {
+    try {
+        const content = await db.Image.findOne({
+            where: {id: req.params.id}
+        });
+        if (!content)
+            return res.status(404).send('콘텐츠가 존재하지 않습니다.');
+        if (req.user.id !== content.UserId)
+            return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
+        await db.Image.destroy({ where: {id: req.params.id }});
+        await db.Comment.destroy({ where: { ImageId: req.params.id }});
+        return res.send(req.params.id);
+    } catch(e) {
+        console.error(e);
+        next(e);
+    }
+})
+
+router.delete('/delete/note/:id', isLoggedIn, async (req, res, next) => {
+    try {
+        const content = await db.Note.findOne({
+            where: {id: req.params.id}
+        });
+        if (!content)
+            return res.status(404).send('콘텐츠가 존재하지 않습니다.');
+        if (req.user.id !== content.UserId)
+            return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
+        await db.Note.destroy({ where: {id: req.params.id }});
+        await db.Comment.destroy({ where: { NoteId: req.params.id }});
+        return res.send(req.params.id);
     } catch(e) {
         console.error(e);
         next(e);

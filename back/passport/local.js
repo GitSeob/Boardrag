@@ -43,7 +43,7 @@ module.exports = () => {
                 })
                 return done(null, newUser);
             }
-            if (user_in_db.access_token !== access_token)
+            else if (user_in_db.access_token !== access_token)
                 user_in_db = await db.User.update({
                     access_token: access_token
                 },{

@@ -9,14 +9,6 @@ type MenuPosition = {
     disp: boolean
 }
 
-type AddedComponentInfo = {
-    width: number,
-    height: number,
-    x: number,
-    y: number,
-    color: string
-}
-
 type BoxPosition = {
     width: number,
     height: number,
@@ -291,9 +283,9 @@ export const BottomFixContent = styled('div')`
     bottom: 0;
     display: flex;
     overflow: hidden;
-    height: 3rem;
+    height: 4rem;
     background: #000;
-    padding-top: 1rem;
+    padding: 1rem .5rem;
 
     & > input {
         width: calc(400px - 4rem);
@@ -373,7 +365,21 @@ export const DetailContentBox = styled.div`
     border-radius: 5px;
     background: #fff;
     color: #000;
-    padding: 1rem .5rem;
+    margin-top: .5rem;
+
+    & > div {
+        padding: 1rem .5rem;
+    }
+
+    & > img {
+        width: 100%;
+    }
+
+    & > h2 {
+        margin: 0 .5rem;
+        padding: 1rem 0 .5rem 0;
+        border-bottom: 1px solid #888;
+    }
 `;
 
 export const CommentBox = styled.div`
@@ -430,4 +436,11 @@ export const Comment = styled.div`
             }
         }
     }
+`;
+
+export const EditArea = styled.div`
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 `;

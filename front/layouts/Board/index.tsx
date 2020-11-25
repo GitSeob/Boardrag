@@ -8,23 +8,11 @@ import axios from 'axios';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
 import useInput from '@hooks/useInput';
-
-const dummyComments = [{
-    id: 1,
-    UserId: 1,
-    User: {
-        id: 1,
-        username: 'han',
-        profile_img: 'https://cdn.intra.42.fr/users/han.jpg'
-    },
-    content: '우왕ㅋㅋ',
-    createdAt: new Date(),
-}]
 
 type Position = {
     x: number,
@@ -142,7 +130,8 @@ interface DetailProps {
     content: null | string,
     head: null | string,
     paragraph: null | string,
-    url: null | string,
+    url: string,
+    background_img: string,
     Comments: Comment[]
 }
 
@@ -202,6 +191,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     const [commentContent, OCCC, setCC] = useInput('');
     const [height, setHeight] = useState(defaultRectSize * 20);
     const [comments, setComments] = useState<Comment[] | null>();
+    const [isEdit, setIsEdit] = useState<boolean>(false);
 
     const detailWindowStyle = {
         transform: openDetail.flg ? 'translateX(0%)' : 'translateX(-100%)',
@@ -339,7 +329,6 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     }, [defaultRectSize, isDragged, menuState]);
 
     const openDetailWindow = useCallback((category, id, content) => {
-        console.log(content);
         setOpenDetail({
             ...openDetail,
             flg: true,
@@ -353,11 +342,11 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     const submitComment = useCallback((e) => {
         e.preventDefault();
         if (commentContent !== '') {
-            axios.post(`/api/comment/${openDetail.category}/${openDetail.id}`, {
+            axios.post(`/api/comment/${openDetail.category}/${openDetail.content?.id}`, {
                 content: commentContent
             }).then((res) => {
                 setCC('');
-                axios.get(`api/comment/${openDetail.category}/${openDetail.id}`).then(res => {
+                axios.get(`api/comment/${openDetail.category}/${openDetail.content?.id}`).then(res => {
                     setComments(res.data);
                 }).catch((e) => {
                     console.error(e);
@@ -368,6 +357,30 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             })
         }
     }, [commentContent, openDetail]);
+
+    const deleteBox = useCallback(() => {
+        let category = '';
+        if (openDetail.category === 1)
+            category = 'text';
+        else if (openDetail.category === 2)
+            category = 'note';
+        else if (openDetail.category === 3)
+            category = 'image';
+        else
+            return ;
+        axios.delete(`api/delete/${category}/${openDetail.content?.id}`).then(() => {
+            dataReval();
+            setOpenDetail({
+                category: 0,
+                id: 0,
+                flg: false,
+                loadComment: false,
+                content: null,
+            })
+        }).catch((e) => {
+            console.error(e);
+        })
+    }, [openDetail]);
 
     useEffect(() => {
         if (addState == 0)
@@ -418,10 +431,14 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                             <p>{userData.username}</p>
                             {(openDetail.content && openDetail.content.UserId === userData.id ) &&
                                 <UDButtonBox>
-                                    <button>
+                                    <button
+                                        onClick={() => setIsEdit(true)}
+                                    >
                                         <img src="/public/edit.svg" />
                                     </button>
-                                    <button>
+                                    <button
+                                        onClick={deleteBox}
+                                    >
                                         <img src="/public/delete.svg" />
                                     </button>
                                 </UDButtonBox>
@@ -434,15 +451,29 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                         Content :
                         <DetailContentBox>
                             {openDetail.category === 1 &&
-                                <div>
-                                    {openDetail.content?.content}
-                                </div>
+                                (!isEdit ?
+                                    <div>
+                                        {openDetail.content?.content}
+                                    </div>
+                                    :
+                                    <EditArea>
+                                        <textarea/>
+                                    </EditArea>
+                                )
                             }
                             {openDetail.category === 2 &&
-                                <div>노트</div>
+                                <>
+                                    {openDetail.content?.background_img && <img src={openDetail.content?.background_img} />}
+                                    <h2>
+                                        {openDetail.content?.head}
+                                    </h2>
+                                    <div>
+                                        {openDetail.content?.paragraph}
+                                    </div>
+                                </>
                             }
                             {openDetail.category === 3 &&
-                                <div>이미지</div>
+                                <img src={openDetail.content?.url} />
                             }
                         </DetailContentBox>
                     </TopFixContent>
@@ -460,7 +491,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                                         <p>{c.User.username}</p>
                                         <div>
                                             <div>{c.content}</div>
-                                            <p>{moment(c.createdAt).format('YYYY년 MM월 DD일')}</p>
+                                            <p>{moment(c.createdAt).diff(new Date(), 'days') < 1 ? moment(c.createdAt).format('LT') : moment(c.createdAt).format('YYYY년 MM월 DD일')}</p>
                                         </div>
                                     </div>
                                 </Comment>
@@ -544,6 +575,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                         y= {defaultRectSize * c.y}
                     >
                         <ImageComponent
+                            onClick={() => openDetailWindow(3, c.id, c)}
                         >
                             <img src={c.url} />
                         </ImageComponent>
@@ -560,6 +592,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                         y= {defaultRectSize * c.y}
                     >
                         <NoteComponent
+                            onClick={() => openDetailWindow(2, c.id, c)}
                             src={c.background_img ? c.background_img : ''}
                         >
                             <div className="head" style={{height: defaultRectSize}}>
