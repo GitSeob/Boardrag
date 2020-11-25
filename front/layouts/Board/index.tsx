@@ -7,30 +7,22 @@ import moment from 'moment';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { UDButtonBox, UserInfo, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
 
-const dummyTest = [{
-    x: 10,
-    y: 7,
-    width: 3,
-    height: 2,
-    content: 'Hello 42Board',
-    userId: 1,
-    expiryDate: '2020-12-31'
-}];
-
-type DummyType = {
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    userId: number,
-    content: string,
-    expiryDate: string
-}
+const dummyComments = [{
+    id: 1,
+    UserId: 1,
+    User: {
+        id: 1,
+        username: 'han',
+        profile_img: 'https://cdn.intra.42.fr/users/han.jpg'
+    },
+    content: '우왕ㅋㅋ',
+    createdAt: new Date(),
+}]
 
 type Position = {
     x: number,
@@ -124,14 +116,6 @@ interface IBoardProps {
     dataReval: () => void,
 }
 
-interface IDetailContent {
-    category: number,
-    id: number,
-    flg: boolean,
-    loadComment: boolean,
-    content: any
-}
-
 const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     const layerRef = React.useRef() as React.MutableRefObject<Konva.Layer>;
     const [isDragged, setDragged] = React.useState<DraggedRect>({
@@ -187,6 +171,10 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         height: defaultRectSize,
     });
     const [height, setHeight] = React.useState(defaultRectSize * 20);
+
+    const detailWindowStyle = {
+        transform: openDetail.flg ? 'translateX(0%)' : 'translateX(-100%)',
+    }
 
     React.useEffect(() => {
         setRPos({
@@ -359,7 +347,6 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                 </WarnMessage>
             }
             {openDetail.flg &&
-                <>
                     <DetailBackground
                         onClick={() => setOpenDetail({
                             category: 0,
@@ -378,48 +365,76 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                             },
                         })}
                     />
-                    <DetailWindow>
-                        <DetailBox>
-                            <TopFixContent>
-                                <UserInfo>
-                                    <img src={userData.profile_img} />
-                                    <p>{userData.username}</p>
-                                    {(openDetail.content && openDetail.content.UserId === userData.id ) &&
-                                        <UDButtonBox>
-                                            <button>
-                                                <img src="/public/edit.svg" />
-                                            </button>
-                                            <button>
-                                                <img src="/public/delete." />
-                                            </button>
-                                        </UDButtonBox>
-                                    }
-                                </UserInfo>
-                                <div>작성일 : {moment(openDetail.content.createdAt).format('YYYY년 MM월 DD일')}</div>
-                                <div>만료일 : {moment(openDetail.content.expiry_date).format('YYYY년 MM월 DD일')}</div>
-                                {openDetail.category === 1 &&
-                                    <div>
-                                        {openDetail.content.content}
-                                    </div>
-                                }
-                                {openDetail.category === 2 &&
-                                    <div>노트</div>
-                                }
-                                {openDetail.category === 3 &&
-                                    <div>이미지</div>
-                                }
-                            </TopFixContent>
-                            <div>comment</div>
-                            <BottomFixContent>
-                                <input type="text" />
-                                <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                                </div>
-                            </BottomFixContent>
-                        </DetailBox>
-                    </DetailWindow>
-                </>
             }
+            <DetailWindow style={detailWindowStyle}>
+                <DetailBox>
+                    { openDetail.id !== 0 &&
+                    <>
+                    <TopFixContent>
+                        <UserInfo>
+                            <img src={userData.profile_img} />
+                            <p>{userData.username}</p>
+                            {(openDetail.content && openDetail.content.UserId === userData.id ) &&
+                                <UDButtonBox>
+                                    <button>
+                                        <img src="/public/edit.svg" />
+                                    </button>
+                                    <button>
+                                        <img src="/public/delete.svg" />
+                                    </button>
+                                </UDButtonBox>
+                            }
+                        </UserInfo>
+                        <MomentBox>
+                            <div>작성일 : <p>{moment(openDetail.content.createdAt).format('YYYY년 MM월 DD일')}</p></div>
+                            <div>만료일 : <p>{moment(openDetail.content.expiry_date).format('YYYY년 MM월 DD일')}</p></div>
+                        </MomentBox>
+                        Content :
+                        <DetailContentBox>
+                            {openDetail.category === 1 &&
+                                <div>
+                                    {openDetail.content.content}
+                                </div>
+                            }
+                            {openDetail.category === 2 &&
+                                <div>노트</div>
+                            }
+                            {openDetail.category === 3 &&
+                                <div>이미지</div>
+                            }
+                        </DetailContentBox>
+                    </TopFixContent>
+                    <div
+                        style={{borderBottom: '1px solid #444', padding: '.5rem 0'}}
+                    >Comment:</div>
+                    <CommentBox>
+                        {dummyComments.map((c, i) => {
+                            return (
+                                <Comment
+                                    key={(i)}
+                                >
+                                    <img src={c.User.profile_img} />
+                                    <div className="content">
+                                        <p>{c.User.username}</p>
+                                        <div>
+                                            <div>{c.content}</div>
+                                            <p>{moment(c.createdAt).format('YYYY년 MM월 DD일')}</p>
+                                        </div>
+                                    </div>
+                                </Comment>
+                            );
+                        })}
+                    </CommentBox>
+                    <BottomFixContent>
+                        <input type="text" />
+                        <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                        </div>
+                    </BottomFixContent>
+                    </>
+                }
+                </DetailBox>
+            </DetailWindow>
             <MenuBox clicked={menuState.flg} x={menuState.x} y={menuState.y} disp={menuState.disp}>
                 <MenuAttr onClick={() => openAddComponent(1)}>Text</MenuAttr>
                 <MenuAttr onClick={() => openAddComponent(2)}>Note</MenuAttr>
@@ -460,48 +475,57 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             }
             { boardData?.TextContents  && boardData?.TextContents.map((c, i) => {
                 return (
-                    <TextComponent
+                    <ComponentBox
                         key={(i)}
-                        width= {defaultRectSize * c.width - 10}
-                        height= {defaultRectSize * c.height - 10}
-                        x= {defaultRectSize * c.x + 5}
-                        y= {defaultRectSize * c.y + 5}
-                        onClick={() => openDetailWindow(1, c.id, c)}
+                        width= {defaultRectSize * c.width}
+                        height= {defaultRectSize * c.height}
+                        x= {defaultRectSize * c.x}
+                        y= {defaultRectSize * c.y}
                     >
-                        {c.content}
-                    </TextComponent>
+                        <TextComponent
+                            onClick={() => openDetailWindow(1, c.id, c)}
+                        >
+                            {c.content}
+                        </TextComponent>
+                    </ComponentBox>
                 );
             })}
             {boardData?.Images && boardData?.Images.map((c, i) => {
                 return (
-                    <ImageComponent
+                    <ComponentBox
                         key={(i)}
-                        width= {defaultRectSize * c.width - 10}
-                        height= {defaultRectSize * c.height - 10}
-                        x= {defaultRectSize * c.x + 5}
-                        y= {defaultRectSize * c.y + 5}
+                        width= {defaultRectSize * c.width}
+                        height= {defaultRectSize * c.height}
+                        x= {defaultRectSize * c.x}
+                        y= {defaultRectSize * c.y}
                     >
-                        <img src={c.url} />
-                    </ImageComponent>
+                        <ImageComponent
+                        >
+                            <img src={c.url} />
+                        </ImageComponent>
+                    </ComponentBox>
                 )
             })}
             {boardData?.Notes && boardData?.Notes.map((c, i) => {
                 return (
-                    <NoteComponent
+                    <ComponentBox
                         key={(i)}
-                        width= {defaultRectSize * c.width - 10}
-                        height= {defaultRectSize * c.height - 10}
-                        x= {defaultRectSize * c.x + 5}
-                        y= {defaultRectSize * c.y + 5}
-                        src={c.background_img ? c.background_img : ''}
+                        width= {defaultRectSize * c.width}
+                        height= {defaultRectSize * c.height}
+                        x= {defaultRectSize * c.x}
+                        y= {defaultRectSize * c.y}
                     >
-                        <div className="head" style={{height: defaultRectSize}}>
-                            {c.head}
-                        </div>
-                        <div style={{height: (defaultRectSize * c.height - 10)}}>
-                            {c.paragraph}
-                        </div>
-                    </NoteComponent>
+                        <NoteComponent
+                            src={c.background_img ? c.background_img : ''}
+                        >
+                            <div className="head" style={{height: defaultRectSize}}>
+                                {c.head}
+                            </div>
+                            <div style={{height: (defaultRectSize * c.height - 10)}}>
+                                {c.paragraph}
+                            </div>
+                        </NoteComponent>
+                    </ComponentBox>
                 )
             })}
             <Stage

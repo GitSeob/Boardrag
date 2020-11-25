@@ -25,10 +25,6 @@ type BoxPosition = {
 }
 
 type NoteProps = {
-    width: number,
-    height: number,
-    x: number,
-    y: number,
     src: string
 }
 
@@ -74,16 +70,16 @@ const leftToRight = keyframes`
 
 const enlarge = keyframes`
     0% {
-        max-width: 0;
-        max-height: 0;
+        width: 0%;
+        height: 0%;
     }
     50% {
-        max-width: 50px;
-        max-height: 50px;
+        width: 30%;
+        height: 30%;
     }
     100% {
-        max-width: 100%;
-        max-height: 100%;
+        width: 100%;
+        height: 100%;
     }
 `
 
@@ -98,7 +94,7 @@ export const MenuBox = styled('div')<MenuPosition>`
     display: flex;
     flex-direction: column;
     position: absolute;
-    background: rgba(0, 0, 0, .7);
+    background: rgba(0, 0, 0, .85);
     display: ${props => props.disp ? 'block' : 'none'};
     overflow: hidden;
     color: #efefef;
@@ -137,22 +133,33 @@ export const BoardFooter = styled.div`
     background: rgba(0, 0, 0, .1);
 `
 
-export const TextComponent = styled('div')<BoxPosition>`
+export const ComponentBox = styled('div')<BoxPosition>`
     position: absolute;
-    border-radius: 5px;
-    box-shadow: 0 0 4px 1px rgba(255, 255, 255, .3);
-    background: rgba(0, 0, 0, .75);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 4;
-    cursor: pointer;
-    animation: ${enlarge} .3s ease-in-out 1;
     width: ${props => props.width};
     height: ${props => props.height};
     left: ${props => props.x};
     top: ${props => props.y};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    z-index: 4;
+    padding: 2px;
+`;
+
+export const TextComponent = styled('div')`
+    position: relative;
+    border-radius: 5px;
+    box-shadow: 0 0 4px 1px rgba(255, 255, 255, .3);
+    background: rgba(0, 0, 0, .75);
+    color: #fff;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    animation: ${enlarge} .3s ease-in-out 1;
     overflow: hidden;
 
     &:hover {
@@ -161,21 +168,18 @@ export const TextComponent = styled('div')<BoxPosition>`
     }
 `;
 
-export const ImageComponent = styled('div')<BoxPosition>`
-    position: absolute;
+export const ImageComponent = styled('div')`
+    position: relative;
     border-radius: 5px;
     box-shadow: 0 0 4px 1px rgba(255, 255, 255, .3);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 4;
     cursor: pointer;
     border-radius: 5px;
     overflow: hidden;
-    width: ${props => props.width};
-    height: ${props => props.height};
-    left: ${props => props.x};
-    top: ${props => props.y};
+    width: 100%;
+    height: 100%;
     animation: ${enlarge} .3s ease-in-out 1;
 
     & > img {
@@ -204,7 +208,7 @@ export const WarnMessage = styled.div`
 `;
 
 export const NoteComponent = styled('div')<NoteProps>`
-    position: absolute;
+    position: relative;
     border-radius: 5px;
     box-shadow: 0 0 4px 1px rgba(255, 255, 255, .3);
     color: #fff;
@@ -212,13 +216,10 @@ export const NoteComponent = styled('div')<NoteProps>`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 4;
     cursor: pointer;
     animation: ${enlarge} .3s ease-in-out 1;
-    width: ${props => props.width};
-    height: ${props => props.height};
-    left: ${props => props.x};
-    top: ${props => props.y};
+    width: 100%;
+    height: 100%;
     background: ${props => props.src ? 'url(\''+props.src+'\') no-repeat center' : 'rgba(0, 0, 0, .75)'};
     background-size: cover;
     padding: 5px;
@@ -249,7 +250,7 @@ export const DetailBackground = styled('div')`
     position: absolute;
     top: 0;
     left: 0;
-    background: transparent;
+    background: rgba(0, 0, 0, .4);
     animation: ${padeIn} .5s ease-in-out 1;
 `;
 
@@ -258,11 +259,11 @@ export const DetailWindow = styled('div')`
     min-height: 100vh;
     height: 100%;
     width: 400px;
-    background: rgba(0, 0, 0, .7);
+    background: rgba(0, 0, 0, .85);
     top: 0;
     left: 0;
     z-index: 13;
-    animation: ${leftToRight} .5s ease-in-out 1;
+    transition: .3s;
     color: #fff;
     overflow: auto;
 `;
@@ -271,9 +272,10 @@ export const DetailBox = styled.div`
     position: relative;
     width: 100%;
     height: 100%;
+    padding: 1rem;
 
     & > div {
-        padding: 1rem;
+        margin: 1rem 0;
     }
 `;
 
@@ -289,18 +291,20 @@ export const BottomFixContent = styled('div')`
     width: 400px;
     display: flex;
     overflow: hidden;
-    height: 5rem;
+    height: 4rem;
     padding: 1rem .5rem;
 
     & > input {
         width: calc(400px - 3rem);
         padding: 5px;
+        border-radius: 5px;
         box-shadow: 0 0 4px 1px #ffffff;
         font-size: 14px;
+        margin-right: .5rem;
     }
 
     & > div {
-        width: 4rem;
+        width: 2rem;
         background: #radial-gradient(ellipse at bottom, #002534 0%, #090a0f 100%) no-repeat;
         cursor: pointer;
         color: #fff;
@@ -310,10 +314,6 @@ export const BottomFixContent = styled('div')`
         align-items: center;
         svg {
             fill: #fff;
-        }
-
-        &:hover {
-            box-shadow: 0 0 8px 1px #ffffff;
         }
     }
 `;
@@ -328,7 +328,7 @@ export const UserInfo = styled.div`
     & > img {
         width: 5rem;
         height: 5rem;
-        border-radius: 20px;
+        border-radius: 100%;
         margin-right: 1rem;
     }
 
@@ -350,6 +350,91 @@ export const UDButtonBox = styled.div`
 
         &:nth-child(1) {
             margin-right: .5rem;
+        }
+    }
+`;
+
+export const MomentBox = styled.div`
+    margin-top: .5rem;
+    margin-bottom: 1rem;
+
+    & > div {
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        color: #d5d5d5;
+
+        &:nth-child(1) {
+            margin-bottom: .5rem;
+        }
+
+        p {
+            margin-left: .5rem;
+            font-size: 14px;
+            color: #fff;
+        }
+    }
+`;
+
+export const DetailContentBox = styled.div`
+    border-radius: 5px;
+    background: #fff;
+    color: #000;
+    padding: 1rem .5rem;
+`;
+
+export const CommentBox = styled.div`
+    overflow: auto;
+`;
+
+export const Comment = styled.div`
+    display: flex;
+    min-height: 3rem;
+
+    & > img {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 100%;
+        margin-right: 1rem;
+    }
+
+    .content {
+        width: 100%;
+        & > div
+        {
+            display: flex;
+            align-items: flex-end;
+            width: 100%;
+
+            div {
+                background: #f8f8f8;
+                border-radius: 5px;
+                color: #000;
+                padding: .5rem;
+                min-height: 100%;
+                width: 100%;
+                position: relative;
+
+                &::before {
+                    content: "";
+                    transform: skewX(30deg);
+                    width: 15px;
+                    left: 0;
+                    height: 15px;
+                    background: #f8f8f8;
+                    position: absolute;
+                    top: 0;
+                    z-index: -1;
+                }
+            }
+
+            & > p {
+                color: #777;
+                height: fit-content;
+                font-size: 10px;
+                margin-left: .3rem;
+                width: 8rem;
+            }
         }
     }
 `;
