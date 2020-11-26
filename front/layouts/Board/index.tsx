@@ -130,6 +130,8 @@ interface Comment {
 
 interface DetailProps {
     id: number,
+    width: number,
+    height: number,
     createdAt: Date,
     updatedAt: Date,
     expiry_date: Date,
