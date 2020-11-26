@@ -462,7 +462,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         {
             setUploading({
                 ...uploading,
-                imageURL: typeof openDetail.content?.background_img === 'string' ? openDetail.content?.background_img : '',
+                imageURL: typeof openDetail.content?.url === 'string' ? openDetail.content?.url : '',
             });
         }
     }, [isEdit, openDetail, textScrollRef]);
@@ -634,7 +634,11 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                                     <>
                                         <EditArea>
                                             <ImageBox>
-                                                <img src={uploading.imageURL} />
+                                                {uploading.imageURL !== '' ?
+                                                    <img src={uploading.imageURL} />
+                                                    :
+                                                    <div className="temp"/>
+                                                }
                                                 <ImageEditButton
                                                     onClick={onClickImageUpload}
                                                     imageInput={imageInput}
@@ -666,9 +670,25 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                                 ( !isEdit ?
                                     <img src={openDetail.content?.url} />
                                     :
-                                    <div>
-                                        edit
-                                    </div>
+                                    <>
+                                        <EditArea>
+                                            <ImageBox>
+                                                <img src={uploading.imageURL} />
+                                                <ImageEditButton
+                                                    onClick={onClickImageUpload}
+                                                    imageInput={imageInput}
+                                                    onChangeImg={onChangeImg}
+                                                />
+                                            </ImageBox>
+                                            <EditButtonBox>
+                                                <div className="button edit">수정</div>
+                                                <div
+                                                    className="button"
+                                                    onClick={cencelEdit}
+                                                >취소</div>
+                                            </EditButtonBox>
+                                        </EditArea>
+                                    </>
                                 )
                             }
                         </DetailContentBox>

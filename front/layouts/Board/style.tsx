@@ -498,6 +498,12 @@ export const ImageBox = styled.div`
     & > img {
         width: 100%;
     }
+
+    .temp {
+        width: 100%;
+        height: 6rem;
+        background: #eee;
+    }
 `;
 
 export const EditImageInput = styled.div`
