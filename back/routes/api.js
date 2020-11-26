@@ -361,6 +361,65 @@ router.delete('/delete/note/:id', isLoggedIn, async (req, res, next) => {
         console.error(e);
         next(e);
     }
-})
+});
+
+router.patch('/text/:id', isLoggedIn, async (req, res, next) => {
+    try {
+        const content = await db.TextContent.findOne({ where: {id: req.params.id }});
+        if (!content)
+            return res.status(404).send('콘텐츠가 존재하지 않습니다.');
+        if (req.user.id !== content.UserId)
+            return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
+        const editedContent = await db.TextContent.update({
+            content: req.body.content
+        }, {
+            where: {id: req.params.id}
+        });
+        return res.json(editedContent);
+    } catch(e) {
+        console.error(e);
+        next(e);
+    }
+});
+
+router.patch('/note/:id', isLoggedIn, async (req, res, next) => {
+    try {
+        const content = await db.Note.findOne({ where: {id: req.params.id }});
+        if (!content)
+            return res.status(404).send('콘텐츠가 존재하지 않습니다.');
+        if (req.user.id !== content.UserId)
+            return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
+        const editedContent = await db.Note.update({
+            background_img: req.body.background_img,
+            head: req.body.head,
+            paragraph: req.body.paragraph
+        }, {
+            where: {id: req.params.id}
+        });
+        return res.json(editedContent);
+    } catch(e) {
+        console.error(e);
+        next(e);
+    }
+});
+
+router.patch('/image/:id', isLoggedIn, async (req, res, next) => {
+    try {
+        const content = await db.Image.findOne({ where: {id: req.params.id }});
+        if (!content)
+            return res.status(404).send('콘텐츠가 존재하지 않습니다.');
+        if (req.user.id !== content.UserId)
+            return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
+        const editedContent = await db.Image.update({
+            url: req.body.url
+        }, {
+            where: {id: req.params.id}
+        });
+        return res.json(editedContent);
+    } catch(e) {
+        console.error(e);
+        next(e);
+    }
+});
 
 module.exports = router;
