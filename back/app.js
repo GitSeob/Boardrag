@@ -38,10 +38,14 @@ const prod = process.env.NODE_ENV === "production";
 app.use(express.static(path.join(__dirname, "public")));
 
 if (prod) {
-    app.enable("trust proxy");
+    app.enable("trust proxy", 1);
     app.use(morgan("combined"));
     app.use(helmet({ contentSecurityPolicy: false }));
     app.use(hpp());
+    app.use(cors({
+        origin: 'https://42board.com',
+        credentials: true,
+    }))
 } else {
     app.use(morgan("dev"));
     app.use(
