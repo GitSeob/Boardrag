@@ -153,6 +153,7 @@ export const TextComponent = styled('div')`
     cursor: pointer;
     animation: ${enlarge} .3s ease-in-out 1;
     overflow: hidden;
+    padding: 5px;
 
     &:hover {
         box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);

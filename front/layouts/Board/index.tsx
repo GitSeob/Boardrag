@@ -530,7 +530,48 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                 message: e.response.message
             });
         })
-	}, []);
+    }, []);
+
+    const onSubmitEdit = useCallback(async () => {
+        let requestURL = '';
+        let data = {};
+        if (openDetail.category === 1) {
+            requestURL = `/api/text/${openDetail.id}`;
+            data = { content: text };
+        } else if (openDetail.category === 2) {
+            requestURL = `/api/note/${openDetail.id}`;
+            data = {
+                background_img: uploading.imageURL,
+                head: head,
+                paragraph: text
+            };
+        } else if (openDetail.category === 3) {
+            requestURL = `/api/image/${openDetail.id}`;
+            data = { url: uploading.imageURL };
+        } else {
+            await setWarning('잘못된 접근입니다.');
+            setTimeout(() => {
+                setWarning('');
+            }, 2000);
+            return ;
+        }
+        await axios.patch(requestURL, data).then(() => {
+            setOpenDetail({
+                category: 0,
+                id: 0,
+                flg: false,
+                loadComment: false,
+                content: null,
+            });
+            dataReval();
+        }).catch((e) => {
+            setWarning(e.response.message);
+            setTimeout(() => {
+                setWarning('');
+            }, 2000);
+        });
+        cencelEdit();
+    }, [text, head, openDetail, uploading]);
 
     useEffect(() => {
         if (addState == 0)
@@ -609,7 +650,10 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                                                 style={{height: TAH}}
                                             />
                                             <EditButtonBox>
-                                                <div className="button edit">수정</div>
+                                                <div
+                                                    className="button edit"
+                                                    onClick={onSubmitEdit}
+                                                >수정</div>
                                                 <div
                                                     className="button"
                                                     onClick={cencelEdit}
@@ -656,7 +700,10 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                                                 style={{height: TAH}}
                                             />
                                             <EditButtonBox>
-                                                <div className="button edit">수정</div>
+                                                <div
+                                                    className="button edit"
+                                                    onClick={onSubmitEdit}
+                                                >수정</div>
                                                 <div
                                                     className="button"
                                                     onClick={cencelEdit}
@@ -681,7 +728,10 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                                                 />
                                             </ImageBox>
                                             <EditButtonBox>
-                                                <div className="button edit">수정</div>
+                                                <div
+                                                    className="button edit"
+                                                    onClick={onSubmitEdit}
+                                                >수정</div>
                                                 <div
                                                     className="button"
                                                     onClick={cencelEdit}

@@ -318,8 +318,10 @@ router.delete('/delete/text/:id', isLoggedIn, async (req, res, next) => {
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
         if (req.user.id !== content.UserId)
             return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
+        const size = content.width * content.height;
         await db.TextContent.destroy({ where: {id: req.params.id }});
         await db.Comment.destroy({ where: { TextContentId: req.params.id }});
+        await db.User.increment({ avail_blocks: size }, {where: { id: content.UserId }});
         return res.send(req.params.id);
     } catch(e) {
         console.error(e);
@@ -336,8 +338,10 @@ router.delete('/delete/image/:id', isLoggedIn, async (req, res, next) => {
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
         if (req.user.id !== content.UserId)
             return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
+        const size = content.width * content.height;
         await db.Image.destroy({ where: {id: req.params.id }});
         await db.Comment.destroy({ where: { ImageId: req.params.id }});
+        await db.User.increment({ avail_blocks: size }, {where: { id: content.UserId }});
         return res.send(req.params.id);
     } catch(e) {
         console.error(e);
@@ -350,12 +354,14 @@ router.delete('/delete/note/:id', isLoggedIn, async (req, res, next) => {
         const content = await db.Note.findOne({
             where: {id: req.params.id}
         });
+        const size = content.width * content.height;
         if (!content)
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
         if (req.user.id !== content.UserId)
             return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
         await db.Note.destroy({ where: {id: req.params.id }});
         await db.Comment.destroy({ where: { NoteId: req.params.id }});
+        await db.User.increment({ avail_blocks: size }, {where: { id: content.UserId }});
         return res.send(req.params.id);
     } catch(e) {
         console.error(e);
