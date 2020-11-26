@@ -214,6 +214,7 @@ export const NoteComponent = styled('div')<NoteProps>`
     height: 100%;
     background: ${props => props.src ? 'url(\''+props.src+'\') no-repeat center' : 'rgba(0, 0, 0, .75)'};
     background-size: cover;
+    overflow: hidden;
     padding: 5px;
 
     &:hover {
@@ -222,7 +223,7 @@ export const NoteComponent = styled('div')<NoteProps>`
     }
 
     & > div {
-        text-shadow: ${props => props.src ? '0 3px 10px #000' : 'none'};
+        text-shadow: ${props => props.src ? '0 1px 5px #000' : 'none'};
         width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -366,6 +367,7 @@ export const DetailContentBox = styled.div`
     background: #fff;
     color: #000;
     margin-top: .5rem;
+    overflow: hidden;
 
     & > div {
         padding: 1rem .5rem;
@@ -378,7 +380,7 @@ export const DetailContentBox = styled.div`
     & > h2 {
         margin: 0 .5rem;
         padding: 1rem 0 .5rem 0;
-        border-bottom: 1px solid #888;
+        border-bottom: 1px solid #ddd;
     }
 `;
 
@@ -440,7 +442,82 @@ export const Comment = styled.div`
 
 export const EditArea = styled.div`
     position: relative;
+    padding: 0 !important;
+    overflow: hidden;
+
+    & > textarea {
+        width: calc(100% - 50px);
+        resize: none;
+        padding: .5rem;
+    }
+
+    & > input {
+        width: calc(100% - 50px);
+        font-size: 24px;
+        padding: .5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+`;
+
+export const EditButtonBox = styled.div`
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    // border-radius: 0 5px 5px 0;
+    overflow: hidden;
+
+    .button {
+        height: 50%;
+        background: #777;
+        color: #fff;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        &.edit {
+            background: #01babc;
+            color: #000;
+        }
+    }
+`;
+
+export const ImageBox = styled.div`
+    position: relative;
+    width: calc(100% - 50px);
+    height: fit-content;
+
+    & > img {
+        width: 100%;
+    }
+`;
+
+export const EditImageInput = styled.div`
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50%;
+    padding: .5rem 1rem;
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    border-radius: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 2rem;
+    cursor: pointer;
+
+    & > svg {
+        fill: #fff;
+        height: 2rem;
+    }
 `;

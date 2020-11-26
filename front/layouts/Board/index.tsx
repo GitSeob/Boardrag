@@ -1,4 +1,4 @@
-import React, {FC, useEffect, useCallback, useState} from 'react';
+import React, {FC, useEffect, useCallback, useState, useRef, TextareaHTMLAttributes, MutableRefObject, ChangeEvent} from 'react';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import LoadingCircle from '@components/LoadingCircle';
@@ -8,7 +8,7 @@ import axios from 'axios';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
@@ -106,6 +106,13 @@ interface IBoardProps {
     dataReval: () => void,
 }
 
+interface UploadProps {
+    loading: boolean,
+    success: boolean,
+    imageURL: string,
+    message: string,
+}
+
 interface Comment {
     id: number,
     createdAt: Date,
@@ -141,6 +148,42 @@ interface IDetail {
     flg: boolean,
     loadComment: boolean,
     content: DetailProps | null
+}
+
+interface IIEB {
+    imageInput: MutableRefObject<HTMLInputElement>,
+    onChangeImg: ( e:ChangeEvent<HTMLInputElement>) => void
+    onClick: () => void;
+}
+
+const ImageEditButton:FC<IIEB> = ({ imageInput, onChangeImg, onClick}) => {
+    return (
+        <EditImageInput
+            onClick={onClick}
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="black"
+                width="18px"
+                height="18px"
+            >
+                <path d="M0 0h24v24H0z" fill="none" />
+                <path d="M0 0h24v24H0V0z" fill="none" />
+                <path d="M18 13v7H4V6h5.02c.05-.71.22-1.38.48-2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5l-2-2zm-1.5 5h-11l2.75-3.53 1.96 2.36 2.75-3.54zm2.8-9.11c.44-.7.7-1.51.7-2.39C20 4.01 17.99 2 15.5 2S11 4.01 11 6.5s2.01 4.5 4.49 4.5c.88 0 1.7-.26 2.39-.7L21 13.42 22.42 12 19.3 8.89zM15.5 9C14.12 9 13 7.88 13 6.5S14.12 4 15.5 4 18 5.12 18 6.5 16.88 9 15.5 9z" />
+            </svg>
+            <p>이미지 변경하기</p>
+            <input
+                style={{
+                    width: 0,
+                    height: 0,
+                }}
+                type="file"
+                ref={imageInput}
+                onChange={onChangeImg}
+            />
+        </EditImageInput>
+    )
 }
 
 const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
@@ -192,6 +235,17 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     const [height, setHeight] = useState(defaultRectSize * 20);
     const [comments, setComments] = useState<Comment[] | null>();
     const [isEdit, setIsEdit] = useState<boolean>(false);
+    const [text, setText] = useState('');
+    const [head, OCHead, setHead] = useInput('');
+    const [editUrl, setEditUrl] = useState<string>('');
+    const [uploading, setUploading] = useState<UploadProps>({
+        loading: false,
+        success: false,
+        imageURL: '',
+        message: '',
+    });
+    const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;
+    const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
 
     const detailWindowStyle = {
         transform: openDetail.flg ? 'translateX(0%)' : 'translateX(-100%)',
@@ -382,6 +436,102 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         })
     }, [openDetail]);
 
+    const onEdit = useCallback((cid) => {
+        setIsEdit(!isEdit);
+        if (isEdit) {
+            setText('');
+            setHead('');
+            setEditUrl('');
+        }
+        else if (cid === 1)
+        {
+            setText(typeof openDetail.content?.content === 'string' ? openDetail.content?.content : '');
+            if (isEdit) setTAH(`${textScrollRef.current.scrollHeight}px`);
+        }
+        else if (cid === 2)
+        {
+            setHead(typeof openDetail.content?.head === 'string' ? openDetail.content?.head : '');
+            setText(typeof openDetail.content?.paragraph === 'string' ? openDetail.content?.paragraph : '');
+            setUploading({
+                ...uploading,
+                imageURL: typeof openDetail.content?.background_img === 'string' ? openDetail.content?.background_img : '',
+            });
+            if (isEdit) setTAH(`${textScrollRef.current.scrollHeight}px`);
+        }
+        else if (cid === 3)
+        {
+            setUploading({
+                ...uploading,
+                imageURL: typeof openDetail.content?.background_img === 'string' ? openDetail.content?.background_img : '',
+            });
+        }
+    }, [isEdit, openDetail, textScrollRef]);
+
+    const [TAH, setTAH] = useState('auto');
+
+    const OCText = useCallback((e) => {
+        setTAH(`${textScrollRef.current.scrollHeight}px`);
+        setText(e.target.value);
+    }, [textScrollRef]);
+
+    const onInitContent = useCallback(() => {
+        setOpenDetail({
+            category: 0,
+            id: 0,
+            flg: false,
+            loadComment: false,
+            content: null,
+        })
+        setHead('');
+        setText('');
+        setUploading({
+            loading: false,
+            success: false,
+            message: '',
+            imageURL: ''
+        });
+        setIsEdit(false);
+    }, []);
+
+    const cencelEdit = useCallback(() => {
+        setHead('');
+        setText('');
+        setUploading({
+            loading: false,
+            success: false,
+            message: '',
+            imageURL: ''
+        });
+        setIsEdit(false);
+    }, []);
+
+    const onClickImageUpload = useCallback(() => {
+		imageInput.current.click();
+    }, [imageInput.current]);
+
+    const onChangeImg = useCallback( async (e) => {
+		const imageFormData = new FormData();
+        imageFormData.append('image', e.target.files[0]);
+        await setUploading({
+            ...uploading,
+            loading: true
+        });
+		await axios.post('/api/uploadImage', imageFormData).then(res => {
+            setUploading({
+                ...uploading,
+                success: true,
+                loading: false,
+                imageURL: res.data.url
+            });
+        }).catch(e => {
+            setUploading({
+                ...uploading,
+                loading: false,
+                message: e.response.message
+            });
+        })
+	}, []);
+
     useEffect(() => {
         if (addState == 0)
         {
@@ -411,15 +561,9 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                 </WarnMessage>
             }
             {openDetail.flg &&
-                    <DetailBackground
-                        onClick={() => setOpenDetail({
-                            category: 0,
-                            id: 0,
-                            flg: false,
-                            loadComment: false,
-                            content: null,
-                        })}
-                    />
+                <DetailBackground
+                    onClick={onInitContent}
+                />
             }
             <DetailWindow style={detailWindowStyle}>
                 <DetailBox>
@@ -432,7 +576,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                             {(openDetail.content && openDetail.content.UserId === userData.id ) &&
                                 <UDButtonBox>
                                     <button
-                                        onClick={() => setIsEdit(true)}
+                                        onClick={() => onEdit(openDetail.category)}
                                     >
                                         <img src="/public/edit.svg" />
                                     </button>
@@ -456,24 +600,76 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                                         {openDetail.content?.content}
                                     </div>
                                     :
-                                    <EditArea>
-                                        <textarea/>
-                                    </EditArea>
+                                    <>
+                                        <EditArea>
+                                            <textarea
+                                                value={text}
+                                                onChange={OCText}
+                                                ref={textScrollRef}
+                                                style={{height: TAH}}
+                                            />
+                                            <EditButtonBox>
+                                                <div className="button edit">수정</div>
+                                                <div
+                                                    className="button"
+                                                    onClick={cencelEdit}
+                                                >취소</div>
+                                            </EditButtonBox>
+                                        </EditArea>
+                                    </>
                                 )
                             }
                             {openDetail.category === 2 &&
-                                <>
-                                    {openDetail.content?.background_img && <img src={openDetail.content?.background_img} />}
-                                    <h2>
-                                        {openDetail.content?.head}
-                                    </h2>
-                                    <div>
-                                        {openDetail.content?.paragraph}
-                                    </div>
-                                </>
+                                ( !isEdit ?
+                                    <>
+                                        {openDetail.content?.background_img && <img src={openDetail.content?.background_img} />}
+                                        <h2>
+                                            {openDetail.content?.head}
+                                        </h2>
+                                        <div>
+                                            {openDetail.content?.paragraph}
+                                        </div>
+                                    </>
+                                    :
+                                    <>
+                                        <EditArea>
+                                            <ImageBox>
+                                                <img src={uploading.imageURL} />
+                                                <ImageEditButton
+                                                    onClick={onClickImageUpload}
+                                                    imageInput={imageInput}
+                                                    onChangeImg={onChangeImg}
+                                                />
+                                            </ImageBox>
+                                            <input
+                                                value={head}
+                                                onChange={OCHead}
+                                            />
+                                            <textarea
+                                                value={text}
+                                                onChange={OCText}
+                                                ref={textScrollRef}
+                                                style={{height: TAH}}
+                                            />
+                                            <EditButtonBox>
+                                                <div className="button edit">수정</div>
+                                                <div
+                                                    className="button"
+                                                    onClick={cencelEdit}
+                                                >취소</div>
+                                            </EditButtonBox>
+                                        </EditArea>
+                                    </>
+                                )
                             }
                             {openDetail.category === 3 &&
-                                <img src={openDetail.content?.url} />
+                                ( !isEdit ?
+                                    <img src={openDetail.content?.url} />
+                                    :
+                                    <div>
+                                        edit
+                                    </div>
+                                )
                             }
                         </DetailContentBox>
                     </TopFixContent>
@@ -595,11 +791,11 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                             onClick={() => openDetailWindow(2, c.id, c)}
                             src={c.background_img ? c.background_img : ''}
                         >
-                            <div className="head" style={{height: defaultRectSize}}>
-                                {c.head}
+                            <div className="head" style={{height: 'fit-content'}}>
+                                <p>{c.head}</p>
                             </div>
-                            <div style={{height: (defaultRectSize * c.height - 10)}}>
-                                {c.paragraph}
+                            <div className="para" style={{height: (defaultRectSize * c.height - 10)}}>
+                                <p>{c.paragraph}</p>
                             </div>
                         </NoteComponent>
                     </ComponentBox>
@@ -658,10 +854,10 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
 }
 
 const Board:FC = () => {
-    const { data:userData, revalidate:USERRevalidate, error:USERError } = useSWR<IUser>('/api/auth', fetcher);
+    const { data:userData, revalidate:USERRevalidate } = useSWR<IUser | false>('/api/auth', fetcher);
     const { data:boardData, revalidate:BOARDRevalidate, error:BOARDError } = useSWR<IBoard>(userData ? `/api/board/${42}` : null, fetcher);
 
-    if (USERError)
+    if (userData === false)
         return <Redirect to="/auth" />
 
     if (!userData)
