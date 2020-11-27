@@ -38,7 +38,7 @@ const prod = process.env.NODE_ENV === "production";
 app.use(express.static(path.join(__dirname, "public")));
 
 if (prod) {
-    app.enable("trust proxy", 1);
+    app.enable("trust proxy");
     app.use(morgan("combined"));
     app.use(helmet({ contentSecurityPolicy: false }));
     app.use(hpp());
@@ -69,13 +69,12 @@ const sessionOption = {
     cookie: {
         httpOnly: true,
     },
-    // name: '42-board'
 };
 
- if (prod) {
-     sessionOption.cookie.secure = true;
-     sessionOption.cookie.proxy = true;
- }
+if (prod) {
+    sessionOption.cookie.secure = true;
+    sessionOption.cookie.proxy = true;
+}
 
 app.use(session(sessionOption));
 app.use(passport.initialize());

@@ -519,7 +519,11 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             ...uploading,
             loading: true
         });
-		await axios.post('/api/uploadImage', imageFormData).then(res => {
+        await axios.post('/api/uploadImage', imageFormData,
+            {
+                headers: {'Access-Control-Allow-Origin': '*'
+            }
+        }).then(res => {
             setUploading({
                 ...uploading,
                 success: true,
@@ -538,6 +542,13 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     const onSubmitEdit = useCallback(async () => {
         let requestURL = '';
         let data = {};
+        if (uploading.imageURL === '')
+        {
+            await setWarning('이미지를 다시 업로드해주세요');
+            await setTimeout(() => {
+                setWarning('');
+            }, 2000);
+        }
         if (openDetail.category === 1) {
             requestURL = `/api/text/${openDetail.id}`;
             data = { content: text };
@@ -553,7 +564,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             data = { url: uploading.imageURL };
         } else {
             await setWarning('잘못된 접근입니다.');
-            setTimeout(() => {
+            await setTimeout(() => {
                 setWarning('');
             }, 2000);
             return ;
