@@ -930,10 +930,11 @@ const Board:FC = () => {
     const { data:userData, revalidate:USERRevalidate } = useSWR<IUser | false>('/api/auth', fetcher);
     const { data:boardData, revalidate:BOARDRevalidate, error:BOARDError } = useSWR<IBoard>(userData ? `/api/board/${42}` : null, fetcher);
 
+    console.log(userData);
     if (userData === false)
         return <Redirect to="/auth" />
 
-    if (!userData)
+    if (!userData || !boardData)
         return <LoadingCircle />
 
     return (
