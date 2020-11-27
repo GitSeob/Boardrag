@@ -207,7 +207,6 @@ router.get(`/board/:boardId`, async (req, res, next) => {
 
 router.post('/uploadImage', isLoggedIn, upload.single('image'), async (req, res, next) => {
     try {
-        res.header("Access-Control-Allow-Origin", "*");
         res.json({
             url: `${env === "development" ? 'http://localhost:3095' : 'https://api.42board.com'}/${req.file.filename}`
         })

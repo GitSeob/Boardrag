@@ -68,7 +68,6 @@ const sessionOption = {
     secret: process.env.COOKIE_SECRET,
     cookie: {
         httpOnly: true,
-        domain: process.env.NODE_ENV === 'production' && '.42board.com'
     },
 };
 
