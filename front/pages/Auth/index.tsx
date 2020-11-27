@@ -36,10 +36,10 @@ const Auth:FC = () => {
         }).catch(e => {
             console.log(e);
         });
-
-        if (data)
-            return <Redirect to="/board" />
     }
+
+    if (userData)
+        return <Redirect to="/board" />
 
     if (userData || codeValue)
         return (

@@ -141,7 +141,8 @@ interface DetailProps {
     paragraph: null | string,
     url: string,
     background_img: string,
-    Comments: Comment[]
+    Comments: Comment[],
+    User: IUser,
 }
 
 interface IDetail {
@@ -614,8 +615,8 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                     <>
                     <TopFixContent>
                         <UserInfo>
-                            <img src={userData.profile_img} />
-                            <p>{userData.username}</p>
+                            <img src={openDetail.content?.User.profile_img} />
+                            <p>{openDetail.content?.User.username}</p>
                             {(openDetail.content && openDetail.content.UserId === userData.id ) &&
                                 <UDButtonBox>
                                     <button
