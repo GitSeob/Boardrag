@@ -208,7 +208,7 @@ router.get(`/board/:boardId`, async (req, res, next) => {
 router.post('/uploadImage', isLoggedIn, upload.single('image'), async (req, res, next) => {
     try {
         res.json({
-            url: `${env === "development" ? 'http://localhost:3095' : 'https://42board.com'}/${req.file.filename}`
+            url: `${env === "development" ? 'http://localhost:3095' : 'https://api.42board.com'}/${req.file.filename}`
         })
     } catch (e) {
         console.error(e);
