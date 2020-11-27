@@ -43,7 +43,7 @@ if (prod) {
     app.use(helmet({ contentSecurityPolicy: false }));
     app.use(hpp());
     app.use(cors({
-        origin: 'https://42board.com',
+        origin: true,
         credentials: true,
     }))
 } else {
@@ -68,6 +68,7 @@ const sessionOption = {
     secret: process.env.COOKIE_SECRET,
     cookie: {
         httpOnly: true,
+        domain: process.env.NODE_ENV === 'production' && '.42board.com'
     },
 };
 
