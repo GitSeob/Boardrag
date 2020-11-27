@@ -66,16 +66,19 @@ const sessionOption = {
     resave: false,
     saveUninitialized: false,
     secret: process.env.COOKIE_SECRET,
+    proxy: true,
     cookie: {
         httpOnly: true,
+        secure: true,
+        domain: process.env.NODE_ENV === 'production' && '.42board.com'
     },
     name: '42-board'
 };
 
-if (prod) {
-    sessionOption.cookie.secure = true;
-    sessionOption.cookie.proxy = true;
-}
+// if (prod) {
+//     sessionOption.cookie.secure = true;
+//     sessionOption.cookie.proxy = true;
+// }
 
 app.use(session(sessionOption));
 app.use(passport.initialize());
