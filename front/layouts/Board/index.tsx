@@ -628,7 +628,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                         <UserInfo>
                             <img src={openDetail.content?.User.profile_img} />
                             <p>{openDetail.content?.User.username}</p>
-                            {(openDetail.content && openDetail.content.UserId === userData.id ) &&
+                            {( userData.is_admin || (openDetail.content && openDetail.content.UserId === userData.id )) &&
                                 <UDButtonBox>
                                     <button
                                         onClick={() => onEdit(openDetail.category)}

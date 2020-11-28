@@ -323,7 +323,7 @@ router.delete('/delete/text/:id', isLoggedIn, async (req, res, next) => {
         });
         if (!content)
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-        if (req.user.id !== content.UserId)
+        if (req.user.id !== content.UserId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
         const size = content.width * content.height;
         await db.TextContent.destroy({ where: {id: req.params.id }});
@@ -343,7 +343,7 @@ router.delete('/delete/image/:id', isLoggedIn, async (req, res, next) => {
         });
         if (!content)
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-        if (req.user.id !== content.UserId)
+        if (req.user.id !== content.UserId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
         const size = content.width * content.height;
         await db.Image.destroy({ where: {id: req.params.id }});
@@ -364,7 +364,7 @@ router.delete('/delete/note/:id', isLoggedIn, async (req, res, next) => {
         const size = content.width * content.height;
         if (!content)
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-        if (req.user.id !== content.UserId)
+        if (req.user.id !== content.UserId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
         await db.Note.destroy({ where: {id: req.params.id }});
         await db.Comment.destroy({ where: { NoteId: req.params.id }});
