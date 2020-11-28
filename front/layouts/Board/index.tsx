@@ -942,10 +942,14 @@ const Board:FC = () => {
     const { data:boardData, revalidate:BOARDRevalidate, error:BOARDError } = useSWR<IBoard>(userData ? `/api/board/${42}` : null, fetcher);
     const [menuFlg, setMFlg] = useState<boolean>(false);
 
-    if (userData === false)
+    useEffect(() => {
+        console.log(userData);
+    }, [userData]);
+
+    if (!userData)
         return <Redirect to="/auth" />
 
-    if (!userData || !boardData)
+    if (!boardData)
         return <LoadingCircle />
 
     return (
