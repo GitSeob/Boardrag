@@ -75,11 +75,63 @@ const enlarge = keyframes`
     }
 `
 
+export const UserMenu = styled.div`
+    position: fixed;
+    min-height: 100vw;
+    width: 300px;
+    right: 0;
+    background: #000;
+    transition: .3s;
+    z-index: 9;
+`;
+
+export const MenuContainer = styled.div`
+    position: relative;
+
+    & > div {
+        height: 40px;
+        padding: .5rem; 1rem;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .up {
+        position: absolute;
+        top: 1rem;
+        transform: translateX(-150%);
+        width: 30px;
+        height: 30px;
+        background: #000;
+        box-shadow: 0 0 4px 1px #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 30px;
+    }
+`;
+
+export const OpenMenu = styled.div`
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 30px;
+    height: 30px;
+    z-index: 9;
+    cursor: pointer;
+    background: #000;
+    box-shadow: 0 0 4px 1px #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 30px;
+`;
+
 export const KonvaContainer = styled.div`
     position: relative;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    transition: .3s;
 `
 
 export const MenuBox = styled('div')<MenuPosition>`

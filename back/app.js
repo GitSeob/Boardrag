@@ -68,6 +68,7 @@ const sessionOption = {
     secret: process.env.COOKIE_SECRET,
     cookie: {
         httpOnly: true,
+        // domain 쓰면 안된다.
     },
 };
 
