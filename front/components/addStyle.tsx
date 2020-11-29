@@ -197,9 +197,6 @@ export const InputBox = styled('div')<RectSize>`
     & > textarea {
         background: none;
     }
-    &:nth-child(2) {
-        margin-top: 2px;
-    }
 `;
 
 export const InputArea = styled.input`

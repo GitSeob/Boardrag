@@ -77,7 +77,7 @@ const enlarge = keyframes`
 
 export const UserMenu = styled.div`
     position: fixed;
-    min-height: 100vw;
+    min-height: 100vh;
     width: 300px;
     right: 0;
     background: #000;

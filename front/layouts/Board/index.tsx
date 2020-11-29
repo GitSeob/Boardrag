@@ -542,13 +542,6 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     const onSubmitEdit = useCallback(async () => {
         let requestURL = '';
         let data = {};
-        if (uploading.imageURL === '')
-        {
-            await setWarning('이미지를 다시 업로드해주세요');
-            await setTimeout(() => {
-                setWarning('');
-            }, 2000);
-        }
         if (openDetail.category === 1) {
             requestURL = `/api/text/${openDetail.id}`;
             data = { content: text };
@@ -560,6 +553,14 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                 paragraph: text
             };
         } else if (openDetail.category === 3) {
+            if (uploading.imageURL === '')
+            {
+                await setWarning('이미지를 다시 업로드해주세요');
+                await setTimeout(() => {
+                    setWarning('');
+                }, 2000);
+                return ;
+            }
             requestURL = `/api/image/${openDetail.id}`;
             data = { url: uploading.imageURL };
         } else {
