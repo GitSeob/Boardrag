@@ -165,13 +165,24 @@ export const MenuBox = styled('div')<MenuPosition>`
 )`
 
 export const MenuAttr = styled.div`
-    width: 140px;
+    width: 120px;
     padding: 1rem;
     cursor: pointer;
     position: relative;
 
     &:hover {
         background: rgba(20, 20, 20, .5);
+    }
+
+    @media screen and (max-width: 800px) {
+        font-size: 12px;
+        width: 100px;
+        padding: .5rem;
+    }
+    @media screen and (max-width: 500px) {
+        font-size: 10px;
+        width: 80px;
+        padding: .3rem;
     }
 `
 
@@ -222,6 +233,14 @@ export const TextComponent = styled('div')`
     &:hover {
         box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
         z-index: 5;
+    }
+
+    @media screen and (max-width: 800px) {
+        font-size: 10px;
+    }
+
+    @media screen and (max-width: 500px) {
+        font-size: 8px;
     }
 `;
 
@@ -285,6 +304,22 @@ export const NoteComponent = styled('div')<NoteProps>`
     &:hover {
         box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
         z-index: 5;
+    }
+
+    @media screen and (max-width: 800px) {
+        font-size: 10px;
+
+        div.head {
+            font-size: 14px;
+        }
+    }
+
+    @media screen and (max-width: 500px) {
+        font-size: 8px;
+
+        div.head {
+            font-size: 12px;
+        }
     }
 
     & > div {

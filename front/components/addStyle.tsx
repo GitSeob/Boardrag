@@ -193,9 +193,32 @@ export const NoteAddBox = styled('div')<ImageProps>`
         font-weight: 500;
     }
 
+    textarea {
+        font-size: 12px;
+    }
+
     input[type="text"], textarea {
         color: ${props => props.src ? '#fff' : '#000'} !important;
         text-shadow: ${props => props.src ? '0 3px 10px #000' : 'none'};
+    }
+
+    @media screen and (max-width: 800px) {
+        textarea {
+            font-size: 10px;
+        }
+        input {
+            font-size: 142x;
+        }
+    }
+
+    @media screen and (max-width: 500px) {
+        textarea {
+            font-size: 8px;
+        }
+
+        input {
+            font-size: 10px;
+        }
     }
 `;
 
@@ -212,7 +235,6 @@ export const InputArea = styled.input`
     width: 100%;
     height: 100%;
     padding: 5px;
-    font-size: 20px;
     font-weight: 600;
     background: inherit !important;
     color: inherit !important;

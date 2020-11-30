@@ -357,23 +357,114 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         return (false);
     }, []);
 
-    const openAddComponent = useCallback((number:number) => {
+    const checkAllBox = useCallback(() => {
+        console.log(rPos, defaultRectSize, rectSize);
+        console.log(boardData?.TextContents);
         if (boardData?.TextContents && boardData.TextContents.find(e =>
-            (
+            ((
+                    checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
+                    ||
+                    checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width)
+                ) && (
+                    checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+                    ||
+                    checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+            ))
+            ||
+            ((
                 checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
                 ||
-                checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width))
-            &&
-            (
+                checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width)
+                ) && (
+                    checkVertexInRect(rPos.y, e.y * defaultRectSize, (e.y + e.height) * defaultRectSize)
+                    ||
+                    checkVertexInRect(rPos.y + rectSize.height, e.y * defaultRectSize, (e.y + e.height) * defaultRectSize)
+            ))
+            ||
+            ((
+                    checkVertexInRect(rPos.x, e.x * defaultRectSize, (e.x + e.width) * defaultRectSize)
+                    ||
+                    checkVertexInRect(rPos.x + rectSize.width, e.x * defaultRectSize, (e.x + e.width) * defaultRectSize)
+                ) && (
+                    checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+                    ||
+                    checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+            ))
+        ))
+            return (false);
+        if (boardData?.Images && boardData.Images.find(e =>
+            ((
+                checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
+                ||
+                checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width)
+            ) && (
                 checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height)
                 ||
                 checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height)
-            )
         ))
-            setWarning('곂치는 영역이 존재합니다.');
+        ||
+        ((
+            checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
+            ||
+            checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width)
+            ) && (
+                checkVertexInRect(rPos.y, e.y * defaultRectSize, (e.y + e.height) * defaultRectSize)
+                ||
+                checkVertexInRect(rPos.y + rectSize.height, e.y * defaultRectSize, (e.y + e.height) * defaultRectSize)
+        ))
+        ||
+        ((
+                checkVertexInRect(rPos.x, e.x * defaultRectSize, (e.x + e.width) * defaultRectSize)
+                ||
+                checkVertexInRect(rPos.x + rectSize.width, e.x * defaultRectSize, (e.x + e.width) * defaultRectSize)
+            ) && (
+                checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+                ||
+                checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+        ))
+    ))
+            return (false);
+        if (boardData?.Notes && boardData.Notes.find(e =>
+            ((
+                checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
+                ||
+                checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width)
+            ) && (
+                checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+                ||
+                checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+        ))
+        ||
+        ((
+            checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
+            ||
+            checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width)
+            ) && (
+                checkVertexInRect(rPos.y, e.y * defaultRectSize, (e.y + e.height) * defaultRectSize)
+                ||
+                checkVertexInRect(rPos.y + rectSize.height, e.y * defaultRectSize, (e.y + e.height) * defaultRectSize)
+        ))
+        ||
+        ((
+                checkVertexInRect(rPos.x, e.x * defaultRectSize, (e.x + e.width) * defaultRectSize)
+                ||
+                checkVertexInRect(rPos.x + rectSize.width, e.x * defaultRectSize, (e.x + e.width) * defaultRectSize)
+            ) && (
+                checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+                ||
+                checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height)
+        ))
+    ))
+            return (false);
+        return (true);
+    }, [boardData, rPos, defaultRectSize, rectSize]);
+
+    const openAddComponent = useCallback((number:number) => {
+        if (!checkAllBox())
+            setWarning('겹치는 영역이 존재합니다.');
         else
             viewAddComponent(number);
-    }, [rectSize, rPos, defaultRectSize]);
+    }, [rectSize, rPos, defaultRectSize, rectSize]);
 
     const initStates = useCallback(() => {
         setRectSize({
@@ -932,9 +1023,11 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                 onMouseUp={() => {
                     if (!menuState.flg && addState == 0)
                     {
+                        const mX = mPos.x > window.innerWidth - 140 ? mPos.x - 140 : mPos.x;
+                        const mY = mPos.y > window.innerHeight - 140 ? mPos.y - 140 : mPos.y;
                         setMenu({
-                            x: mPos.x,
-                            y: mPos.y,
+                            x: mX,
+                            y: mY,
                             flg: true,
                             disp: true,
                         });
