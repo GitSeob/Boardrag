@@ -8,7 +8,7 @@ import axios from 'axios';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { MenuContainer, OpenMenu, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { LogOutButton, MenuContainer, OpenMenu, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
@@ -943,6 +943,15 @@ const Board:FC = () => {
     const { data:boardData, revalidate:BOARDRevalidate, error:BOARDError } = useSWR<IBoard>(userData ? `/api/board/${42}` : null, fetcher);
     const [menuFlg, setMFlg] = useState<boolean>(false);
 
+    const logout = useCallback(() => {
+        axios.post(`/api/logout`).then(() => {
+            USERRevalidate();
+            window.location.reload(false);
+        }).catch((e) => {
+            console.error(e);
+        });
+    }, []);
+
     useEffect(() => {
         console.log(userData);
     }, [userData]);
@@ -965,9 +974,11 @@ const Board:FC = () => {
             style={{transform: `translateX(${menuFlg ? '0' : '100%'})`}}
         >
             <MenuContainer>
-                <div>
+                <LogOutButton
+                    onClick={logout}
+                >
                     로그아웃
-                </div>
+                </LogOutButton>
                 <div className="up"
                     onClick={() => setMFlg(!menuFlg)}
                 >

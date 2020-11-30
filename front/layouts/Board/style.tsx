@@ -87,6 +87,8 @@ export const UserMenu = styled.div`
 
 export const MenuContainer = styled.div`
     position: relative;
+    padding-bottom: 40px;
+    height: 100vh;
 
     & > div {
         height: 40px;
@@ -579,4 +581,17 @@ export const EditImageInput = styled.div`
         fill: #fff;
         height: 2rem;
     }
+`;
+
+export const LogOutButton = styled.div`
+    position: absolute;
+    width: 100%;
+    font-align: left;
+    bottom: 0;
+    left: 0;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 `;

@@ -54,7 +54,7 @@ router.get('/auth', isLoggedIn, async (req, res, next) => {
         console.error(e);
         next(e);
     }
-})
+});
 
 router.post('/auth', isNotLoggedIn, async (req, res, next) => {
     passport.authenticate('local', (e, user, info) => {
@@ -80,6 +80,12 @@ router.post('/auth', isNotLoggedIn, async (req, res, next) => {
             }
         })
     })(req, res, next);
+});
+
+router.post('/logout', isLoggedIn, (req, res) => {
+	req.logout();
+	req.session.destroy();
+	res.send('logout 성공');
 });
 
 router.post('/write/text', isLoggedIn, async (req, res, next) => {
