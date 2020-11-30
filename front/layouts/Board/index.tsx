@@ -54,7 +54,8 @@ interface IText {
     UserId: number,
     createdAt: Date,
     updatedAt: Date,
-    expiry_date: Date
+    expiry_date: Date,
+    Comments: Comment[]
 }
 
 interface IImage {
@@ -67,7 +68,8 @@ interface IImage {
     UserId: number,
     createdAt: Date,
     updatedAt: Date,
-    expiry_date: Date
+    expiry_date: Date,
+    Comments: Comment[]
 }
 
 interface INote {
@@ -82,7 +84,8 @@ interface INote {
     UserId: number,
     createdAt: Date,
     updatedAt: Date,
-    expiry_date: Date
+    expiry_date: Date,
+    Comments: Comment[]
 }
 
 interface IBoard {
@@ -250,6 +253,8 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
 
+    const now = new Date();
+
     const detailWindowStyle = {
         transform: openDetail.flg ? 'translateX(0%)' : 'translateX(-100%)',
     }
@@ -403,11 +408,11 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                 content: commentContent
             }).then((res) => {
                 setCC('');
-                axios.get(`api/comment/${openDetail.category}/${openDetail.content?.id}`).then(res => {
-                    setComments(res.data);
-                }).catch((e) => {
-                    console.error(e);
-                })
+                // axios.get(`api/comment/${openDetail.category}/${openDetail.content?.id}`).then(res => {
+                //     setComments(res.data);
+                // }).catch((e) => {
+                //     console.error(e);
+                // })
                 dataReval();
             }). catch((e) => {
                 console.error(e);
@@ -607,6 +612,19 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             });
     }, [addState]);
 
+    useEffect(() => {
+        let editedContent;
+        if (openDetail.category === 1) {
+            editedContent = boardData?.TextContents?.find(v => v.id === openDetail.id)?.Comments;
+        } else if (openDetail.category === 2) {
+            editedContent = boardData?.Notes?.find(v => v.id === openDetail.id)?.Comments;
+        } else if (openDetail.category === 3) {
+            editedContent = boardData?.Images?.find(v => v.id === openDetail.id)?.Comments;
+        }
+        if (editedContent)
+            setComments(editedContent);
+    }, [boardData, openDetail])
+
     return (
         <KonvaContainer>
             {warning !== ''&&
@@ -770,7 +788,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                                         <p>{c.User.username}</p>
                                         <div>
                                             <div>{c.content}</div>
-                                            <p>{moment(c.createdAt).diff(new Date(), 'days') < 1 ? moment(c.createdAt).format('LT') : moment(c.createdAt).format('YYYY년 MM월 DD일')}</p>
+                                            <p>{moment(c.createdAt).diff(now, 'days') > -1 ? moment(c.createdAt).format('LT') : moment(c.createdAt).format('YYYY년 MM월 DD일')}</p>
                                         </div>
                                     </div>
                                 </Comment>

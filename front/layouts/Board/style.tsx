@@ -60,6 +60,17 @@ const leftToRight = keyframes`
     }
 `
 
+const padeLeftToRight = keyframes`
+    from {
+        opacity: 0;
+        transform: translateX(-10%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0%);
+    }
+`
+
 const enlarge = keyframes`
     0% {
         width: 0%;
@@ -445,6 +456,7 @@ export const Comment = styled.div`
     display: flex;
     min-height: 3rem;
     margin-bottom: .5rem;
+    animation: ${padeLeftToRight} .5s ease-in-out 1;
 
     & > img {
         width: 3rem;
