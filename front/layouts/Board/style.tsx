@@ -90,16 +90,15 @@ export const MenuContainer = styled.div`
     padding-bottom: 40px;
     height: 100vh;
 
-    & > div {
-        height: 40px;
-        padding: .5rem; 1rem;
+    div {
         color: #fff;
-        cursor: pointer;
     }
 
     .up {
         position: absolute;
+        cursor: pointer;
         top: 1rem;
+        padding: .5rem; 1rem;
         transform: translateX(-150%);
         width: 30px;
         height: 30px;
@@ -594,4 +593,14 @@ export const LogOutButton = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+
+    &:hover {
+        background: #111;
+    }
+`;
+
+export const UserList = styled.div`
+    width: 100%;
+    height: 100%;
+    padding: 1rem;
 `;

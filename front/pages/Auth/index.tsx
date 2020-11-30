@@ -34,7 +34,7 @@ const Auth:FC = () => {
             revalidate();
             return res.data;
         }).catch(e => {
-            console.log(e);
+            console.error(e.response.data);
         });
     }
 

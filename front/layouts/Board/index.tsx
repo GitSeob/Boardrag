@@ -8,7 +8,7 @@ import axios from 'axios';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { LogOutButton, MenuContainer, OpenMenu, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { UserList, LogOutButton, MenuContainer, OpenMenu, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
@@ -519,10 +519,8 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             ...uploading,
             loading: true
         });
-        await axios.post('/api/uploadImage', imageFormData,
-            {
-                headers: {'Access-Control-Allow-Origin': '*'
-            }
+        await axios.post('/api/uploadImage', imageFormData, {
+            headers: {'Access-Control-Allow-Origin': '*'}
         }).then(res => {
             setUploading({
                 ...uploading,
@@ -534,7 +532,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             setUploading({
                 ...uploading,
                 loading: false,
-                message: e.response.message
+                message: e.response.data
             });
         })
     }, []);
@@ -580,7 +578,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             });
             dataReval();
         }).catch((e) => {
-            setWarning(e.response.message);
+            setWarning(e.response.data);
             setTimeout(() => {
                 setWarning('');
             }, 2000);
@@ -938,6 +936,20 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     )
 }
 
+const dummyUsers = [{
+    id: 2,
+    username: 'yujo',
+},{
+    id: 3,
+    username: 'hycho',
+},{
+    id: 4,
+    username: 'seoh',
+},{
+    id: 5,
+    username: 'sucho',
+},]
+
 const Board:FC = () => {
     const { data:userData, revalidate:USERRevalidate } = useSWR<IUser | false>('/api/auth', fetcher);
     const { data:boardData, revalidate:BOARDRevalidate, error:BOARDError } = useSWR<IBoard>(userData ? `/api/board/${42}` : null, fetcher);
@@ -979,6 +991,21 @@ const Board:FC = () => {
                 >
                     로그아웃
                 </LogOutButton>
+                <UserList>
+                    <p>User List</p>
+                    <li>
+                        <ul>
+                            {userData.username}
+                        </ul>
+                        {dummyUsers.map((c, i) => {
+                            return (
+                                <ul>
+                                    {c.username}
+                                </ul>
+                            );
+                        })}
+                    </li>
+                </UserList>
                 <div className="up"
                     onClick={() => setMFlg(!menuFlg)}
                 >

@@ -53,7 +53,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
             setUploading({
                 ...uploading,
                 loading: false,
-                message: e.response.message
+                message: e.response.data
             });
         })
     }, [uploading]);
@@ -83,7 +83,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
             setUploading({
                 ...uploading,
                 loading: false,
-                message: e.response.message
+                message: e.response.data
             })
         });
     }, [uploading, para, head]);
@@ -113,6 +113,9 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
                             onChange={OCPara}
                             autoFocus={true}
                             placeholder="본문 내용을 입력해주세요."
+                            style={{
+                                textAlign: 'left'
+                            }}
                         />
                     </InputBox>
                 </NoteAddBox>

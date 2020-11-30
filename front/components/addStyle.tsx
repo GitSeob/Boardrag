@@ -75,9 +75,11 @@ export const AddContainer = styled('div')<Container>`
 
 export const AddBox = styled.div`
     position: relative;
-    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 5px;
-    background: rgba(255, 255, 255, .6);
+    background: #fff;
     box-shadow: 0 0 4px 1px rgba(255, 255, 255, .5);
     color: #000;
     width: 100%;
@@ -91,6 +93,7 @@ export const AddBox = styled.div`
     & > img {
         width: 100%;
         height: 100%;
+        border-radius: 5px;
     }
 `;
 
@@ -139,9 +142,15 @@ export const ImageInputButton = styled('div')<RectSize>`
 
 export const TextArea = styled.textarea`
     width: 100%;
-    height: 100%;
+    // height: 100%;
+    max-height: 100%;
+    overflow: auto;
     border: none;
-    border-radius: 0 0 5px 5px;
+    // border-radius: 0 0 5px 5px;
+    border-radius: 5px;
+    padding: 0;
+    white-space: normal;
+    text-align: center;
     resize: none;
     padding: 5px;
 `;
@@ -152,7 +161,7 @@ export const ImageAddBox = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 12px;
     font-weight: 500;
     overflow: hidden;
     text-align: center;

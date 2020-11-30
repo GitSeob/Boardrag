@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useState } from 'react';
+import React, { FC, useCallback, useRef, useState } from 'react';
 import {
     boxProps,
     SubmitButton,
@@ -17,12 +17,19 @@ type PostState = {
 }
 
 const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataReval }) => {
-    const [value, OCValue] = useInput('');
+    const [value, setValue] = useState('');
     const [postState, setPostState] = useState<PostState>({
         loading: false,
         success: false,
         warning: '',
     })
+    const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;
+    const [TAH, setTAH] = useState('auto');
+
+    const OCValue = useCallback((e) => {
+        setTAH(`${textScrollRef.current.scrollHeight}px`);
+        setValue(e.target.value);
+    }, [textScrollRef]);
 
     const writeText = useCallback(async (e) => {
         e.preventDefault();
@@ -47,9 +54,13 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
             <AddBox>
                 { !postState.loading ?
                     <TextArea
+                        style={{
+                            height: TAH
+                        }}
                         value={value}
                         onChange={OCValue}
                         autoFocus={true}
+                        ref={textScrollRef}
                     />
                     :
                     <div>
