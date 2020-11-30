@@ -12,6 +12,7 @@ import {
     ImageInputButton
 } from '../addStyle';
 import useInput from '@hooks/useInput';
+import useSocket from '@hooks/useSocket';
 
 interface UploadProps {
     loading: boolean,
@@ -23,6 +24,7 @@ interface UploadProps {
 const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataReval }) => {
     const [head, OCHead] = useInput('');
     const [para, OCPara] = useInput('');
+    const [socket] = useSocket(42);
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
     const [uploading, setUploading] = useState<UploadProps>({
         loading: false,
@@ -49,6 +51,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
                 loading: false,
                 imageURL: res.data.url
             });
+            socket?.emit('refresh');
         }).catch(e => {
             setUploading({
                 ...uploading,

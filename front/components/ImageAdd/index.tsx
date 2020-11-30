@@ -1,4 +1,5 @@
 import React, { FC, useRef, useCallback, useState } from 'react';
+import useSocket from '@hooks/useSocket';
 import axios from 'axios';
 import {
     boxProps,
@@ -18,6 +19,7 @@ interface UploadProps {
 
 const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataReval }) => {
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
+    const [socket] = useSocket(42);
     const [uploading, setUploading] = useState<UploadProps>({
         loading: false,
         success: false,
@@ -43,6 +45,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
                 loading: false,
                 imageURL: res.data.url
             });
+            socket?.emit('refresh');
         }).catch(e => {
             setUploading({
                 ...uploading,

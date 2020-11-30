@@ -1070,21 +1070,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             </BoardFooter>
         </KonvaContainer>
     )
-}
-
-const dummyUsers = [{
-    id: 2,
-    username: 'yujo',
-},{
-    id: 3,
-    username: 'hycho',
-},{
-    id: 4,
-    username: 'seoh',
-},{
-    id: 5,
-    username: 'sucho',
-},]
+};
 
 const Board:FC = () => {
     const [socket, disconnectSocket] = useSocket(42);
@@ -1108,6 +1094,7 @@ const Board:FC = () => {
             disconnectSocket();
         };
     }, [disconnectSocket]);
+
     useEffect(() => {
         if (boardData && userData) {
             console.info('로그인');
@@ -1117,13 +1104,12 @@ const Board:FC = () => {
 
     useEffect(() => {
         socket?.on('onlineList', (data: IUuserList[]) => {
-            console.log(data);
             setUserList(data);
         });
-        return () => {
-            console.log('socket off dm', socket?.hasListeners('dm'));
-            socket?.off('onlineList');
-        };
+        socket?.on('refresh', () => {
+            console.log('refresh');
+            BOARDRevalidate();
+        })
     }, [socket]);
 
     if (!userData)

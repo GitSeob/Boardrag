@@ -18,8 +18,8 @@ module.exports = (server, app) => {
         socket.emit("hello", socket.nsp.name);
 
         socket.on("login", ({ id, username, board }) => {
-            onlineMap[socket.nsp.name][socket.id] = {id, username};
-            console.log()
+            console.log(id);
+            onlineMap[socket.nsp.name][id] = {id, username};
             newNamespace.emit(
                 "onlineList",
                 Object.values(onlineMap[socket.nsp.name])
@@ -27,6 +27,10 @@ module.exports = (server, app) => {
 
             socket.join(`${socket.nsp.name}-${board}`);
         });
+
+        socket.on('newContent', () => {
+            newNamespace.emit('refresh');
+        })
 
         socket.on("disconnect", () => {
             delete onlineMap[socket.nsp.name][socket.id];

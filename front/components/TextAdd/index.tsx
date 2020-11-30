@@ -7,8 +7,7 @@ import {
     AddBox
 } from '../addStyle';
 import axios from 'axios';
-
-import useInput from '@hooks/useInput';
+import useSocket from '@hooks/useSocket';
 
 type PostState = {
     loading: boolean,
@@ -18,6 +17,7 @@ type PostState = {
 
 const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataReval }) => {
     const [value, setValue] = useState('');
+    const [socket] = useSocket(42);
     const [postState, setPostState] = useState<PostState>({
         loading: false,
         success: false,
@@ -43,6 +43,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
         }).then(() => {
             setPostState({...postState, loading: false, success: true});
             initStates();
+            socket?.emit('refresh');
             dataReval();
         }).catch((e) => {
             setPostState({...postState, loading: false, warning: e.data.reason});
