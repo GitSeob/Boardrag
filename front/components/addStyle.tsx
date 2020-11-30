@@ -118,10 +118,15 @@ export const SubmitButton = styled('div')<ButtonBox>`
     color: #fff;
     box-shadow: 0 0 4px 1px rgba(1, 186, 188, .7);
     cursor: pointer;
+    padding: 2px;
 
     & > svg {
         height: 20px;
         fill: #fff;
+    }
+
+    @media screen and (max-width: 800px) {
+        border-radius: 2px;
     }
 `;
 
@@ -139,12 +144,17 @@ export const ImageInputButton = styled('div')<ButtonBox>`
     cursor: pointer;
     background: #34568B;
     box-shadow: 0 0 4px 1px rgba(52, 86, 139, .7);
+    padding: 2px;
 
     & > svg {
         fill: #fff;
         height: 20px;
     }
-`
+
+    @media screen and (max-width: 800px) {
+        border-radius: 2px;
+    }
+`;
 
 export const TextArea = styled.textarea`
     width: 100%;

@@ -5,9 +5,10 @@ import LoadingCircle from '@components/LoadingCircle';
 import { Redirect } from 'react-router-dom';
 import moment from 'moment';
 import axios from 'axios';
-
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
+
+import useSocket from '@hooks/useSocket';
 import { AltBox, UserList, LogOutButton, MenuContainer, OpenMenu, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
@@ -163,6 +164,11 @@ interface IIEB {
     imageInput: MutableRefObject<HTMLInputElement>,
     onChangeImg: ( e:ChangeEvent<HTMLInputElement>) => void
     onClick: () => void;
+}
+
+interface IUuserList {
+    id: number,
+    username: string,
 }
 
 const ImageEditButton:FC<IIEB> = ({ imageInput, onChangeImg, onClick}) => {
@@ -893,7 +899,16 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                 <BottomFixContent
                     onClick={submitComment}
                 >
-                    <input type="text" value={commentContent} onChange={OCCC}/>
+                    <input
+                        type="text"
+                        value={commentContent}
+                        onChange={OCCC}
+                        onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                                submitComment(e);
+                            }
+                        }}
+                    />
                     <div>
                     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                     </div>
@@ -1072,9 +1087,11 @@ const dummyUsers = [{
 },]
 
 const Board:FC = () => {
+    const [socket, disconnectSocket] = useSocket(42);
     const { data:userData, revalidate:USERRevalidate } = useSWR<IUser | false>('/api/auth', fetcher);
     const { data:boardData, revalidate:BOARDRevalidate, error:BOARDError } = useSWR<IBoard>(userData ? `/api/board/${42}` : null, fetcher);
     const [menuFlg, setMFlg] = useState<boolean>(false);
+    const [userList, setUserList] = useState<IUuserList[] | null | undefined>();
 
     const logout = useCallback(() => {
         axios.post(`/api/logout`).then(() => {
@@ -1086,8 +1103,28 @@ const Board:FC = () => {
     }, []);
 
     useEffect(() => {
-        console.log(userData);
-    }, [userData]);
+        return () => {
+            console.info('disconnect socket', 42);
+            disconnectSocket();
+        };
+    }, [disconnectSocket]);
+    useEffect(() => {
+        if (boardData && userData) {
+            console.info('로그인');
+            socket?.emit('login', { id: userData?.id, username: userData?.username, boards: 42 });
+        }
+    }, [socket, userData, boardData]);
+
+    useEffect(() => {
+        socket?.on('onlineList', (data: IUuserList[]) => {
+            console.log(data);
+            setUserList(data);
+        });
+        return () => {
+            console.log('socket off dm', socket?.hasListeners('dm'));
+            socket?.off('onlineList');
+        };
+    }, [socket]);
 
     if (!userData)
         return <Redirect to="/auth" />
@@ -1115,13 +1152,10 @@ const Board:FC = () => {
                 <UserList>
                     <p>User List</p>
                     <ul>
-                        <li>
-                            {userData.username} (me)
-                        </li>
-                        {dummyUsers.map((c, i) => {
+                        {userList?.map((c, i) => {
                             return (
                                 <li key={(i)}>
-                                    {c.username}
+                                    {c.id === userData.id ? `${c.username} (me)` : c.username}
                                 </li>
                             );
                         })}

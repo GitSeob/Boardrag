@@ -4,26 +4,28 @@ import io from 'socket.io-client';
 
 const backUrl = process.env.NODE_ENV === 'production' ? 'https://api.42board.com' : 'http://localhost:3095';
 
-const sockets: { [key: string]: SocketIOClient.Socket } = {};
+const sockets: { [key: number]: SocketIOClient.Socket } = {};
 
-const useSocket = (workspace?: string): [SocketIOClient.Socket | undefined, () => void] => {
+const useSocket = (board?: number): [SocketIOClient.Socket | undefined, () => void] => {
     const disconnect = useCallback(() => {
-        if (workspace && sockets[workspace]) {
-        sockets[workspace].disconnect();
-        delete sockets[workspace];
+        if (board && sockets[board]) {
+            sockets[board].disconnect();
+            delete sockets[board];
         }
-    }, [workspace]);
-    if (!workspace) {
+    }, [board]);
+
+    if (!board) {
         return [undefined, disconnect];
     }
-    if (!sockets[workspace]) {
-        sockets[workspace] = io(`${backUrl}/ws-${workspace}`, {
-        transports: ['websocket'],
+
+    if (!sockets[board]) {
+        sockets[board] = io(`${backUrl}/ws-${board}`, {
+            transports: ['websocket'],
         });
-        console.info('create socket', workspace, sockets[workspace].id);
+        console.info('create socket', board, sockets[board].id);
     }
 
-    return [sockets[workspace], disconnect];
+    return [sockets[board], disconnect];
 };
 
 export default useSocket;

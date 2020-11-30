@@ -17,7 +17,7 @@ axios.defaults.withCredentials = true;
 const { sequelize } = require("./models");
 const passportConfig = require('./passport');
 const apiRouter = require("./routes/api");
-// const webSocket = require("./socket");
+const webSocket = require("./socket");
 
 const app = express();
 app.set("PORT", process.env.PORT || 3095);
@@ -87,8 +87,8 @@ app.get("*", (req, res, next) => {
 });
 
 
-app.listen(app.get("PORT"), () => {
+const server = app.listen(app.get("PORT"), () => {
     console.log(`listening on port ${app.get("PORT")}`);
 });
 
-// webSocket(server, app);
+webSocket(server, app);
