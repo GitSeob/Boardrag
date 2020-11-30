@@ -122,6 +122,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
                 <SubmitButton
                     size={width / offset.width}
                     onClick={submitNote}
+                    right={offset.x + offset.width < 32 ? -5 : width}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
                         <path d="M0 0h24v24H0z" fill="none" />
@@ -131,6 +132,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
                 <ImageInputButton
                     onClick={onClickImageUpload}
                     size={width / offset.width}
+                    right={offset.x + offset.width < 32 ? -5 : width}
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"

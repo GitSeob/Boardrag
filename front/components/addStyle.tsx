@@ -41,6 +41,11 @@ type RectSize = {
     size: number
 }
 
+type ButtonBox = {
+    size: number,
+    right: number,
+}
+
 type ImageProps = {
     src: string | null,
 }
@@ -97,16 +102,17 @@ export const AddBox = styled.div`
     }
 `;
 
-export const SubmitButton = styled('div')<RectSize>`
+export const SubmitButton = styled('div')<ButtonBox>`
     position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
     top: 0;
-    right: -10px;
+    right: ${props => props.right};
     transform: translateX(100%);
-    width: ${props => props.size};
-    height: ${props => props.size};
+    width: ${props => props.size - 10};
+    height: ${props => props.size - 10};
+    transform: translateX(${props => props.right === -5 ? '100%' : '0'});
     border-radius: 5px;
     background: #01babc;
     color: #fff;
@@ -119,16 +125,16 @@ export const SubmitButton = styled('div')<RectSize>`
     }
 `;
 
-export const ImageInputButton = styled('div')<RectSize>`
+export const ImageInputButton = styled('div')<ButtonBox>`
     position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
-    right: -10px;
-    top: ${props => props.size + 10};
-    transform: translateX(100%);
-    width: ${props => props.size};
-    height: ${props => props.size};
+    right: ${props => props.right};
+    top: ${props => props.size };
+    transform: translateX(${props => props.right === -5 ? '100%' : '0'});
+    width: ${props => props.size - 10};
+    height: ${props => props.size - 10};
     border-radius: 5px;
     cursor: pointer;
     background: #34568B;

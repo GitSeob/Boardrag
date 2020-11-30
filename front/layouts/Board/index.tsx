@@ -8,7 +8,7 @@ import axios from 'axios';
 
 import {Stage, Layer, Rect} from 'react-konva';
 import Konva from 'konva';
-import { UserList, LogOutButton, MenuContainer, OpenMenu, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { AltBox, UserList, LogOutButton, MenuContainer, OpenMenu, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
@@ -55,7 +55,8 @@ interface IText {
     createdAt: Date,
     updatedAt: Date,
     expiry_date: Date,
-    Comments: Comment[]
+    Comments: Comment[],
+    User: IUser,
 }
 
 interface IImage {
@@ -69,7 +70,8 @@ interface IImage {
     createdAt: Date,
     updatedAt: Date,
     expiry_date: Date,
-    Comments: Comment[]
+    Comments: Comment[],
+    User: IUser,
 }
 
 interface INote {
@@ -85,7 +87,8 @@ interface INote {
     createdAt: Date,
     updatedAt: Date,
     expiry_date: Date,
-    Comments: Comment[]
+    Comments: Comment[],
+    User: IUser,
 }
 
 interface IBoard {
@@ -358,8 +361,6 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     }, []);
 
     const checkAllBox = useCallback(() => {
-        console.log(rPos, defaultRectSize, rectSize);
-        console.log(boardData?.TextContents);
         if (boardData?.TextContents && boardData.TextContents.find(e =>
             ((
                     checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
@@ -949,6 +950,9 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                             onClick={() => openDetailWindow(1, c.id, c)}
                         >
                             {c.content}
+                        <AltBox className="alt">
+                            {c.User.username}
+                        </AltBox>
                         </TextComponent>
                     </ComponentBox>
                 );
@@ -965,6 +969,9 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                         <ImageComponent
                             onClick={() => openDetailWindow(3, c.id, c)}
                         >
+                            <AltBox className="alt">
+                                {c.User.username}
+                            </AltBox>
                             <img src={c.url} />
                         </ImageComponent>
                     </ComponentBox>
@@ -983,6 +990,9 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                             onClick={() => openDetailWindow(2, c.id, c)}
                             src={c.background_img ? c.background_img : ''}
                         >
+                            <AltBox className="alt">
+                                {c.User.username}
+                            </AltBox>
                             <div className="head" style={{height: 'fit-content'}}>
                                 <p>{c.head}</p>
                             </div>
@@ -1104,18 +1114,18 @@ const Board:FC = () => {
                 </LogOutButton>
                 <UserList>
                     <p>User List</p>
-                    <li>
-                        <ul>
-                            {userData.username}
-                        </ul>
+                    <ul>
+                        <li>
+                            {userData.username} (me)
+                        </li>
                         {dummyUsers.map((c, i) => {
                             return (
-                                <ul>
+                                <li key={(i)}>
                                     {c.username}
-                                </ul>
+                                </li>
                             );
                         })}
-                    </li>
+                    </ul>
                 </UserList>
                 <div className="up"
                     onClick={() => setMFlg(!menuFlg)}

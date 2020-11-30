@@ -233,6 +233,10 @@ export const TextComponent = styled('div')`
     &:hover {
         box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
         z-index: 5;
+
+        .alt {
+            display: flex;
+        }
     }
 
     @media screen and (max-width: 800px) {
@@ -258,6 +262,14 @@ export const ImageComponent = styled('div')`
     height: 100%;
     animation: ${enlarge} .3s ease-in-out 1;
 
+    @media screen and (max-width: 800px) {
+        font-size: 10px;
+    }
+
+    @media screen and (max-width: 500px) {
+        font-size: 8px;
+    }
+
     & > img {
         width: 100%;
         height: 100%;
@@ -266,6 +278,10 @@ export const ImageComponent = styled('div')`
     &:hover {
         box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
         z-index: 5;
+
+        .alt {
+            display: flex;
+        }
     }
 `;
 
@@ -304,6 +320,10 @@ export const NoteComponent = styled('div')<NoteProps>`
     &:hover {
         box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
         z-index: 5;
+
+        .alt {
+            display: flex;
+        }
     }
 
     @media screen and (max-width: 800px) {
@@ -650,4 +670,38 @@ export const UserList = styled.div`
     width: 100%;
     height: 100%;
     padding: 1rem;
+
+    & > ul {
+        list-style-type: none;
+
+        li {
+            position: relative;
+            padding-left: 1rem;
+
+            &:before {
+                position: absolute;
+                content: "";
+                top: 50%;
+                left: 0;
+                width: 5px;
+                height: 5px;
+                border-radius: 5px;
+                background: #66DD66;
+                transform: translateY(-50%);
+            }
+        }
+    }
+`;
+
+export const AltBox = styled.div`
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, .8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
 `;
