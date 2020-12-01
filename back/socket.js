@@ -19,7 +19,7 @@ module.exports = (server, app) => {
 
         socket.on("login", ({ id, username, board }) => {
             console.log(id);
-            onlineMap[socket.nsp.name][id] = {id, username};
+            onlineMap[socket.nsp.name][socket.id] = {id, username};
             newNamespace.emit(
                 "onlineList",
                 Object.values(onlineMap[socket.nsp.name])

@@ -1103,8 +1103,13 @@ const Board:FC = () => {
     }, [socket, userData, boardData]);
 
     useEffect(() => {
-        socket?.on('onlineList', (data: IUuserList[]) => {
-            setUserList(data);
+        socket?.on('onlineList', async (data: IUuserList[]) => {
+            const rmDupData:IUuserList[] = [];
+            await data.forEach((elem) => {
+                if (!rmDupData.find(v => v.id === elem.id))
+                    rmDupData.push(elem);
+            });
+            setUserList(rmDupData);
         });
         socket?.on('refresh', () => {
             console.log('refresh');

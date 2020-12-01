@@ -223,7 +223,8 @@ router.post('/write/image', isLoggedIn, async (req, res, next) => {
 
         if (availBlocks < 0)
             return res.status(202).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
-
+        if (!req.body.url)
+        return res.status(202).send({ reason: `이미지가 등록되지 않았습니다.`});
         const newImage = await db.Image.create({
             url: req.body.url,
             x: req.body.x,
