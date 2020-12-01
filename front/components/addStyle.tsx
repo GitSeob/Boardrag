@@ -254,4 +254,15 @@ export const InputArea = styled.input`
     font-weight: 600;
     background: inherit !important;
     color: inherit !important;
-`
+`;
+
+export const WarnBox = styled.div`
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, .8);
+    color: red;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`;

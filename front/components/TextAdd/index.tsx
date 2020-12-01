@@ -4,7 +4,8 @@ import {
     SubmitButton,
     TextArea,
     AddContainer,
-    AddBox
+    AddBox,
+    WarnBox
 } from '../addStyle';
 import axios from 'axios';
 import useSocket from '@hooks/useSocket';
@@ -40,7 +41,14 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
             y: offset.y,
             width: offset.width,
             height: offset.height,
-        }).then(() => {
+        }).then(res => {
+            if (res.status === 202)
+            {
+                setPostState({ ...postState, warning: res.data.reason});
+                return setTimeout(() => {
+                    setPostState({ ...postState, warning: ''});
+                }, 2000);
+            }
             setPostState({...postState, loading: false, success: true});
             initStates();
             socket?.emit('refresh');
@@ -52,33 +60,39 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
 
     return (
         <AddContainer y={y} x={x} width={width} height={height}>
-            <AddBox>
-                { !postState.loading ?
-                    <TextArea
-                        style={{
-                            height: TAH
-                        }}
-                        value={value}
-                        onChange={OCValue}
-                        autoFocus={true}
-                        ref={textScrollRef}
-                    />
-                    :
-                    <div>
-                        loading...
-                    </div>
-                }
-                <SubmitButton
-                    size={width / offset.width}
-                    onClick={writeText}
-                    right={offset.x + offset.width < 32 ? -5 : width}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                        <path d="M0 0h24v24H0z" fill="none" />
-                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                    </svg>
-                </SubmitButton>
-            </AddBox>
+            { postState.warning === '' ?
+                <AddBox>
+                    { !postState.loading ?
+                        <TextArea
+                            style={{
+                                height: TAH
+                            }}
+                            value={value}
+                            onChange={OCValue}
+                            autoFocus={true}
+                            ref={textScrollRef}
+                        />
+                        :
+                        <div>
+                            loading...
+                        </div>
+                    }
+                    <SubmitButton
+                        size={width / offset.width}
+                        onClick={writeText}
+                        right={offset.x + offset.width < 32 ? -5 : width}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                        </svg>
+                    </SubmitButton>
+                </AddBox>
+                :
+                <WarnBox>
+                    {postState.warning}
+                </WarnBox>
+            }
         </AddContainer>
     );
 }
