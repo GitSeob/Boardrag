@@ -203,7 +203,6 @@ router.get(`/board/:boardId`, async (req, res, next) => {
                 order: [["createdAt", "DESC"]],
             }]
         });
-        console.log(boardData);
         return res.send(boardData);
     } catch (e) {
         console.error(e);

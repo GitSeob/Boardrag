@@ -48,10 +48,10 @@ const Auth:FC = () => {
 
     return (
         <LoginContainer>
-            <h1>Login</h1>
+            <h1>LOGIN</h1>
             <LoginButton href={OAuthURL}>
                 <img src="/public/42_logo.svg" />
-                Login with 42api
+                Login with 42API
             </LoginButton>
         </LoginContainer>
     );
