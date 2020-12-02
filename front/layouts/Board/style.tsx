@@ -214,7 +214,7 @@ export const ComponentBox = styled('div')<BoxPosition>`
     padding: 2px;
 `;
 
-export const TextComponent = styled('div')`
+export const TextComponent = styled('pre')`
     position: relative;
     border-radius: 5px;
     box-shadow: 0 0 4px 1px rgba(255, 255, 255, .3);
@@ -229,6 +229,7 @@ export const TextComponent = styled('div')`
     animation: ${enlarge} .3s ease-in-out 1;
     overflow: hidden;
     padding: 5px;
+    white-space: break-spaces;
 
     &:hover {
         box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
@@ -489,8 +490,9 @@ export const DetailContentBox = styled.div`
     margin-top: .5rem;
     overflow: hidden;
 
-    & > div {
+    & > pre {
         padding: 1rem .5rem;
+        white-space: break-spaces;
     }
 
     & > img {
@@ -704,4 +706,8 @@ export const AltBox = styled.div`
     justify-content: center;
     align-items: center;
     color: #fff;
+
+    & > div {
+        display: flex;
+    }
 `;

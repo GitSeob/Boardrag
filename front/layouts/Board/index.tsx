@@ -1,15 +1,15 @@
-import React, {FC, useEffect, useCallback, useState, useRef, TextareaHTMLAttributes, MutableRefObject, ChangeEvent} from 'react';
+import React, {FC, useEffect, useCallback, useState, useRef, MutableRefObject, ChangeEvent} from 'react';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import LoadingCircle from '@components/LoadingCircle';
 import { Redirect } from 'react-router-dom';
 import moment from 'moment';
 import axios from 'axios';
-import {Stage, Layer, Rect} from 'react-konva';
+import {Stage, Layer, Rect, Group} from 'react-konva';
 import Konva from 'konva';
 
 import useSocket from '@hooks/useSocket';
-import { AltBox, UserList, LogOutButton, MenuContainer, OpenMenu, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { AltBox, UserList, LogOutButton, MenuContainer, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
@@ -137,6 +137,8 @@ interface Comment {
 
 interface DetailProps {
     id: number,
+    x: number,
+    y: number,
     width: number,
     height: number,
     createdAt: Date,
@@ -209,7 +211,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         dragged: false,
     });
 
-    const [mPos, setMPost] = useState<Position>({
+    const [mPos, setMPos] = useState<Position>({
         x: 0,
         y: 0,
     });
@@ -305,7 +307,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     }, [rectSize, defaultRectSize]);
 
     const getRectSize = useCallback(() => {
-        if (isDragged)
+        if (isDragged && !moveInfo.canDrag)
         {
             let w = defaultRectSize * Math.floor((Math.abs( mPos.x - mPos.x % defaultRectSize - isDragged.x) / defaultRectSize ) + 1);
             let h = defaultRectSize * Math.floor((Math.abs( mPos.y - mPos.y % defaultRectSize - isDragged.y) / defaultRectSize ) + 1);
@@ -347,17 +349,31 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                 height: h
             })
         }
-    }, [mPos, isDragged, rPos, defaultRectSize])
+    }, [mPos, isDragged, rPos, defaultRectSize]);
+
+    const rectDE = (e:any) => {
+        setRPos({
+            x: mPos.x - mPos.x % defaultRectSize,
+            y: mPos.y - mPos.y % defaultRectSize
+        })
+        setRPos({
+            x: e.target.x() - e.target.x() % defaultRectSize,
+            y: e.target.y() - e.target.y() % defaultRectSize,
+        });
+    };
 
     const RectOnCanvas = ({x = 0, y = 0}) => {
         return <Rect
-            width={rectSize.width}
-            height={rectSize.height}
-            fill='rgba(255, 255, 255, 0.1)'
+            width={!moveInfo.isDragged ? rectSize.width : rectSize.width + 10}
+            height={!moveInfo.isDragged ? rectSize.height : rectSize.height + 10}
+            fill={ moveInfo.canDrag ? `#fff` : `rgba(255, 255, 255, 0.1)`}
             x={x}
             y={y}
             cornerRadius={5}
-            />
+            draggable
+            onDragEnd={rectDE}
+
+        />
     }
 
     const checkVertexInRect = useCallback((v:number, left:number, right: number) => {
@@ -689,8 +705,38 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         cencelEdit();
     }, [text, head, openDetail, uploading]);
 
+
+
+    const [moveInfo, setMoveInfo] = useState({
+        canDrag: false,
+        isDragged: false,
+    })
+
+    const moveMode = useCallback(( ) => {
+        if (openDetail.content)
+        {
+            console.log("moveMode");
+            setMenu({...menuState, flg: false, disp: false});
+            setOpenDetail({
+                ...openDetail, flg: false
+            });
+            setMoveInfo({
+                canDrag: true,
+                isDragged: false
+            });
+            setRPos({
+                x: openDetail.content.x * defaultRectSize,
+                y: openDetail.content.y * defaultRectSize
+            });
+            setRectSize({
+                width: openDetail.content.width * defaultRectSize,
+                height: openDetail.content.height * defaultRectSize,
+            });
+        }
+    }, [openDetail, defaultRectSize]);
+
     useEffect(() => {
-        if (addState == 0)
+        if (addState == 0 && !moveInfo.canDrag)
         {
             if (isDragged.dragged)
                 getRectSize();
@@ -702,6 +748,47 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             }
         }
     }, [mPos, isDragged, addState]);
+
+    const mouseMove = (e:any) => {
+        if (!menuState.flg)
+        {
+            const transform = layerRef.current.getAbsoluteTransform().copy();
+            transform.invert();
+            const pos = e.target.getStage()?.getPointerPosition();
+            setMPos({
+                x: pos?.x as number,
+                y: pos?.y as number,
+            })
+        }
+    };
+
+    const mouseDown = () => {
+        if (addState === 0 && !moveInfo.canDrag)
+            setDragged({
+                x: mPos.x,
+                y: mPos.y,
+                dragged: true,
+            })
+    }
+
+    const mouseUp = () => {
+        console.log(moveInfo.canDrag);
+        if (moveInfo.canDrag)
+            return ;
+        else if (!menuState.flg && addState == 0)
+        {
+            const mX = mPos.x > window.innerWidth - 140 ? mPos.x - 140 : mPos.x;
+            const mY = mPos.y > window.innerHeight - 140 ? mPos.y - 140 : mPos.y;
+            setMenu({
+                x: mX,
+                y: mY,
+                flg: true,
+                disp: true,
+            });
+        } else {
+            initStates();
+        }
+    }
 
     useEffect(() => {
         if (addState !== 0)
@@ -721,7 +808,11 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         }
         if (editedContent)
             setComments(editedContent);
-    }, [boardData, openDetail])
+    }, [boardData, openDetail]);
+
+    useEffect(() => {
+        console.log(moveInfo);
+    }, [moveInfo]);
 
     return (
         <KonvaContainer>
@@ -755,6 +846,14 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                                     >
                                         <img src="/public/delete.svg" />
                                     </button>
+                                    <button>
+                                        <img src="/public/resize.svg" />
+                                    </button>
+                                    <button
+                                        onClick={moveMode}
+                                    >
+                                        <img src="/public/dragMove.svg" />
+                                    </button>
                                 </UDButtonBox>
                             }
                         </UserInfo>
@@ -766,9 +865,9 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                         <DetailContentBox>
                             {openDetail.category === 1 &&
                                 (!isEdit ?
-                                    <div>
+                                    <pre>
                                         {openDetail.content?.content}
-                                    </div>
+                                    </pre>
                                     :
                                     <>
                                         <EditArea>
@@ -965,9 +1064,9 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                             onClick={() => openDetailWindow(1, c.id, c)}
                         >
                             {c.content}
-                        <AltBox className="alt">
-                            {c.User.username}
-                        </AltBox>
+                            <AltBox className="alt">
+                                {c.User.username}
+                            </AltBox>
                         </TextComponent>
                     </ComponentBox>
                 );
@@ -1021,48 +1120,19 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             <Stage
                 style={{
                     height: height,
-                    zIndex: 1,
+                    zIndex: moveInfo.canDrag ? 20 : 1,
+                    background: moveInfo.canDrag ? 'rgba(0, 0, 0, .2)' : ''
                 }}
                 width={width}
                 height={height}
-                onMouseMove={(e) => {
-                    if (!menuState.flg)
-                    {
-                        const transform = layerRef.current.getAbsoluteTransform().copy();
-                        transform.invert();
-                        const pos = e.target.getStage()?.getPointerPosition();
-                        setMPost({
-                            x: pos?.x as number,
-                            y: pos?.y as number,
-                        })
-                    }
-                }}
-                onMouseDown={() => {
-                    if (addState === 0)
-                        setDragged({
-                            x: mPos.x,
-                            y: mPos.y,
-                            dragged: true,
-                        })
-                }}
-                onMouseUp={() => {
-                    if (!menuState.flg && addState == 0)
-                    {
-                        const mX = mPos.x > window.innerWidth - 140 ? mPos.x - 140 : mPos.x;
-                        const mY = mPos.y > window.innerHeight - 140 ? mPos.y - 140 : mPos.y;
-                        setMenu({
-                            x: mX,
-                            y: mY,
-                            flg: true,
-                            disp: true,
-                        });
-                    } else {
-                        initStates();
-                    }
-                }}
+                onMouseMove={!moveInfo.canDrag ? mouseMove : undefined}
+                onMouseDown={!moveInfo.canDrag ? mouseDown : undefined}
+                onMouseUp={!moveInfo.canDrag ? mouseUp : undefined}
             >
                 <Layer ref={layerRef}>
-                    <RectOnCanvas x={rPos.x} y={rPos.y}/>
+                    <Group>
+                        <RectOnCanvas x={rPos.x} y={rPos.y}/>
+                    </Group>
                 </Layer>
             </Stage>
             <BoardFooter>
