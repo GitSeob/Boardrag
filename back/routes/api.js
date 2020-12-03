@@ -394,6 +394,7 @@ router.patch('/text/:id', isLoggedIn, async (req, res, next) => {
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
         if (req.user.id !== content.UserId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
+        const oldSize = content.width * content.height;
         const editedContent = await db.TextContent.update({
             content: req.body.content,
             x: req.body.x,
@@ -403,6 +404,11 @@ router.patch('/text/:id', isLoggedIn, async (req, res, next) => {
         }, {
             where: {id: req.params.id}
         });
+        await db.User.increment({
+            avail_blocks: oldSize - (req.body.width * req.body.height)
+        }, {
+            where: {id: content.UserId}
+        })
         return res.json(editedContent);
     } catch(e) {
         console.error(e);
@@ -417,6 +423,7 @@ router.patch('/note/:id', isLoggedIn, async (req, res, next) => {
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
         if (req.user.id !== content.UserId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
+        const oldSize = content.width * content.height;
         const editedContent = await db.Note.update({
             background_img: req.body.background_img,
             head: req.body.head,
@@ -428,6 +435,11 @@ router.patch('/note/:id', isLoggedIn, async (req, res, next) => {
         }, {
             where: {id: req.params.id}
         });
+        await db.User.increment({
+            avail_blocks: oldSize - (req.body.width * req.body.height)
+        }, {
+            where: {id: content.UserId}
+        })
         return res.json(editedContent);
     } catch(e) {
         console.error(e);
@@ -442,6 +454,8 @@ router.patch('/image/:id', isLoggedIn, async (req, res, next) => {
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
         if (req.user.id !== content.UserId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
+        console.log(content);
+        const oldSize = await content.width * content.height;
         const editedContent = await db.Image.update({
             url: req.body.url,
             x: req.body.x,
@@ -451,6 +465,11 @@ router.patch('/image/:id', isLoggedIn, async (req, res, next) => {
         }, {
             where: {id: req.params.id}
         });
+        await db.User.increment({
+            avail_blocks: oldSize - (req.body.width * req.body.height)
+        }, {
+            where: {id: content.UserId}
+        })
         return res.json(editedContent);
     } catch(e) {
         console.error(e);
