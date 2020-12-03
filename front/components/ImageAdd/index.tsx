@@ -39,7 +39,11 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
             ...uploading,
             loading: true
         });
-		await axios.post('/api/uploadImage', imageFormData).then(res => {
+		await axios.post('/api/uploadImage', imageFormData, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(res => {
             setUploading({
                 ...uploading,
                 success: true,
