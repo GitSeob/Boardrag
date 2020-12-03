@@ -135,6 +135,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
                                 height: 0,
                             }}
                             type="file"
+                            accept=".gif, .jpg, .png"
                             ref={imageInput}
                             onChange={onChangeImg}
                         />

@@ -387,7 +387,9 @@ router.patch('/text/:id', isLoggedIn, async (req, res, next) => {
         const editedContent = await db.TextContent.update({
             content: req.body.content,
             x: req.body.x,
-            y: req.body.y
+            y: req.body.y,
+            width: req.body.width,
+            height: req.body.height,
         }, {
             where: {id: req.params.id}
         });
@@ -410,7 +412,9 @@ router.patch('/note/:id', isLoggedIn, async (req, res, next) => {
             head: req.body.head,
             paragraph: req.body.paragraph,
             x: req.body.x,
-            y: req.body.y
+            y: req.body.y,
+            width: req.body.width,
+            height: req.body.height,
         }, {
             where: {id: req.params.id}
         });
@@ -431,7 +435,9 @@ router.patch('/image/:id', isLoggedIn, async (req, res, next) => {
         const editedContent = await db.Image.update({
             url: req.body.url,
             x: req.body.x,
-            y: req.body.y
+            y: req.body.y,
+            width: req.body.width,
+            height: req.body.height,
         }, {
             where: {id: req.params.id}
         });

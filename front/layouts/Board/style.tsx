@@ -327,6 +327,16 @@ export const NoteComponent = styled('div')<NoteProps>`
         }
     }
 
+    .head {
+        text-shadow: ${props => props.src ? '0 1px 5px #000' : 'none'};
+        width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        font-size: 20px;
+        font-weight: 600;
+        padding-bottom: .5rem;
+    }
+
     @media screen and (max-width: 800px) {
         font-size: 10px;
 
@@ -343,17 +353,13 @@ export const NoteComponent = styled('div')<NoteProps>`
         }
     }
 
-    & > div {
+    & > pre {
         text-shadow: ${props => props.src ? '0 1px 5px #000' : 'none'};
         width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
-
-        &.head {
-            white-space: nowrap;
-            font-size: 20px;
-            font-weight: 600;
-        }
+        padding: 5px;
+        white-space: break-spaces;
     }
 `;
 
@@ -503,6 +509,10 @@ export const DetailContentBox = styled.div`
         margin: 0 .5rem;
         padding: 1rem 0 .5rem 0;
         border-bottom: 1px solid #ddd;
+    }
+
+    & > div {
+        padding: 1rem;
     }
 `;
 
@@ -729,6 +739,10 @@ export const OnModeAlt = styled.div`
     width: fit-content;
     margin-bottom: 1rem;
 
+    &.resize {
+        flex-direction: column;
+    }
+
     & > img {
         background: transparent;
     }
@@ -746,3 +760,46 @@ export const OnModeAlt = styled.div`
         }
     }
 `;
+
+export const ResizeRemote = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    & > span {
+        width: 4rem;
+    }
+
+    & > button {
+        width: 1.5rem;
+        height: 1.5rem;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 600;
+        background: transparent;
+        cursor: pointer
+    }
+
+    button.decrease img{
+        transform: rotate(180deg);
+    }
+
+    & > div {
+        background: rgb(32, 178, 170);
+        box-shadow: 0 0 3px 1px rgb(32, 178, 170);
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 1rem;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 600;
+    }
+
+    &:nth-of-type(2) {
+        margin-top: .5rem;
+    }
+`

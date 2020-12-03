@@ -5,11 +5,11 @@ import LoadingCircle from '@components/LoadingCircle';
 import { Redirect } from 'react-router-dom';
 import moment from 'moment';
 import axios from 'axios';
-import {Stage, Layer, Rect, Group} from 'react-konva';
+import {Stage, Layer, Rect, Group, Image} from 'react-konva';
 import Konva from 'konva';
 
 import useSocket from '@hooks/useSocket';
-import { OnModeAlt ,AltBox, UserList, LogOutButton, MenuContainer, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { ResizeRemote, OnModeAlt ,AltBox, UserList, LogOutButton, MenuContainer, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
@@ -196,6 +196,7 @@ const ImageEditButton:FC<IIEB> = ({ imageInput, onChangeImg, onClick}) => {
                     height: 0,
                 }}
                 type="file"
+                accept=".gif, .jpg, .png"
                 ref={imageInput}
                 onChange={onChangeImg}
             />
@@ -261,10 +262,8 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         imageURL: '',
         message: '',
     });
-    const [moveInfo, setMoveInfo] = useState({
-        canDrag: false,
-        isDragged: false
-    });
+    const [canMove, setCanMove] = useState(false);
+    const [isEditSize, setIsEditSize] = useState(false);
     const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
 
@@ -311,7 +310,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     }, [rectSize, defaultRectSize]);
 
     const getRectSize = useCallback(() => {
-        if (isDragged && !moveInfo.canDrag)
+        if (isDragged && !canMove)
         {
             let w = defaultRectSize * Math.floor((Math.abs( mPos.x - mPos.x % defaultRectSize - isDragged.x) / defaultRectSize ) + 1);
             let h = defaultRectSize * Math.floor((Math.abs( mPos.y - mPos.y % defaultRectSize - isDragged.y) / defaultRectSize ) + 1);
@@ -363,7 +362,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     };
 
     const RectOnCanvas = ({x = 0, y = 0}) => {
-        const color = moveInfo.canDrag ? `rgba(32, 178, 170, .5)` : `rgba(255, 255, 255, 0.1)`;
+        const color = canMove ? `rgba(32, 178, 170, .5)` : `rgba(255, 255, 255, 0.1)`;
 
         return <Rect
             width={rectSize.width}
@@ -485,8 +484,6 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     }, [boardData, rPos, defaultRectSize, rectSize, openDetail]);
 
     const testF = (x:number, y:number, w:number, h:number, rx:number, ry:number, rw:number, rh:number) => {
-        // 내부에 있을 때 기존 checkAllBox() 버그 발생
-        // 1. 전부 내부
         if (rx >= x && ry >= y && rx + rw <= x + w && ry + rh <= y + h)
             return false;
         return true;
@@ -508,7 +505,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         )))
             return false;
         return true;
-    }, [boardData, rPos, rectSize, defaultRectSize, openDetail, moveInfo]);
+    }, [boardData, rPos, rectSize, defaultRectSize, openDetail]);
 
     const openAddComponent = useCallback((number:number) => {
         if (!checkAllBox())
@@ -548,13 +545,8 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         if (commentContent !== '') {
             axios.post(`/api/comment/${openDetail.category}/${openDetail.content?.id}`, {
                 content: commentContent
-            }).then((res) => {
+            }).then(() => {
                 setCC('');
-                // axios.get(`api/comment/${openDetail.category}/${openDetail.content?.id}`).then(res => {
-                //     setComments(res.data);
-                // }).catch((e) => {
-                //     console.error(e);
-                // })
                 dataReval();
             }). catch((e) => {
                 console.error(e);
@@ -563,6 +555,8 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     }, [commentContent, openDetail]);
 
     const deleteBox = useCallback(() => {
+        if (!confirm('정말 삭제하시겠습니까?'))
+            return ;
         let category = '';
         if (openDetail.category === 1)
             category = 'text';
@@ -754,10 +748,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             setOpenDetail({
                 ...openDetail, flg: false
             });
-            setMoveInfo({
-                ...moveInfo,
-                canDrag: true,
-            });
+            setCanMove(true);
             setRPos({
                 x: openDetail.content.x * defaultRectSize,
                 y: openDetail.content.y * defaultRectSize
@@ -770,7 +761,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     }, [openDetail, defaultRectSize]);
 
     useEffect(() => {
-        if (addState == 0 && !moveInfo.canDrag)
+        if (addState == 0 && !canMove)
         {
             if (isDragged.dragged)
                 getRectSize();
@@ -797,7 +788,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     };
 
     const mouseDown = () => {
-        if (addState === 0 && !moveInfo.canDrag)
+        if (addState === 0 && !canMove)
             setDragged({
                 x: mPos.x,
                 y: mPos.y,
@@ -806,7 +797,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     }
 
     const mouseUp = () => {
-        if (moveInfo.canDrag)
+        if (canMove)
             return ;
         else if (!menuState.flg && addState == 0)
         {
@@ -830,8 +821,8 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         let data = {
             x: rPos.x / defaultRectSize,
             y: rPos.y / defaultRectSize,
-            width: openDetail.content?.width,
-            height: openDetail.content?.height,
+            width: rectSize.width / defaultRectSize,
+            height: rectSize.height / defaultRectSize,
             content: openDetail.content?.content,
             head: openDetail.content?.head,
             paragraph: openDetail.content?.paragraph,
@@ -861,7 +852,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         });
         onInitContent();
         setWarning('');
-        setMoveInfo({ canDrag: false, isDragged: false});
+        setCanMove(false);
         initStates();
         axios.patch
     }
@@ -918,13 +909,10 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                                     >
                                         <img src="/public/delete.svg" />
                                     </button>
-                                    <button>
-                                        <img src="/public/resize.svg" />
-                                    </button>
                                     <button
                                         onClick={moveMode}
                                     >
-                                        <img src="/public/dragMove.svg" />
+                                        <img src="/public/resize.svg" />
                                     </button>
                                 </UDButtonBox>
                             }
@@ -1182,9 +1170,9 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                             <div className="head" style={{height: 'fit-content'}}>
                                 <p>{c.head}</p>
                             </div>
-                            <div className="para" style={{height: (defaultRectSize * c.height - 10)}}>
+                            <pre className="para" style={{height: (defaultRectSize * c.height - 10)}}>
                                 <p>{c.paragraph}</p>
-                            </div>
+                            </pre>
                         </NoteComponent>
                     </ComponentBox>
                 )
@@ -1192,14 +1180,14 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             <Stage
                 style={{
                     height: height,
-                    zIndex: moveInfo.canDrag ? 20 : 1,
-                    background: moveInfo.canDrag ? 'rgba(0, 0, 0, .2)' : ''
+                    zIndex: (canMove) ? 20 : 1,
+                    background: canMove ? 'rgba(0, 0, 0, .2)' : ''
                 }}
                 width={width}
                 height={height}
-                onMouseMove={!moveInfo.canDrag ? mouseMove : undefined}
-                onMouseDown={!moveInfo.canDrag ? mouseDown : undefined}
-                onMouseUp={!moveInfo.canDrag ? mouseUp : undefined}
+                onMouseMove={!canMove ? mouseMove : undefined}
+                onMouseDown={!canMove ? mouseDown : undefined}
+                onMouseUp={!canMove ? mouseUp : undefined}
             >
                 <Layer ref={layerRef}>
                     <Group>
@@ -1207,7 +1195,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                     </Group>
                 </Layer>
             </Stage>
-            { moveInfo.canDrag &&
+            { canMove &&
                 <div style={{
                     position: 'absolute',
                     top: '10px',
@@ -1215,9 +1203,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                 }}>
                     <OnModeAlt
                         onClick={() => {
-                            setMoveInfo({
-                                ...moveInfo, canDrag: false
-                            });
+                            setCanMove(false);
                             initStates();
                         }}>
                         <span>돌아가기</span>
@@ -1228,6 +1214,44 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                         <span>수정하기</span>
                         <img src="/public/check.svg" />
                     </OnModeAlt>
+                    { !isEditSize ?
+                        <OnModeAlt
+                            onClick={() => setIsEditSize(true)}>
+                            <span>크기 변경하기</span>
+                            <img src="/public/resize.svg" />
+                        </OnModeAlt>
+                        :
+                        <OnModeAlt className="resize" style={{cursor: 'none'}}>
+                            <ResizeRemote>
+                                <span>WIDTH -</span>
+                                <button
+                                    className="decrease"
+                                    onClick={() => setRectSize({...rectSize, width: rectSize.width - defaultRectSize })}
+                                >
+                                    <img src="/public/arrow.svg" />
+                                </button>
+                                <div>{rectSize.width / defaultRectSize}</div>
+                                <button
+                                    onClick={() => setRectSize({...rectSize, width: rectSize.width + defaultRectSize})}
+                                >
+                                    <img src="/public/arrow.svg" />
+                                </button>
+                            </ResizeRemote>
+                            <ResizeRemote>
+                                <span>HEIGHT -</span>
+                                <button
+                                    className="decrease"
+                                    onClick={() => setRectSize({...rectSize, height: rectSize.height - defaultRectSize})}
+                                >
+                                    <img src="/public/arrow.svg" />
+                                </button>
+                                <div>{rectSize.height / defaultRectSize}</div>
+                                <button onClick={() => setRectSize({...rectSize, height: rectSize.height + defaultRectSize})} >
+                                    <img src="/public/arrow.svg" />
+                                </button>
+                            </ResizeRemote>
+                        </OnModeAlt>
+                    }
                 </div>
             }
             <BoardFooter>
