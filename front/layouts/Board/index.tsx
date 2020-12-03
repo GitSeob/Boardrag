@@ -818,6 +818,16 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         if (!isAvailPos())
             return setWarning('이동할 수 없는 위치입니다.');
         let requestURL = '';
+        const selectWidth = rectSize.width / defaultRectSize;
+        const selectHeight = rectSize.height / defaultRectSize;
+        if ((selectHeight * selectWidth) < 4)
+            return setWarning('최소 4칸의 영역을 선택해야합니다.');
+        else if (openDetail.category === 3 && (selectHeight * selectWidth) < 6)
+            return setWarning('이미지는 최소 6칸의 영역을 선택해야합니다.');
+        else if (openDetail.category === 2 && (selectHeight * selectWidth) < 20)
+            return setWarning('노트는 최소 20칸이상의 영역을 선택해야합니다.');
+        else if (openDetail.category === 2 && (selectHeight < 3 || selectWidth < 4))
+            return setWarning('노트는 4x3이상의 영역을 선택해야합니다.');
         let data = {
             x: rPos.x / defaultRectSize,
             y: rPos.y / defaultRectSize,
