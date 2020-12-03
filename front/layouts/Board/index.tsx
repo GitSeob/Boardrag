@@ -263,8 +263,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     });
     const [moveInfo, setMoveInfo] = useState({
         canDrag: false,
-        isDragged: false,
-        available: true,
+        isDragged: false
     });
     const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
@@ -496,15 +495,15 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     const isAvailPos = useCallback(() => {
         if (!checkAllBox())
             return false;
-        if (boardData?.TextContents?.find((e) => (
+        if (boardData?.TextContents?.filter(elem => !(openDetail.category === 1 && elem.id === openDetail.id)).find((e) => (
             !testF(e.x * defaultRectSize, e.y* defaultRectSize, e.width* defaultRectSize, e.height* defaultRectSize, rPos.x, rPos.y, rectSize.width, rectSize.height)
         )))
             return false;
-        if (boardData?.Images?.find((e) => (
+        if (boardData?.Images?.filter(elem => !(openDetail.category === 3 && elem.id === openDetail.id)).find((e) => (
             !testF(e.x * defaultRectSize, e.y* defaultRectSize, e.width* defaultRectSize, e.height* defaultRectSize, rPos.x, rPos.y, rectSize.width, rectSize.height)
         )))
             return false;
-        if (boardData?.Notes?.find((e) => (
+        if (boardData?.Notes?.filter(elem => !(openDetail.category === 2 && elem.id === openDetail.id)).find((e) => (
             !testF(e.x * defaultRectSize, e.y* defaultRectSize, e.width* defaultRectSize, e.height* defaultRectSize, rPos.x, rPos.y, rectSize.width, rectSize.height)
         )))
             return false;
@@ -687,13 +686,27 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
 
     const onSubmitEdit = useCallback(async () => {
         let requestURL = '';
-        let data = {};
+        let data = {
+            x: openDetail.content?.x,
+            y: openDetail.content?.y,
+            width: openDetail.content?.width,
+            height: openDetail.content?.height,
+            content: '',
+            head: '',
+            paragraph: '',
+            background_img: '',
+            url: '',
+        };
         if (openDetail.category === 1) {
             requestURL = `/api/text/${openDetail.id}`;
-            data = { content: text };
+            data = {
+                ...data,
+                content: text
+            };
         } else if (openDetail.category === 2) {
             requestURL = `/api/note/${openDetail.id}`;
             data = {
+                ...data,
                 background_img: uploading.imageURL,
                 head: head,
                 paragraph: text
@@ -708,7 +721,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                 return ;
             }
             requestURL = `/api/image/${openDetail.id}`;
-            data = { url: uploading.imageURL };
+            data = { ...data, url: uploading.imageURL };
         } else {
             await setWarning('잘못된 접근입니다.');
             await setTimeout(() => {
@@ -810,11 +823,46 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         }
     };
 
-    const UpdatePosition = () => {
+    const UpdatePosition = async () => {
         if (!isAvailPos())
             return setWarning('이동할 수 없는 위치입니다.');
-        console.log('ok');
+        let requestURL = '';
+        let data = {
+            x: rPos.x / defaultRectSize,
+            y: rPos.y / defaultRectSize,
+            width: openDetail.content?.width,
+            height: openDetail.content?.height,
+            content: openDetail.content?.content,
+            head: openDetail.content?.head,
+            paragraph: openDetail.content?.paragraph,
+            background_img: openDetail.content?.background_img,
+            url: openDetail.content?.url,
+        };
+        if (openDetail.category === 1) {
+            requestURL = `/api/text/${openDetail.id}`;
+        } else if (openDetail.category === 2) {
+            requestURL = `/api/note/${openDetail.id}`;
+        } else if (openDetail.category === 3) {
+            requestURL = `/api/image/${openDetail.id}`;
+        } else {
+            await setWarning('잘못된 접근입니다.');
+            await setTimeout(() => {
+                setWarning('');
+            }, 2000);
+            return ;
+        }
+        await axios.patch(requestURL, data).then(() => {
+            dataReval();
+        }).catch((e) => {
+            setWarning(e.response.data);
+            setTimeout(() => {
+                setWarning('');
+            }, 2000);
+        });
         setWarning('');
+        setMoveInfo({ canDrag: false, isDragged: false});
+        initStates();
+        axios.patch
     }
 
     useEffect(() => {
