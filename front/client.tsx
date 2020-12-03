@@ -8,6 +8,7 @@ import App from './layouts/App';
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? 'https://api.42board.com' : 'http://localhost:3095';
 axios.defaults.headers['Access-Control-Allow-Origin'] = '*';
+axios.defaults.headers['Access-Control-Allow-Credentials'] = true;
 
 render(
     <BrowserRouter>
