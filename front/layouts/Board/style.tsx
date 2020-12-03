@@ -331,10 +331,11 @@ export const NoteComponent = styled('div')<NoteProps>`
         text-shadow: ${props => props.src ? '0 1px 5px #000' : 'none'};
         width: 100%;
         overflow: hidden;
-        white-space: nowrap;
+        height: auto;
         font-size: 20px;
         font-weight: 600;
         padding-bottom: .5rem;
+        white-space: break-spaces;
     }
 
     @media screen and (max-width: 800px) {

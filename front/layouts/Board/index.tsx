@@ -968,9 +968,9 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                                         <h2>
                                             {openDetail.content?.head}
                                         </h2>
-                                        <div>
+                                        <pre>
                                             {openDetail.content?.paragraph}
-                                        </div>
+                                        </pre>
                                     </>
                                     :
                                     <>
@@ -1177,9 +1177,9 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                             <AltBox className="alt">
                                 {c.User.username}
                             </AltBox>
-                            <div className="head" style={{height: 'fit-content'}}>
-                                <p>{c.head}</p>
-                            </div>
+                            <h3 className="head">
+                                {c.head}
+                            </h3>
                             <pre className="para" style={{height: (defaultRectSize * c.height - 10)}}>
                                 <p>{c.paragraph}</p>
                             </pre>

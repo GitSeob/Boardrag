@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const axios = require("axios");
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 // const { Op } = require("sequelize");
 
 const env = process.env.NODE_ENV || "development";
@@ -342,6 +343,7 @@ router.delete('/delete/image/:id', isLoggedIn, async (req, res, next) => {
         const content = await db.Image.findOne({
             where: {id: req.params.id}
         });
+        const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
         if (!content)
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
         if (req.user.id !== content.UserId && !req.user.is_admin)
@@ -350,6 +352,9 @@ router.delete('/delete/image/:id', isLoggedIn, async (req, res, next) => {
         await db.Image.destroy({ where: {id: req.params.id }});
         await db.Comment.destroy({ where: { ImageId: req.params.id }});
         await db.User.increment({ avail_blocks: size }, {where: { id: content.UserId }});
+        fs.unlink(`./uploads/${content.url.replace(delURL, "")}`, () => {
+            return;
+        });
         return res.send(req.params.id);
     } catch(e) {
         console.error(e);
@@ -362,6 +367,7 @@ router.delete('/delete/note/:id', isLoggedIn, async (req, res, next) => {
         const content = await db.Note.findOne({
             where: {id: req.params.id}
         });
+        const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
         const size = content.width * content.height;
         if (!content)
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
@@ -370,6 +376,10 @@ router.delete('/delete/note/:id', isLoggedIn, async (req, res, next) => {
         await db.Note.destroy({ where: {id: req.params.id }});
         await db.Comment.destroy({ where: { NoteId: req.params.id }});
         await db.User.increment({ avail_blocks: size }, {where: { id: content.UserId }});
+        if (content.background_img)
+            fs.unlink(`./uploads/${content.background_img.replace(delURL, "")}`, () => {
+                return;
+            });
         return res.send(req.params.id);
     } catch(e) {
         console.error(e);
