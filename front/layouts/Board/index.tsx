@@ -385,7 +385,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     }, []);
 
     const checkAllBox = useCallback(() => {
-        if (boardData?.TextContents && boardData.TextContents.find(e =>
+        if (boardData?.TextContents && boardData.TextContents.filter(elem => !(openDetail.category === 1 && elem.id === openDetail.id)).find(e =>
             ((
                     checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
                     ||
@@ -417,7 +417,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             ))
         ))
             return (false);
-        if (boardData?.Images && boardData.Images.find(e =>
+        if (boardData?.Images && boardData.Images.filter(elem => !(openDetail.category === 3 && elem.id === openDetail.id)).find(e =>
             ((
                 checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
                 ||
@@ -449,7 +449,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         ))
     ))
             return (false);
-        if (boardData?.Notes && boardData.Notes.find(e =>
+        if (boardData?.Notes && boardData.Notes.filter(elem => !(openDetail.category === 2 && elem.id === openDetail.id)).find(e =>
             ((
                 checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width)
                 ||
@@ -482,7 +482,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     ))
             return (false);
         return (true);
-    }, [boardData, rPos, defaultRectSize, rectSize]);
+    }, [boardData, rPos, defaultRectSize, rectSize, openDetail]);
 
     const testF = (x:number, y:number, w:number, h:number, rx:number, ry:number, rw:number, rh:number) => {
         // 내부에 있을 때 기존 checkAllBox() 버그 발생
@@ -859,6 +859,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                 setWarning('');
             }, 2000);
         });
+        onInitContent();
         setWarning('');
         setMoveInfo({ canDrag: false, isDragged: false});
         initStates();
