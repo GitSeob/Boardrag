@@ -330,7 +330,6 @@ export const NoteComponent = styled('div')<NoteProps>`
     .head {
         text-shadow: ${props => props.src ? '0 1px 5px #000' : 'none'};
         width: 100%;
-        overflow: hidden;
         height: auto;
         font-size: 20px;
         font-weight: 600;
