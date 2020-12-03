@@ -711,3 +711,38 @@ export const AltBox = styled.div`
         display: flex;
     }
 `;
+
+export const OnModeAlt = styled.div`
+    position: relative;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 21;
+    color: #fff;
+    padding: .5rem; 1rem;
+    border-radius: 3px;
+    line-height: 1.2;
+    border: 1px solid #999;
+    transition: .3s;
+    cursor: pointer;
+    width: fit-content;
+    margin-bottom: 1rem;
+
+    & > img {
+        background: transparent;
+    }
+
+    & > span {
+        width: 0;
+        height: 1rem;
+        overflow: hidden;
+    }
+
+    &:hover {
+        & > img { margin-left: .5rem; }
+        & > span {
+            width: fit-content;
+        }
+    }
+`;

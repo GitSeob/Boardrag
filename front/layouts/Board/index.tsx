@@ -9,7 +9,7 @@ import {Stage, Layer, Rect, Group} from 'react-konva';
 import Konva from 'konva';
 
 import useSocket from '@hooks/useSocket';
-import { AltBox, UserList, LogOutButton, MenuContainer, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { OnModeAlt ,AltBox, UserList, LogOutButton, MenuContainer, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
@@ -261,6 +261,11 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         imageURL: '',
         message: '',
     });
+    const [moveInfo, setMoveInfo] = useState({
+        canDrag: false,
+        isDragged: false,
+        available: true,
+    });
     const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
 
@@ -353,20 +358,18 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
 
     const rectDE = (e:any) => {
         setRPos({
-            x: mPos.x - mPos.x % defaultRectSize,
-            y: mPos.y - mPos.y % defaultRectSize
-        })
-        setRPos({
             x: e.target.x() - e.target.x() % defaultRectSize,
             y: e.target.y() - e.target.y() % defaultRectSize,
         });
     };
 
     const RectOnCanvas = ({x = 0, y = 0}) => {
+        const color = moveInfo.canDrag ? `rgba(32, 178, 170, .5)` : `rgba(255, 255, 255, 0.1)`;
+
         return <Rect
-            width={!moveInfo.isDragged ? rectSize.width : rectSize.width + 10}
-            height={!moveInfo.isDragged ? rectSize.height : rectSize.height + 10}
-            fill={ moveInfo.canDrag ? `#fff` : `rgba(255, 255, 255, 0.1)`}
+            width={rectSize.width}
+            height={rectSize.height}
+            fill={ color }
             x={x}
             y={y}
             cornerRadius={5}
@@ -481,6 +484,32 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             return (false);
         return (true);
     }, [boardData, rPos, defaultRectSize, rectSize]);
+
+    const testF = (x:number, y:number, w:number, h:number, rx:number, ry:number, rw:number, rh:number) => {
+        // 내부에 있을 때 기존 checkAllBox() 버그 발생
+        // 1. 전부 내부
+        if (rx >= x && ry >= y && rx + rw <= x + w && ry + rh <= y + h)
+            return false;
+        return true;
+    };
+
+    const isAvailPos = useCallback(() => {
+        if (!checkAllBox())
+            return false;
+        if (boardData?.TextContents?.find((e) => (
+            !testF(e.x * defaultRectSize, e.y* defaultRectSize, e.width* defaultRectSize, e.height* defaultRectSize, rPos.x, rPos.y, rectSize.width, rectSize.height)
+        )))
+            return false;
+        if (boardData?.Images?.find((e) => (
+            !testF(e.x * defaultRectSize, e.y* defaultRectSize, e.width* defaultRectSize, e.height* defaultRectSize, rPos.x, rPos.y, rectSize.width, rectSize.height)
+        )))
+            return false;
+        if (boardData?.Notes?.find((e) => (
+            !testF(e.x * defaultRectSize, e.y* defaultRectSize, e.width* defaultRectSize, e.height* defaultRectSize, rPos.x, rPos.y, rectSize.width, rectSize.height)
+        )))
+            return false;
+        return true;
+    }, [boardData, rPos, rectSize, defaultRectSize, openDetail, moveInfo]);
 
     const openAddComponent = useCallback((number:number) => {
         if (!checkAllBox())
@@ -705,24 +734,16 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         cencelEdit();
     }, [text, head, openDetail, uploading]);
 
-
-
-    const [moveInfo, setMoveInfo] = useState({
-        canDrag: false,
-        isDragged: false,
-    })
-
     const moveMode = useCallback(( ) => {
         if (openDetail.content)
         {
-            console.log("moveMode");
             setMenu({...menuState, flg: false, disp: false});
             setOpenDetail({
                 ...openDetail, flg: false
             });
             setMoveInfo({
+                ...moveInfo,
                 canDrag: true,
-                isDragged: false
             });
             setRPos({
                 x: openDetail.content.x * defaultRectSize,
@@ -772,7 +793,6 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     }
 
     const mouseUp = () => {
-        console.log(moveInfo.canDrag);
         if (moveInfo.canDrag)
             return ;
         else if (!menuState.flg && addState == 0)
@@ -788,6 +808,13 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         } else {
             initStates();
         }
+    };
+
+    const UpdatePosition = () => {
+        if (!isAvailPos())
+            return setWarning('이동할 수 없는 위치입니다.');
+        console.log('ok');
+        setWarning('');
     }
 
     useEffect(() => {
@@ -809,10 +836,6 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         if (editedContent)
             setComments(editedContent);
     }, [boardData, openDetail]);
-
-    useEffect(() => {
-        console.log(moveInfo);
-    }, [moveInfo]);
 
     return (
         <KonvaContainer>
@@ -1135,6 +1158,29 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                     </Group>
                 </Layer>
             </Stage>
+            { moveInfo.canDrag &&
+                <div style={{
+                    position: 'absolute',
+                    top: '10px',
+                    left: '10px'
+                }}>
+                    <OnModeAlt
+                        onClick={() => {
+                            setMoveInfo({
+                                ...moveInfo, canDrag: false
+                            });
+                            initStates();
+                        }}>
+                        <span>돌아가기</span>
+                        <img src="/public/close.svg" />
+                    </OnModeAlt>
+                    <OnModeAlt
+                        onClick={UpdatePosition}>
+                        <span>수정하기</span>
+                        <img src="/public/check.svg" />
+                    </OnModeAlt>
+                </div>
+            }
             <BoardFooter>
                 designed by @han
             </BoardFooter>
