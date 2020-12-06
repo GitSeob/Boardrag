@@ -9,7 +9,7 @@ import {Stage, Layer, Rect, Group, Image} from 'react-konva';
 import Konva from 'konva';
 
 import useSocket from '@hooks/useSocket';
-import { ResizeRemote, OnModeAlt ,AltBox, UserList, LogOutButton, MenuContainer, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { ChatForm, ChatRoom, ResizeRemote, OnModeAlt ,AltBox, UserList, LogOutButton, MenuContainer, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
@@ -1271,12 +1271,21 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     )
 };
 
+interface IChat {
+    id: number,
+    username: string,
+    chat: string
+}
+
 const Board:FC = () => {
     const [socket, disconnectSocket] = useSocket(42);
     const { data:userData, revalidate:USERRevalidate } = useSWR<IUser | false>('/api/auth', fetcher);
     const { data:boardData, revalidate:BOARDRevalidate, error:BOARDError } = useSWR<IBoard>(userData ? `/api/board/${42}` : null, fetcher);
     const [menuFlg, setMFlg] = useState<boolean>(false);
     const [userList, setUserList] = useState<IUuserList[] | null | undefined>();
+    // const [isOUL, setOUL] = useState(false);
+    const [chatData, setChatData] = useState<any[]>();
+    const [chat, OCChat, setChat] = useInput('');
 
     const logout = useCallback(() => {
         axios.post(`/api/logout`).then(() => {
@@ -1286,6 +1295,26 @@ const Board:FC = () => {
             console.error(e);
         });
     }, []);
+
+    const submitMessage = useCallback((e) => {
+        e.preventDefault();
+        console.log('submit emit');
+        userData && socket?.emit('chat', {
+            id: userData.id,
+            username: userData.username,
+            chat: chat
+        });
+        setChat('');
+    }, [userData, chat])
+
+    const onKeydownChat = useCallback((e) => {
+        if (e.key === 'Enter') {
+            if (!e.shiftKey) {
+                e.preventDefault();
+                submitMessage(e);
+            }
+        }
+    }, [chat]);
 
     useEffect(() => {
         return () => {
@@ -1315,6 +1344,13 @@ const Board:FC = () => {
             BOARDRevalidate();
         })
     }, [socket]);
+
+    useEffect(() => {
+        socket?.on("newChat", (data:IChat) => {
+            console.log(data);
+            chatData ? setChatData([...Array.from(chatData), data]) : setChatData([data]);
+        });
+    }, [socket, chatData])
 
     if (!userData)
         return <Redirect to="/auth" />
@@ -1351,6 +1387,26 @@ const Board:FC = () => {
                         })}
                     </ul>
                 </UserList>
+                <ChatRoom>
+                    {chatData && chatData.map((c, i) => {
+                        return (
+                            <div key={(i)}>
+                                {c.id}
+                                {c.username}
+                                {c.chat}
+                            </div>
+                        )
+                    })}
+                    <ChatForm
+                        onSubmit={submitMessage}
+                    >
+                        <input
+                            type="text"
+                            onChange={OCChat}
+                            onKeyPress={onKeydownChat}
+                        />
+                    </ChatForm>
+                </ChatRoom>
                 <div className="up"
                     onClick={() => setMFlg(!menuFlg)}
                 >

@@ -39,5 +39,11 @@ module.exports = (server, app) => {
                 Object.values(onlineMap[socket.nsp.name])
             );
         });
+
+        socket.on('chat', ({ id, username, chat}) => {
+            newNamespace.emit("newChat", {
+                id, username, chat
+            })
+        })
     });
 };

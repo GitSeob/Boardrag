@@ -10,6 +10,7 @@
         "strict": true,
         "resolveJsonModule": true,
         "baseUrl": ".",
+        "downlevelIteration": true,
         "paths": {
             "@hooks/*": ["hooks/*"],
             "@components/*": ["components/*"],
