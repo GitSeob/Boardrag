@@ -807,6 +807,13 @@ export const ResizeRemote = styled.div`
 export const ChatRoom = styled.div`
     height: -webkit-fill-available;
     overflow: auto;
+
+    & > p {
+        padding: .3rem;
+        background: #444;
+        font-size: 10px;
+        text-align: center;
+    }
 `;
 
 export const ChatForm = styled.form`
@@ -815,4 +822,66 @@ export const ChatForm = styled.form`
     width: 100%;
     display: flex;
     align-items: center;
+    padding: .5rem;
+
+    & > input {
+        width: 100%;
+        padding: .5rem;
+        font-size: 14px;
+        border-radius: 5px;
+    }
+`;
+
+export const Chat = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: .5rem;
+    margin-left: 1rem;
+
+    & > pre {
+        background: #fafafa;
+        padding: .5rem;
+        border-radius: 5px;
+        color: #111;
+        position: relative;
+
+        &::before {
+            content: "";
+            transform: skewX(30deg);
+            width: 15px;
+            left: 0;
+            height: 15px;
+            background: #f8f8f8;
+            position: absolute;
+            top: 0;
+            z-index: -1;
+        }
+    }
+
+    &.myChat {
+        align-items: flex-end;
+        margin-right: 1rem;
+        margin-left: 0;
+
+        pre {
+            background: #c7efdf;
+
+            &::before {
+                display: none;
+            }
+
+            &::after {
+                content: "";
+                transform: skewX(-30deg);
+                width: 15px;
+                right: 0;
+                height: 15px;
+                background: #c7efdf;
+                position: absolute;
+                top: 0;
+                z-index: -1;
+            }
+        }
+    }
 `;

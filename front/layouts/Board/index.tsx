@@ -9,7 +9,7 @@ import {Stage, Layer, Rect, Group, Image} from 'react-konva';
 import Konva from 'konva';
 
 import useSocket from '@hooks/useSocket';
-import { ChatForm, ChatRoom, ResizeRemote, OnModeAlt ,AltBox, UserList, LogOutButton, MenuContainer, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
+import { Chat, ChatForm, ChatRoom, ResizeRemote, OnModeAlt ,AltBox, UserList, LogOutButton, MenuContainer, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
@@ -1298,7 +1298,6 @@ const Board:FC = () => {
 
     const submitMessage = useCallback((e) => {
         e.preventDefault();
-        console.log('submit emit');
         userData && socket?.emit('chat', {
             id: userData.id,
             username: userData.username,
@@ -1347,7 +1346,6 @@ const Board:FC = () => {
 
     useEffect(() => {
         socket?.on("newChat", (data:IChat) => {
-            console.log(data);
             chatData ? setChatData([...Array.from(chatData), data]) : setChatData([data]);
         });
     }, [socket, chatData])
@@ -1388,13 +1386,13 @@ const Board:FC = () => {
                     </ul>
                 </UserList>
                 <ChatRoom>
+                    <p>현재 접속한 사람들과 채팅을 할 수 있습니다.</p>
                     {chatData && chatData.map((c, i) => {
                         return (
-                            <div key={(i)}>
-                                {c.id}
-                                {c.username}
-                                {c.chat}
-                            </div>
+                            <Chat key={(i)} className={`${c.id === userData.id ? 'myChat' : ''}`}>
+                                <p>{c.username}</p>
+                                <pre>{c.chat}</pre>
+                            </Chat>
                         )
                     })}
                     <ChatForm
@@ -1402,8 +1400,10 @@ const Board:FC = () => {
                     >
                         <input
                             type="text"
+                            value={chat}
                             onChange={OCChat}
                             onKeyPress={onKeydownChat}
+                            placeholder="이곳에 채팅을 입력해주세요"
                         />
                     </ChatForm>
                 </ChatRoom>
