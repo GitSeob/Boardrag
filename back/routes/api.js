@@ -225,7 +225,7 @@ router.post('/write/image', isLoggedIn, async (req, res, next) => {
         if (availBlocks < 0)
             return res.status(202).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
         if (!req.body.url)
-        return res.status(202).send({ reason: `이미지가 등록되지 않았습니다.`});
+            return res.status(202).send({ reason: `이미지가 등록되지 않았습니다.`});
         const newImage = await db.Image.create({
             url: req.body.url,
             x: req.body.x,
@@ -395,6 +395,8 @@ router.patch('/text/:id', isLoggedIn, async (req, res, next) => {
         if (req.user.id !== content.UserId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
         const oldSize = content.width * content.height;
+        if (req.user.availBlocks - ( req.body.width * req.body.height - oldSize ))
+            return res.status(202).send({ reason: `현재 추가 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
         const editedContent = await db.TextContent.update({
             content: req.body.content,
             x: req.body.x,
@@ -424,6 +426,8 @@ router.patch('/note/:id', isLoggedIn, async (req, res, next) => {
         if (req.user.id !== content.UserId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
         const oldSize = content.width * content.height;
+        if (req.user.availBlocks - ( req.body.width * req.body.height - oldSize ))
+            return res.status(202).send({ reason: `현재 추가 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
         const editedContent = await db.Note.update({
             background_img: req.body.background_img,
             head: req.body.head,
@@ -454,8 +458,9 @@ router.patch('/image/:id', isLoggedIn, async (req, res, next) => {
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
         if (req.user.id !== content.UserId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
-        console.log(content);
         const oldSize = await content.width * content.height;
+        if (req.user.availBlocks - ( req.body.width * req.body.height - oldSize ))
+            return res.status(202).send({ reason: `현재 추가 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
         const editedContent = await db.Image.update({
             url: req.body.url,
             x: req.body.x,
