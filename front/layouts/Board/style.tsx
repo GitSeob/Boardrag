@@ -288,7 +288,7 @@ export const ImageComponent = styled('div')`
 export const WarnMessage = styled.div`
     position: absolute;
     background: rgba(0, 0, 0, .6);
-    z-index: 5;
+    z-index: 50;
     border-radius: 5px;
     color: #ff5555;
     font-weight: 500;

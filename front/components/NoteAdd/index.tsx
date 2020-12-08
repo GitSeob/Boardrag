@@ -97,7 +97,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
             setUploading({
                 ...uploading,
                 loading: false,
-                message: e.response.data
+                message: e.response.data.reason
             })
         });
     }, [uploading, para, head]);

@@ -54,7 +54,10 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
             socket?.emit('refresh');
             dataReval();
         }).catch((e) => {
-            setPostState({...postState, loading: false, warning: e.data.reason});
+            setPostState({...postState, loading: false, warning: e.response.data.reason});
+            setTimeout(() => {
+                setPostState({ ...postState, warning: ''});
+            }, 2000);
         });
     }, [value]);
 

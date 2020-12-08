@@ -754,7 +754,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             });
             dataReval();
         }).catch((e) => {
-            setWarning(e.response.data);
+            setWarning(e.response.data.reason);
             setTimeout(() => {
                 setWarning('');
             }, 2000);
@@ -875,16 +875,16 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
         }
         await axios.patch(requestURL, data).then(() => {
             dataReval();
+            onInitContent();
+            setWarning('');
+            setCanMove(false);
+            initStates();
         }).catch((e) => {
-            setWarning(e.response.data);
+            setWarning(e.response.data.reason);
             setTimeout(() => {
                 setWarning('');
             }, 2000);
         });
-        onInitContent();
-        setWarning('');
-        setCanMove(false);
-        initStates();
         axios.patch
     }
 
