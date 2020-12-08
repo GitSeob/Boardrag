@@ -7,6 +7,7 @@ import moment from 'moment';
 import axios from 'axios';
 import {Stage, Layer, Rect, Group, Image} from 'react-konva';
 import Konva from 'konva';
+import useImage from 'use-image'
 
 import useSocket from '@hooks/useSocket';
 import { Chat, ChatForm, ChatRoom, ResizeRemote, OnModeAlt ,AltBox, UserList, LogOutButton, MenuContainer, UserMenu, EditImageInput, ImageBox, EditButtonBox, EditArea, Comment, CommentBox, DetailContentBox, ComponentBox, UDButtonBox, UserInfo, MomentBox, DetailBox, TopFixContent, BottomFixContent, DetailBackground, DetailWindow, NoteComponent, ImageComponent, MenuBox, KonvaContainer,BoardFooter, MenuAttr, WarnMessage, TextComponent } from './style';
@@ -264,6 +265,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     });
     const [canMove, setCanMove] = useState(false);
     const [isEditSize, setIsEditSize] = useState(false);
+
     const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
 
@@ -364,6 +366,26 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
     const RectOnCanvas = ({x = 0, y = 0}) => {
         const color = canMove ? `rgba(32, 178, 170, .5)` : `rgba(255, 255, 255, 0.1)`;
 
+        if ((openDetail?.category === 3  || openDetail?.category === 2) && canMove)
+        {
+            const imageSrc = openDetail.category === 3 ? openDetail.content?.url : openDetail.content?.background_img;
+            const [image] = useImage(imageSrc ? imageSrc : '');
+
+            return (
+                <Image
+                    opacity={0.4}
+                    width={rectSize.width}
+                    height={rectSize.height}
+                    fill={ color }
+                    x={x}
+                    y={y}
+                    cornerRadius={5}
+                    image={image}
+                    draggable
+                    onDragEnd={canMove ? rectDE : undefined}
+                />
+            )
+        }
         return <Rect
             width={rectSize.width}
             height={rectSize.height}
@@ -372,8 +394,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             y={y}
             cornerRadius={5}
             draggable
-            onDragEnd={rectDE}
-
+            onDragEnd={canMove ? rectDE : undefined}
         />
     }
 
@@ -772,7 +793,7 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
                 })
             }
         }
-    }, [mPos, isDragged, addState]);
+    }, [mPos, isDragged, addState, defaultRectSize, canMove]);
 
     const mouseMove = (e:any) => {
         if (!menuState.flg)
@@ -1190,14 +1211,14 @@ const WorkSpace:FC<IBoardProps> = ({ boardData, dataReval, userData }) => {
             <Stage
                 style={{
                     height: height,
-                    zIndex: (canMove) ? 20 : 1,
+                    zIndex: canMove ? 20 : 1,
                     background: canMove ? 'rgba(0, 0, 0, .2)' : ''
                 }}
                 width={width}
                 height={height}
-                onMouseMove={!canMove ? mouseMove : undefined}
-                onMouseDown={!canMove ? mouseDown : undefined}
-                onMouseUp={!canMove ? mouseUp : undefined}
+                onMouseMove={!(canMove) ? mouseMove : undefined}
+                onMouseDown={!(canMove) ? mouseDown : undefined}
+                onMouseUp={!(canMove) ? mouseUp : undefined}
             >
                 <Layer ref={layerRef}>
                     <Group>
