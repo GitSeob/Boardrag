@@ -2,7 +2,7 @@ import React, {FC, useEffect, useCallback, useState, useRef, MutableRefObject, C
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import LoadingCircle from '@components/LoadingCircle';
-import { Redirect } from 'react-router-dom';
+import { Redirect, RouteChildrenProps } from 'react-router-dom';
 import moment from 'moment';
 import axios from 'axios';
 import {Stage, Layer, Rect, Group, Image} from 'react-konva';
@@ -1300,8 +1300,8 @@ interface IChat {
 
 const Board:FC = () => {
     const [socket, disconnectSocket] = useSocket(42);
-    const { data:userData, revalidate:USERRevalidate } = useSWR<IUser | false>('/api/auth', fetcher);
-    const { data:boardData, revalidate:BOARDRevalidate, error:BOARDError } = useSWR<IBoard>(userData ? `/api/board/${42}` : null, fetcher);
+    const { data:userData, revalidate:USERRevalidate, error:UserError } = useSWR<IUser | false>('/api/auth', fetcher);
+    const { data:boardData, revalidate:BOARDRevalidate } = useSWR<IBoard>(userData ? `/api/board/${42}` : null, fetcher);
     const [menuFlg, setMFlg] = useState<boolean>(false);
     const [userList, setUserList] = useState<IUuserList[] | null | undefined>();
     // const [isOUL, setOUL] = useState(false);

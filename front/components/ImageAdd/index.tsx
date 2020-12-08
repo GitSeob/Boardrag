@@ -10,6 +10,7 @@ import {
     AddBox,
     WarnBox
 } from '../addStyle';
+import { Redirect } from 'react-router-dom';
 
 interface UploadProps {
     loading: boolean,
@@ -86,6 +87,11 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
             initStates();
             dataReval();
         }).catch((e) => {
+            if (e.response.status === 401)
+            {
+                alert('로그인을 해주세요.');
+                <Redirect to="/auth" />
+            }
             setUploading({
                 ...uploading,
                 loading: false,

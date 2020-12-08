@@ -9,6 +9,7 @@ import {
 } from '../addStyle';
 import axios from 'axios';
 import useSocket from '@hooks/useSocket';
+import { useHistory } from 'react-router-dom';
 
 type PostState = {
     loading: boolean,
@@ -26,6 +27,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
     })
     const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;
     const [TAH, setTAH] = useState('auto');
+    const route = useHistory();
 
     const OCValue = useCallback((e) => {
         setTAH(`${textScrollRef.current.scrollHeight}px`);
@@ -59,7 +61,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
                 setPostState({ ...postState, warning: ''});
             }, 2000);
         });
-    }, [value]);
+    }, [value, postState]);
 
     return (
         <AddContainer y={y} x={x} width={width} height={height}>
