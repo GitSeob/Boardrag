@@ -87,8 +87,8 @@ const enlarge = keyframes`
 `
 
 export const UserMenu = styled.div`
-    position: fixed;
-    min-height: 100vh;
+    position: absolute;
+    height: 100vh;
     width: 300px;
     right: 0;
     background: #000;
@@ -98,10 +98,20 @@ export const UserMenu = styled.div`
 
 export const MenuContainer = styled.div`
     position: relative;
-    height: calc(100vh - 40px);
+    height: 100%;
 
     div {
         color: #fff;
+    }
+    & > p {
+        padding: 3px;
+        background: #444;
+        font-size: 10px;
+        text-align: center;
+        color: #fff;
+        width: 80%;
+        margin: 0 auto;
+        border-radius: 10px;
     }
 
     .up {
@@ -661,12 +671,8 @@ export const EditImageInput = styled.div`
 `;
 
 export const LogOutButton = styled.div`
-    position: absolute;
     width: 100%;
-    bottom: 0;
-    left: 0;
     height: 40px;
-    transform: translateY(100%);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -679,9 +685,8 @@ export const LogOutButton = styled.div`
 
 export const UserList = styled.div`
     width: 100%;
-    height: fit-content;
+    height: 20%;
     padding: 1rem;
-    max-height: 40vh;
 
     & > ul {
         list-style-type: none;
@@ -805,24 +810,14 @@ export const ResizeRemote = styled.div`
 `
 
 export const ChatRoom = styled.div`
-    height: -webkit-fill-available;
-    overflow: auto;
-
-    & > p {
-        padding: .3rem;
-        background: #444;
-        font-size: 10px;
-        text-align: center;
-    }
+    height: calc(80% - 98px);
 `;
 
 export const ChatForm = styled.form`
-    position: absolute;
-    bottom: 0;
     width: 100%;
     display: flex;
     align-items: center;
-    padding: .5rem;
+    padding: 3px 10px;
 
     & > input {
         width: 100%;
@@ -832,7 +827,7 @@ export const ChatForm = styled.form`
     }
 `;
 
-export const Chat = styled.div`
+export const Chat = styled.li`
     display: flex;
     flex-direction: column;
     align-items: flex-start;

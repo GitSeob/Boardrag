@@ -2,7 +2,7 @@ import React, {FC, useEffect, useCallback, useState, useRef, MutableRefObject, C
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import LoadingCircle from '@components/LoadingCircle';
-import { Redirect, RouteChildrenProps } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import moment from 'moment';
 import axios from 'axios';
 import {Stage, Layer, Rect, Group, Image} from 'react-konva';
@@ -1305,8 +1305,11 @@ const Board:FC = () => {
     const [menuFlg, setMFlg] = useState<boolean>(false);
     const [userList, setUserList] = useState<IUuserList[] | null | undefined>();
     // const [isOUL, setOUL] = useState(false);
-    const [chatData, setChatData] = useState<any[]>();
     const [chat, OCChat, setChat] = useInput('');
+    // const chatList = new Array();
+    const [chatList, setCL] = useState<any[]>(new Array());
+
+    const scrollbarRef = useRef() as MutableRefObject<HTMLUListElement>;
 
     const logout = useCallback(() => {
         axios.post(`/api/logout`).then(() => {
@@ -1319,6 +1322,8 @@ const Board:FC = () => {
 
     const submitMessage = useCallback((e) => {
         e.preventDefault();
+        if (chat === '')
+            return;
         userData && socket?.emit('chat', {
             id: userData.id,
             username: userData.username,
@@ -1367,9 +1372,13 @@ const Board:FC = () => {
 
     useEffect(() => {
         socket?.on("newChat", (data:IChat) => {
-            chatData ? setChatData([...Array.from(chatData), data]) : setChatData([data]);
+            setCL([...chatList, data]);
+            scrollbarRef.current.scrollTop = scrollbarRef.current.scrollHeight - scrollbarRef.current.clientHeight;
         });
-    }, [socket, chatData])
+        return () => {
+            socket?.off('newChat');
+        };
+    }, [socket, chatList, scrollbarRef])
 
     if (!userData)
         return <Redirect to="/auth" />
@@ -1389,11 +1398,6 @@ const Board:FC = () => {
             style={{transform: `translateX(${menuFlg ? '0' : '100%'})`}}
         >
             <MenuContainer>
-                <LogOutButton
-                    onClick={logout}
-                >
-                    로그아웃
-                </LogOutButton>
                 <UserList>
                     <p>User List</p>
                     <ul>
@@ -1406,16 +1410,31 @@ const Board:FC = () => {
                         })}
                     </ul>
                 </UserList>
+                <p>현재 접속한 사람들과 채팅을 할 수 있습니다.</p>
                 <ChatRoom>
-                    <p>현재 접속한 사람들과 채팅을 할 수 있습니다.</p>
-                    {chatData && chatData.map((c, i) => {
-                        return (
-                            <Chat key={(i)} className={`${c.id === userData.id ? 'myChat' : ''}`}>
+                    <ul
+                        ref={scrollbarRef}
+                        style={{height: "100%", overflow: 'auto'}}
+                    >
+                    {
+                        chatList.map((c, i) => (
+                            <Chat key={(i)} className={`${c.id === userData?.id ? 'myChat' : '' }`}>
                                 <p>{c.username}</p>
                                 <pre>{c.chat}</pre>
                             </Chat>
-                        )
-                    })}
+                        ))
+                    }
+                    </ul>
+                </ChatRoom>
+                <div className="up"
+                    onClick={() => setMFlg(!menuFlg)}
+                >
+                    {menuFlg ?
+                        <img src="/public/arrow.svg" />
+                        :
+                        <img src="/public/person.svg" />
+                    }
+                </div>
                     <ChatForm
                         onSubmit={submitMessage}
                     >
@@ -1427,16 +1446,11 @@ const Board:FC = () => {
                             placeholder="이곳에 채팅을 입력해주세요"
                         />
                     </ChatForm>
-                </ChatRoom>
-                <div className="up"
-                    onClick={() => setMFlg(!menuFlg)}
+                <LogOutButton
+                    onClick={logout}
                 >
-                    {menuFlg ?
-                        <img src="/public/arrow.svg" />
-                        :
-                        <img src="/public/person.svg" />
-                    }
-                </div>
+                    로그아웃
+                </LogOutButton>
             </MenuContainer>
         </UserMenu>
         <WorkSpace
