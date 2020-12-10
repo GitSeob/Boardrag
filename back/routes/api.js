@@ -168,7 +168,7 @@ router.post('/board/:boardId/write/text', isLoggedIn, async (req, res, next) => 
         });
 
         const io = req.app.get("io");
-        io.of(`/board-${board.name}`).emit('refresh');ç
+        io.of(`/board-${board.name}`).emit('refresh');
         return res.send(newText);
     } catch (e) {
         console.error(e);
