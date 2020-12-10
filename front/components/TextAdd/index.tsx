@@ -8,7 +8,6 @@ import {
     WarnBox
 } from '../addStyle';
 import axios from 'axios';
-import useSocket from '@hooks/useSocket';
 import { useHistory } from 'react-router-dom';
 
 type PostState = {
@@ -17,9 +16,8 @@ type PostState = {
     warning: string,
 }
 
-const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataReval }) => {
+const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, board }) => {
     const [value, setValue] = useState('');
-    const [socket] = useSocket(42);
     const [postState, setPostState] = useState<PostState>({
         loading: false,
         success: false,
@@ -37,7 +35,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
     const writeText = useCallback(async (e) => {
         e.preventDefault();
         setPostState({ ...postState, loading: true});
-        await axios.post(`api/write/text`, {
+        await axios.post(`/api/board/${board}/write/text`, {
             content: value,
             x: offset.x,
             y: offset.y,
@@ -53,8 +51,6 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
             }
             setPostState({...postState, loading: false, success: true});
             initStates();
-            socket?.emit('refresh');
-            dataReval();
         }).catch((e) => {
             setPostState({...postState, loading: false, warning: e.response.data.reason});
             setTimeout(() => {

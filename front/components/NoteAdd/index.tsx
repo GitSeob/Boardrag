@@ -13,7 +13,6 @@ import {
     WarnBox
 } from '../addStyle';
 import useInput from '@hooks/useInput';
-import useSocket from '@hooks/useSocket';
 
 interface UploadProps {
     loading: boolean,
@@ -22,10 +21,9 @@ interface UploadProps {
     message: string,
 }
 
-const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataReval }) => {
+const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, board }) => {
     const [head, OCHead] = useInput('');
     const [para, OCPara] = useInput('');
-    const [socket] = useSocket(42);
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
     const [uploading, setUploading] = useState<UploadProps>({
         loading: false,
@@ -52,7 +50,6 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
                 loading: false,
                 imageURL: res.data.url
             });
-            socket?.emit('refresh');
         }).catch(e => {
             setUploading({
                 ...uploading,
@@ -67,7 +64,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
             ...uploading,
             loading: true,
         })
-        await axios.post(`/api/write/note`, {
+        await axios.post(`/api/board/${board}/write/note`, {
             background_img: uploading.imageURL,
             head: head,
             paragraph: para,
@@ -92,7 +89,6 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
                 success: true
             });
             initStates();
-            dataReval();
         }).catch((e) => {
             setUploading({
                 ...uploading,

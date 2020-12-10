@@ -19,9 +19,8 @@ interface UploadProps {
     message: string,
 }
 
-const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataReval }) => {
+const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, board }) => {
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
-    const [socket] = useSocket(42);
     const [uploading, setUploading] = useState<UploadProps>({
         loading: false,
         success: false,
@@ -47,7 +46,6 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
                 loading: false,
                 imageURL: res.data.url
             });
-            socket?.emit('refresh');
         }).catch(e => {
             setUploading({
                 ...uploading,
@@ -62,7 +60,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
             ...uploading,
             loading: true,
         })
-        await axios.post(`/api/write/image`, {
+        await axios.post(`/api/board/${board}/write/image`, {
             url: uploading.imageURL,
             x: offset.x,
             y: offset.y,
@@ -85,7 +83,6 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, dataRe
                 success: true
             });
             initStates();
-            dataReval();
         }).catch((e) => {
             if (e.response.status === 401)
             {
