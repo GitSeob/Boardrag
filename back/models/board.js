@@ -8,7 +8,11 @@ module.exports = class Board extends Model {
                 name: {
                     type: DataTypes.STRING(50),
                     allowNull: false
-                }
+                },
+                // password: {
+                //     type: DataTypes.STRING(100),
+                //     allowNull: true,
+                // },
             },
             {
                 modelName: "Board",

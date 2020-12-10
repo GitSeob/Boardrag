@@ -51,7 +51,7 @@ module.exports = class User extends Model {
             as: "Boards",
         });
         db.User.hasMany(db.Image);
-        // // db.User.hasMany(db.Draw);
         db.User.hasMany(db.Comment);
+        // db.User.hasMany(db.Chat);
     }
 };
