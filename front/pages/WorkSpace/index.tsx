@@ -507,7 +507,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
     const submitComment = useCallback((e) => {
         e.preventDefault();
         if (commentContent !== '') {
-            axios.post(`/api/comment/${openDetail.category}/${openDetail.content?.id}`, {
+            axios.post(`/api/board/${board}/comment/${openDetail.category}/${openDetail.content?.id}`, {
                 content: commentContent
             }).then(() => {
                 setCC('');
@@ -518,7 +518,8 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
         }
     }, [commentContent, openDetail]);
 
-    const deleteBox = useCallback(() => {
+    const deleteBox = useCallback((e) => {
+        e.preventDefault();
         if (!confirm('정말 삭제하시겠습니까?'))
             return ;
         let category = '';
