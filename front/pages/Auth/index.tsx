@@ -39,7 +39,7 @@ const Auth:FC = () => {
     }
 
     if (userData)
-        return <Redirect to="/board" />
+        return <Redirect to="/board/42board" />
 
     if (userData || codeValue)
         return (
