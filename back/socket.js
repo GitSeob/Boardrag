@@ -7,8 +7,11 @@ module.exports = (server, app) => {
     });
     app.set("io", io);
     app.set("onlineMap", onlineMap);
-    const dynamicNsp = io.of(/^\/ws-.+$/).on("connect", (socket) => {
+
+    const dynamicNsp = io.of(/^\/board-.+$/).on("connect", (socket) => {
         const newNamespace = socket.nsp; // newNamespace.name === '/dynamic-101'
+
+        console.log(newNamespace.name);
 
         if (!onlineMap[socket.nsp.name]) {
             onlineMap[socket.nsp.name] = {};
@@ -18,7 +21,6 @@ module.exports = (server, app) => {
         socket.emit("hello", socket.nsp.name);
 
         socket.on("login", ({ id, username, board }) => {
-            console.log(id);
             onlineMap[socket.nsp.name][socket.id] = {id, username};
             newNamespace.emit(
                 "onlineList",
