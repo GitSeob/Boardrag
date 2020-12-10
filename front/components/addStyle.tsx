@@ -14,8 +14,8 @@ export interface boxProps {
     width: number,
     height: number,
     offset: offset,
+    board: string,
     initStates: () => void,
-    dataReval: () => void,
 }
 
 export interface SwitchProps {

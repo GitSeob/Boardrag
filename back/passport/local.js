@@ -17,22 +17,26 @@ module.exports = () => {
             }).catch(e => {
                 return done(null, false, { reason: 'not available code value please retry login.'});
             });
+            if (!access_token)
+                return done(null, false, { reason: 'not available code value please retry login.'});
+            console.log('check');
 
             const user_data = await axios.get(`${config.api_url}/me?access_token=${access_token}`).then(res => {
                 return res.data;
             }).catch(e => {
                 return done(null, false, { reason: '42api server was unable to send valid data.'});
             });
-
             if (!user_data) {
                 return done(null, false, { reason: '다시 로그인해주시기바랍니다.' });
             }
+            console.log('check');
 
             let user_in_db = await db.User.findOne({
                 where: {
                     username: user_data.login
                 }
             });
+            console.log('check');
 
             if (!user_in_db) {
                 const newUser = await db.User.create({
@@ -49,7 +53,9 @@ module.exports = () => {
                 },{
                     where: {id : user_in_db.id}
                 })
+            console.log('check');
             return done(null, user_in_db);
+
         } catch (e) {
             return done(e);
         }
