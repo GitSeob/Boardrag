@@ -14,7 +14,7 @@ const Auth:FC = () => {
     const { data:userData, revalidate } = useSWR('/api/auth', fetcher);
 
     if (userData) {
-        return <Redirect to="/board" />
+        return <Redirect to="/board/42board" />
     }
 
     if (!userData && document && document.cookie) {

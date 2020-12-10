@@ -11,7 +11,7 @@ const App: FC = () => (
             <Redirect to="/auth"/>
         </Route>
         <Route path="/auth" component={Auth} />
-        <Route path="/board" component={Board} />
+        <Route path="/board/:board" component={Board} />
     </Switch>
 )
 
