@@ -31,6 +31,7 @@ const Auth:FC = () => {
                 console.error(e);
                 location.href = "/auth?error=codeValue";
             })
+            return <LoadingCircle />
         }
     }
 

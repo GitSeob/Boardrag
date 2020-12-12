@@ -1,6 +1,8 @@
 import React, { FC, useEffect, useCallback, useRef, RefObject } from 'react';
 import { useSWRInfinite } from 'swr';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+dayjs.extend(localizedFormat);
 import axios from 'axios';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { IUser } from '@typings/datas';
@@ -129,7 +131,7 @@ const ChatBox:FC<IChatBox> = ({ userData, board }) => {
                                         <p>{c.username}</p>
                                         <div>
                                             <div>{c.content}</div>
-                                            <p>{moment(c.createdAt).diff(now, 'days') > -1 ? moment(c.createdAt).format('LT') : moment(c.createdAt).format('YYYY년 MM월 DD일')}</p>
+                                            <p>{dayjs(c.createdAt).diff(now, 'day') > -1 ? dayjs(c.createdAt).format('LT') : dayjs(c.createdAt).format('YYYY년 MM월 DD일')}</p>
                                         </div>
                                     </Chat>
                                 ))}

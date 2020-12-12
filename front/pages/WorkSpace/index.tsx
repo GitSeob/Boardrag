@@ -1,5 +1,7 @@
 import React, {FC, useEffect, useCallback, useState, useRef, MutableRefObject, ChangeEvent} from 'react';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+dayjs.extend(localizedFormat);
 import axios from 'axios';
 import {Stage, Layer, Rect, Group, Image} from 'react-konva';
 import Konva from 'konva';
@@ -892,8 +894,10 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                             }
                         </UserInfo>
                         <MomentBox>
-                            <div>작성일 : <p>{moment(openDetail.content?.createdAt).format('YYYY년 MM월 DD일')}</p></div>
-                            <div>만료일 : <p>{moment(openDetail.content?.expiry_date).format('YYYY년 MM월 DD일')}</p></div>
+                            <div>작성일 : <p>{dayjs(openDetail.content?.createdAt).format('YYYY년 MM월 DD일')}</p></div>
+                            <div>만료일 : <p>{dayjs(openDetail.content?.expiry_date).format('YYYY년 MM월 DD일')}</p></div>
+                            {/* <div>작성일 : <p>{moment(openDetail.content?.createdAt).format('YYYY년 MM월 DD일')}</p></div>
+                            <div>만료일 : <p>{moment(openDetail.content?.expiry_date).format('YYYY년 MM월 DD일')}</p></div> */}
                         </MomentBox>
                         Content :
                         <DetailContentBox>
@@ -1019,7 +1023,8 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                                         <p>{c.User.username}</p>
                                         <div>
                                             <div>{c.content}</div>
-                                            <p>{moment(c.createdAt).diff(now, 'days') > -1 ? moment(c.createdAt).format('LT') : moment(c.createdAt).format('YYYY년 MM월 DD일')}</p>
+                                            {/* <p>{moment(c.createdAt).diff(now, 'days') > -1 ? moment(c.createdAt).format('LT') : moment(c.createdAt).format('YYYY년 MM월 DD일')}</p> */}
+                                            <p>{dayjs(c.createdAt).diff(now, 'day') > -1 ? dayjs(c.createdAt).format('LT') : dayjs(c.createdAt).format('YYYY년 MM월 DD일')}</p>
                                         </div>
                                     </div>
                                 </Comment>

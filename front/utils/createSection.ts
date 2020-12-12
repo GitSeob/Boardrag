@@ -1,4 +1,4 @@
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 interface Props {
     id: number,
@@ -11,7 +11,7 @@ interface Props {
 export default function makeSection<T extends Props>(chatList: T[]) {
     const sections: { [key: string]: T[] } = {};
     chatList.forEach((chat) => {
-        const monthDate = moment(chat.createdAt).format('YYYY-MM-DD');
+        const monthDate = dayjs(chat.createdAt).format('YYYY-MM-DD');
         if (Array.isArray(sections[monthDate])) {
             sections[monthDate].push(chat);
         } else {
