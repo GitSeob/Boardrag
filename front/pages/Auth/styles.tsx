@@ -28,6 +28,13 @@ export const LoginContainer = styled.div`
         text-align: center;
         margin-bottom: 1rem;
     }
+
+    & > p {
+        color: #ff7777;
+        font-size: 10px;
+        margin-top: .5rem;
+        text-align: center;
+    }
 `;
 
 export const LoginButton = styled.a`

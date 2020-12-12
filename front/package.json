@@ -21,6 +21,7 @@
     "@types/react-dom": "^16.9.9",
     "@types/react-router-dom": "^5.1.6",
     "@types/socket.io-client": "^1.4.34",
+    "dayjs": "^1.9.7",
     "dotenv": "^8.2.0",
     "dotenv-webpack": "^5.1.0",
     "konva": "^7.1.7",
