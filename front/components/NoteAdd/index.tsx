@@ -21,7 +21,7 @@ interface UploadProps {
     message: string,
 }
 
-const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, board }) => {
+const TextAdd: FC<boxProps> = ({ toast, x, y, width, height, offset, initStates, board }) => {
     const [head, OCHead] = useInput('');
     const [para, OCPara] = useInput('');
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
@@ -88,6 +88,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, board 
                 loading: false,
                 success: true
             });
+            toast.dark(`남은 칸은 ${res.data}칸 입니다.`);
             initStates();
         }).catch((e) => {
             setUploading({

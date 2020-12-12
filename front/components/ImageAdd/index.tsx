@@ -19,7 +19,7 @@ interface UploadProps {
     message: string,
 }
 
-const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, board }) => {
+const TextAdd: FC<boxProps> = ({ toast, x, y, width, height, offset, initStates, board }) => {
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
     const [uploading, setUploading] = useState<UploadProps>({
         loading: false,
@@ -82,6 +82,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, board 
                 loading: false,
                 success: true
             });
+            toast.dark(`남은 칸은 ${res.data}칸 입니다.`);
             initStates();
         }).catch((e) => {
             if (e.response.status === 401)

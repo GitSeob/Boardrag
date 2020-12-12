@@ -5,14 +5,10 @@ const axios = require("axios");
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-// const { Op } = require("sequelize");
 
 const env = process.env.NODE_ENV || "development";
 const config = require("../config/config")[env];
 
-const get_token_url = `${config.api_url}/me?access_token=`
-
-// const { sequelize } = require("../models");
 const router = require(".");
 const db = require("../models");
 
@@ -33,24 +29,9 @@ const upload = multer({
 	}),
 });
 
-router.get('/auth', isLoggedIn, async (req, res, next) => {
+router.get('/auth', async (req, res, next) => {
     try {
-        if (!req.user)
-            res.status(401).send({ reason: "before created cookie" });
-        const userInfo = await db.User.findOne({
-            where: {id: req.user.id},
-            attributes: ['id', 'username', 'profile_img', 'is_admin']
-        });
-
-        // if (new Date().getTime() > userInfo.updatedAt.getTime() + 7200 )
-        //     res.status(401).send({ reason: "만료된 토큰입니다." });
-        // const get_user_42api = await axios.get(get_token_url + userInfo.access_token).then(res => {
-        //     return res.data;
-        // }).catch(e => {
-        //     res.status(401).send({ reason: "만료된 토큰입니다." });
-        // })
-        // if (get_user_42api)
-        return res.send(userInfo);
+        return res.send(req.user || false);
     } catch (e) {
         console.error(e);
         next(e);
@@ -169,7 +150,7 @@ router.post('/board/:boardId/write/text', isLoggedIn, async (req, res, next) => 
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
-        return res.send(newText);
+        return res.send(`${req.user.avail_blocks - (req.body.width * req.body.height)}`);
     } catch (e) {
         console.error(e);
         next(e);
@@ -208,7 +189,7 @@ router.post('/board/:boardId/write/note', isLoggedIn, async (req, res, next) => 
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
-        return res.send(newText);
+        return res.send(`${req.user.avail_blocks - (req.body.width * req.body.height)}`);
     } catch (e) {
         console.error(e);
         next(e);
@@ -254,7 +235,7 @@ router.post('/board/:boardId/write/image', isLoggedIn, async (req, res, next) =>
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
-        return res.send(newImage);
+        return res.send(`${req.user.avail_blocks - (req.body.width * req.body.height)}`);
     } catch(e) {
         console.error(e);
         next(e);
@@ -350,7 +331,7 @@ router.delete('/board/:boardId/delete/text/:id', isLoggedIn, async (req, res, ne
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
-        return res.send(req.params.id);
+        return res.send(`delete done`);
     } catch(e) {
         console.error(e);
         next(e);
@@ -382,7 +363,7 @@ router.delete('/board/:boardId/delete/image/:id', isLoggedIn, async (req, res, n
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
-        return res.send(req.params.id);
+        return res.send(`delete done`);
     } catch(e) {
         console.error(e);
         next(e);
@@ -415,7 +396,7 @@ router.delete('/board/:boardId/delete/note/:id', isLoggedIn, async (req, res, ne
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
-        return res.send(req.params.id);
+        return res.send(`delete done`);
     } catch(e) {
         console.error(e);
         next(e);
@@ -454,7 +435,9 @@ router.patch('/board/:boardId/text/:id', isLoggedIn, async (req, res, next) => {
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
-        return res.json(editedContent);
+        if (req.body.width * req.body.height === oldSize)
+            return res.send(false);
+        return res.send(`${req.user.avail_blocks - (req.body.width * req.body.height)}`);
     } catch(e) {
         console.error(e);
         next(e);
@@ -495,7 +478,9 @@ router.patch('/board/:boardId/note/:id', isLoggedIn, async (req, res, next) => {
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
-        return res.json(editedContent);
+        if (req.body.width * req.body.height === oldSize)
+            return res.send(false);
+        return res.send(`${req.user.avail_blocks - (req.body.width * req.body.height)}`);
     } catch(e) {
         console.error(e);
         next(e);
@@ -533,7 +518,9 @@ router.patch('/board/:boardId/image/:id', isLoggedIn, async (req, res, next) => 
         });
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
-        return res.json(editedContent);
+        if (req.body.width * req.body.height === oldSize)
+            return res.send(false);
+        return res.send(`${req.user.avail_blocks - (req.body.width * req.body.height)}`);
     } catch(e) {
         console.error(e);
         next(e);

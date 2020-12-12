@@ -16,6 +16,7 @@ export interface boxProps {
     offset: offset,
     board: string,
     initStates: () => void,
+    toast: any
 }
 
 export interface SwitchProps {

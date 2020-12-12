@@ -5,7 +5,6 @@ import fetcher from '@utils/fetcher';
 import LoadingCircle from '@components/LoadingCircle';
 import { Redirect } from 'react-router-dom';
 import axios from 'axios';
-
 import useSocket from '@hooks/useSocket';
 import { UserList, LogOutButton, MenuContainer, UserMenu, DetailBackground } from './style';
 import ChatBox from '@components/ChatBox';

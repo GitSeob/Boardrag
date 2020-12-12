@@ -2,6 +2,8 @@ import React, {FC, useEffect, useCallback, useState, useRef, MutableRefObject, C
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 dayjs.extend(localizedFormat);
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import {Stage, Layer, Rect, Group, Image} from 'react-konva';
 import Konva from 'konva';
@@ -541,7 +543,8 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                 flg: false,
                 loadComment: false,
                 content: null,
-            })
+            });
+            toast.dark(`게시물이 삭제되었습니다.`);
         }).catch((e) => {
             console.error(e);
         })
@@ -698,6 +701,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                 loadComment: false,
                 content: null,
             });
+            toast.dark(`게시물이 수정되었습니다.`);
             dataReval();
         }).catch((e) => {
             setWarning(e.response.data.reason);
@@ -819,11 +823,14 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
             }, 2000);
             return ;
         }
-        await axios.patch(requestURL, data).then(() => {
+        await axios.patch(requestURL, data).then((res) => {
             dataReval();
             onInitContent();
             setWarning('');
             setCanMove(false);
+            if (res.data === false)
+                toast.dark('게시물이 수정되었습니다.');
+            else toast.dark(`남은 칸은 ${res.data}칸 입니다.`);
             initStates();
         }).catch((e) => {
             setWarning(e.response.data.reason);
@@ -1059,6 +1066,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
             </MenuBox>
             { addState === 1 &&
                 <TextAdd
+                    toast={toast}
                     width={rectSize.width}
                     height={rectSize.height}
                     x={rPos.x}
@@ -1071,6 +1079,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
             }
             { addState === 2 &&
                 <NoteAdd
+                    toast={toast}
                     width={rectSize.width}
                     height={rectSize.height}
                     x={rPos.x}
@@ -1083,6 +1092,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
             }
             { addState === 3 &&
                 <ImageAdd
+                    toast={toast}
                     width={rectSize.width}
                     height={rectSize.height}
                     x={rPos.x}
@@ -1239,6 +1249,17 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
             <BoardFooter>
                 designed by @han
             </BoardFooter>
+            <ToastContainer
+                position="bottom-left"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop
+                closeOnClick={false}
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                />
         </KonvaContainer>
     )
 };

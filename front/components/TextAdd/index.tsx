@@ -1,4 +1,5 @@
 import React, { FC, useCallback, useRef, useState } from 'react';
+// import toast from 'react-toastify';
 import {
     boxProps,
     SubmitButton,
@@ -8,7 +9,6 @@ import {
     WarnBox
 } from '../addStyle';
 import axios from 'axios';
-import { useHistory } from 'react-router-dom';
 
 type PostState = {
     loading: boolean,
@@ -16,7 +16,7 @@ type PostState = {
     warning: string,
 }
 
-const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, board }) => {
+const TextAdd: FC<boxProps> = ({ toast, x, y, width, height, offset, initStates, board }) => {
     const [value, setValue] = useState('');
     const [postState, setPostState] = useState<PostState>({
         loading: false,
@@ -25,7 +25,6 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, board 
     })
     const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;
     const [TAH, setTAH] = useState('auto');
-    const route = useHistory();
 
     const OCValue = useCallback((e) => {
         setTAH(`${textScrollRef.current.scrollHeight}px`);
@@ -50,6 +49,7 @@ const TextAdd: FC<boxProps> = ({ x, y, width, height, offset, initStates, board 
                 }, 2000);
             }
             setPostState({...postState, loading: false, success: true});
+            toast.dark(`남은 칸은 ${res.data}칸 입니다.`);
             initStates();
         }).catch((e) => {
             setPostState({...postState, loading: false, warning: e.response.data.reason});
