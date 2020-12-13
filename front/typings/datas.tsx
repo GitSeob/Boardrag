@@ -125,3 +125,30 @@ export interface IComment {
     content_id: number,
     User: IUser,
 }
+
+export interface IDetail {
+    category: number,
+    id: number,
+    flg: boolean,
+    loadComment: boolean,
+    content: DetailProps | null
+}
+
+export interface DetailProps {
+    id: number,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    createdAt: Date,
+    updatedAt: Date,
+    expiry_date: Date,
+    UserId: number,
+    content: null | string,
+    head: null | string,
+    paragraph: null | string,
+    url: string,
+    background_img: string,
+    Comments: IComment[],
+    User: IUser,
+}

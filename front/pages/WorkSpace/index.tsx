@@ -5,10 +5,10 @@ dayjs.extend(localizedFormat);
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
-import {Stage, Layer, Rect, Group, Image} from 'react-konva';
+import {Stage, Layer, Group} from 'react-konva';
 import Konva from 'konva';
-import useImage from 'use-image'
-import { IUser, IBoard, IComment } from '@typings/datas';
+import RectOnCanvas from '@components/RectOnCanvas';
+import { IUser, IBoard, IComment, IDetail } from '@typings/datas';
 
 import {
     UDButtonBox,
@@ -86,33 +86,6 @@ interface UploadProps {
     success: boolean,
     imageURL: string,
     message: string,
-}
-
-interface IDetail {
-    category: number,
-    id: number,
-    flg: boolean,
-    loadComment: boolean,
-    content: DetailProps | null
-}
-
-interface DetailProps {
-    id: number,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    createdAt: Date,
-    updatedAt: Date,
-    expiry_date: Date,
-    UserId: number,
-    content: null | string,
-    head: null | string,
-    paragraph: null | string,
-    url: string,
-    background_img: string,
-    Comments: IComment[],
-    User: IUser,
 }
 
 interface IIEB {
@@ -302,48 +275,6 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
             })
         }
     }, [mPos, isDragged, rPos, defaultRectSize]);
-
-    const rectDE = (e:any) => {
-        setRPos({
-            x: e.target.x() - e.target.x() % defaultRectSize,
-            y: e.target.y() - e.target.y() % defaultRectSize,
-        });
-    };
-
-    const RectOnCanvas = ({x = 0, y = 0}) => {
-        const color = canMove ? `rgba(32, 178, 170, .5)` : `rgba(255, 255, 255, 0.1)`;
-
-        if ((openDetail?.category === 3  || openDetail?.category === 2) && canMove)
-        {
-            const imageSrc = openDetail.category === 3 ? openDetail.content?.url : openDetail.content?.background_img;
-            const [image] = useImage(imageSrc ? imageSrc : '');
-
-            return (
-                <Image
-                    opacity={0.4}
-                    width={rectSize.width}
-                    height={rectSize.height}
-                    fill={ color }
-                    x={x}
-                    y={y}
-                    cornerRadius={5}
-                    image={image}
-                    draggable
-                    onDragEnd={canMove ? rectDE : undefined}
-                />
-            )
-        }
-        return <Rect
-            width={rectSize.width}
-            height={rectSize.height}
-            fill={ color }
-            x={x}
-            y={y}
-            cornerRadius={5}
-            draggable
-            onDragEnd={canMove ? rectDE : undefined}
-        />
-    }
 
     const checkVertexInRect = useCallback((v:number, left:number, right: number) => {
         if (v > left && v < right)
@@ -785,6 +716,13 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
         }
     };
 
+    const rectDE = (e:any) => {
+        setRPos({
+            x: e.target.x() - e.target.x() % defaultRectSize,
+            y: e.target.y() - e.target.y() % defaultRectSize,
+        });
+    };
+
     const UpdatePosition = async () => {
         if (!isAvailPos())
             return setWarning('이동할 수 없는 위치입니다.');
@@ -1180,7 +1118,14 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
             >
                 <Layer ref={layerRef}>
                     <Group>
-                        <RectOnCanvas x={rPos.x} y={rPos.y}/>
+                        <RectOnCanvas
+                            x={rPos.x}
+                            y={rPos.y}
+                            canMove={canMove}
+                            openDetail={openDetail}
+                            rectSize={rectSize}
+                            rectDE={rectDE}
+                        />
                     </Group>
                 </Layer>
             </Stage>

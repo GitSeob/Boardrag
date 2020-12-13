@@ -17,7 +17,7 @@ export const UserMenu = styled.div`
     right: 0;
     background: #000;
     transition: .3s;
-    z-index: 9;
+    z-index: 11;
 `;
 
 export const MenuContainer = styled.div`
