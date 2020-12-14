@@ -120,7 +120,7 @@ const ChatBox:FC<IChatBox> = ({ userData, board }) => {
                     autoHide
                     ref={scrollbarRef}
                     onScrollFrame={onScroll}
-                    style={{height: "100%", overflow: 'auto'}}
+                    style={{height: "100%", overflow: 'hidden'}}
                 >
                     {Object.entries(chatSections).map(([date, chats]) => {
                         return (

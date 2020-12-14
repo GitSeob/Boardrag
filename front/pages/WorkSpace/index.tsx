@@ -43,6 +43,7 @@ import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
 import useInput from '@hooks/useInput';
+import Scrollbars from 'react-custom-scrollbars';
 
 type Position = {
     x: number,
@@ -148,9 +149,11 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
     });
     const [canMove, setCanMove] = useState(false);
     const [isEditSize, setIsEditSize] = useState(false);
+    const [editCommnetIdx, setEditCommentIdx] = useState(0);
 
     const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
+    const detailScrollbarRef = useRef<Scrollbars>(null);
 
     const now = new Date();
 
@@ -345,7 +348,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
         return (true);
     }, [boardData, rPos, defaultRectSize, rectSize, openDetail]);
 
-    const testF = (x:number, y:number, w:number, h:number, rx:number, ry:number, rw:number, rh:number) => {
+    const checkRectArea = (x:number, y:number, w:number, h:number, rx:number, ry:number, rw:number, rh:number) => {
         if (rx >= x && ry >= y && rx + rw <= x + w && ry + rh <= y + h)
             return false;
         return true;
@@ -355,15 +358,15 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
         if (!checkAllBox())
             return false;
         if (boardData?.TextContents?.filter(elem => !(openDetail.category === 1 && elem.id === openDetail.id)).find((e) => (
-            !testF(e.x * defaultRectSize, e.y* defaultRectSize, e.width* defaultRectSize, e.height* defaultRectSize, rPos.x, rPos.y, rectSize.width, rectSize.height)
+            !checkRectArea(e.x * defaultRectSize, e.y* defaultRectSize, e.width* defaultRectSize, e.height* defaultRectSize, rPos.x, rPos.y, rectSize.width, rectSize.height)
         )))
             return false;
         if (boardData?.Images?.filter(elem => !(openDetail.category === 3 && elem.id === openDetail.id)).find((e) => (
-            !testF(e.x * defaultRectSize, e.y* defaultRectSize, e.width* defaultRectSize, e.height* defaultRectSize, rPos.x, rPos.y, rectSize.width, rectSize.height)
+            !checkRectArea(e.x * defaultRectSize, e.y* defaultRectSize, e.width* defaultRectSize, e.height* defaultRectSize, rPos.x, rPos.y, rectSize.width, rectSize.height)
         )))
             return false;
         if (boardData?.Notes?.filter(elem => !(openDetail.category === 2 && elem.id === openDetail.id)).find((e) => (
-            !testF(e.x * defaultRectSize, e.y* defaultRectSize, e.width* defaultRectSize, e.height* defaultRectSize, rPos.x, rPos.y, rectSize.width, rectSize.height)
+            !checkRectArea(e.x * defaultRectSize, e.y* defaultRectSize, e.width* defaultRectSize, e.height* defaultRectSize, rPos.x, rPos.y, rectSize.width, rectSize.height)
         )))
             return false;
         return true;
@@ -409,12 +412,13 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                 content: commentContent
             }).then(() => {
                 setCC('');
-                dataReval();
+                if (detailScrollbarRef.current)
+                    detailScrollbarRef.current.scrollToBottom();
             }). catch((e) => {
                 console.error(e);
             })
         }
-    }, [commentContent, openDetail]);
+    }, [commentContent, openDetail, detailScrollbarRef]);
 
     const deleteBox = useCallback((e) => {
         e.preventDefault();
@@ -740,6 +744,30 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
             }, 2000);
         });
         axios.patch
+    };
+
+    const deleteComment = (commentId:number) => {
+        if (confirm('댓글을 삭제하시겠습니까?')) {
+            axios.delete(`/api/board/${board}/comment/${commentId}`)
+            .then(() => {
+                toast.dark('댓글이 삭제되었습니다.');
+            }).catch((e) => {
+                toast.error(e.response.data.reason);
+            });
+        }
+    }
+
+    const updateComment = (commentId:number) => {
+        axios.patch(`/api/board/${board}/comment/${commentId}`, {
+            content: head
+        })
+        .then(() => {
+            toast.dark('댓글이 수정되었습니다.');
+            setHead('');
+            setEditCommentIdx(0);
+        }).catch((e) => {
+            toast.error(e.response.data.reason);
+        });
     }
 
     useEffect(() => {
@@ -774,6 +802,11 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                 />
             }
             <DetailWindow style={detailWindowStyle}>
+                <Scrollbars
+                    autoHide
+                    ref={detailScrollbarRef}
+                    style={{height: "calc(100% - 4rem)", overflow: 'hidden',}}
+                >
                 <DetailBox>
                     { openDetail.id !== 0 &&
                     <>
@@ -928,9 +961,47 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                                     <div className="content">
                                         <p>{c.User.username}</p>
                                         <div>
-                                            <div>{c.content}</div>
-                                            <p>{dayjs(c.createdAt).diff(now, 'day') > -1 ? dayjs(c.createdAt).format('LT') : dayjs(c.createdAt).format('YYYY년 MM월 DD일')}</p>
+                                            { c.id === editCommnetIdx ?
+                                                <div>
+                                                    <input
+                                                        type="text"
+                                                        autoFocus
+                                                        value={head}
+                                                        onChange={OCHead}
+                                                    />
+                                                </div>
+                                            :
+                                                <>
+                                                    <div>{c.content}</div>
+                                                    <p>{dayjs(c.createdAt).diff(now, 'day') > -1 ? dayjs(c.createdAt).format('LT') : dayjs(c.createdAt).format('YYYY년 MM월 DD일')}</p>
+                                                </>
+                                            }
                                         </div>
+                                        { (c.UserId === userData.id ) &&
+                                            <div className="edit-box">
+                                                { c.id === editCommnetIdx ?
+                                                    <>
+                                                        <button onClick={() => { updateComment(c.id) }}>
+                                                            <span>수정하기</span>
+                                                        </button>
+                                                        <span> | </span>
+                                                        <button onClick={() => { setEditCommentIdx(0); setHead(''); }}>
+                                                            <span>취소하기</span>
+                                                        </button>
+                                                    </>
+                                                    :
+                                                    <>
+                                                        <button onClick={() => { setHead(c.content); setEditCommentIdx(c.id) }}>
+                                                            <span>수정</span>
+                                                        </button>
+                                                        <span> | </span>
+                                                        <button onClick={() => { deleteComment(c.id) }}>
+                                                            <span>삭제</span>
+                                                        </button>
+                                                    </>
+                                                }
+                                            </div>
+                                        }
                                     </div>
                                 </Comment>
                             );
@@ -939,6 +1010,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                     </>
                 }
                 </DetailBox>
+                </Scrollbars>
                 <BottomFixContent
                     onClick={submitComment}
                 >

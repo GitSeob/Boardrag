@@ -262,7 +262,7 @@ router.post('/board/:boardId/comment/:cid/:id', isLoggedIn, async (req, res, nex
         } else {
             return res.status(401).send({reason: 'category parameter is wrong.'});
         }
-        const newComment = await db.Comment.create({
+        await db.Comment.create({
             content_category: req.params.cid,
             content_id: req.params.id,
             content: req.body.content,
@@ -270,7 +270,9 @@ router.post('/board/:boardId/comment/:cid/:id', isLoggedIn, async (req, res, nex
             UserId: req.user.id,
             ...query,
         })
-        return res.send(newComment);
+        const io = req.app.get("io");
+        io.of(`/board-${board.name}`).emit('refresh');
+        res.send('write comment ok');
     } catch(e) {
         console.error(e);
         next(e);
@@ -305,6 +307,62 @@ router.get('/board/:boardId/comment/:cid/:id', isLoggedIn, async (req, res, next
         });
         return res.send(comments);
     } catch(e) {
+        console.error(e);
+        next(e);
+    }
+});
+
+router.patch('/board/:boardId/comment/:id', isLoggedIn, async (req, res, next) => {
+    try {
+        const board = await db.Board.findOne({
+            where: {name: req.params.boardId}
+        });
+        if (!board)
+            return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
+        const comment = await db.Comment.findOne({
+            where: {id: req.params.id}
+        });
+        if (!comment)
+            return res.status(404).send({ reason: '존재하지 않는 댓글입니다.' });
+        if (comment.UserId !== req.user.id)
+            return res.status(401).send({ reason: '다른 사람의 덧글은 수정할 수 없습니다.' });
+        await db.Comment.update({
+            content: req.body.content,
+        }, {
+            where: {
+                id: req.params.id
+            }
+        });
+        const io = req.app.get("io");
+        io.of(`/board-${board.name}`).emit('refresh');
+        res.send('update comment ok');
+    } catch (e) {
+        console.error(e);
+        next(e);
+    }
+});
+
+router.delete('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next) => {
+    try {
+        const board = await db.Board.findOne({
+            where: {name: req.params.boardName}
+        });
+        if (!board)
+            return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
+        const comment = await db.Comment.findOne({
+            where: {id: req.params.id}
+        });
+        if (!comment)
+            return res.status(404).send({ reason: '존재하지 않는 댓글입니다.' });
+        if (comment.UserId !== req.user.id)
+            return res.status(401).send({ reason: '다른 사람의 덧글은 수정할 수 없습니다.' });
+        await db.Comment.destroy({
+            where: { id: req.params.id }
+        });
+        const io = req.app.get("io");
+        io.of(`/board-${board.name}`).emit('refresh');
+        res.send('delete comment ok');
+    } catch (e) {
         console.error(e);
         next(e);
     }

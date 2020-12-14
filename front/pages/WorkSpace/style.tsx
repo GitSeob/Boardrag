@@ -126,10 +126,7 @@ export const DetailWindow = styled('div')`
 export const DetailBox = styled.div`
     position: relative;
     width: 100%;
-    height: 100%;
     padding: 1rem;
-    padding-bottom: 4rem;
-    overflow: auto;
 
     & > div {
         margin: 1rem 0;
@@ -339,6 +336,22 @@ export const Comment = styled.div`
 
     .content {
         width: 100%;
+
+        .edit-box {
+            color: #999;
+            font-size: 9px;
+
+            & > button {
+                color: #aaa;
+                font-size: 9px;
+                background: inherit;
+                cursor: pointer;
+            }
+            & > span {
+                margin: 0 2px;
+            }
+        }
+
         & > div
         {
             display: flex;

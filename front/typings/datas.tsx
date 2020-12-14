@@ -124,6 +124,7 @@ export interface IComment {
     content_category: number,
     content_id: number,
     User: IUser,
+    UserId: number,
 }
 
 export interface IDetail {

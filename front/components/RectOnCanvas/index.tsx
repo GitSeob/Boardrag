@@ -34,7 +34,7 @@ const RectOnCanvas:FC<Props> = ({
                 y={y}
                 cornerRadius={5}
                 image={image}
-                draggable
+                draggable={canMove}
                 onDragEnd={canMove ? rectDE : undefined}
             />
         )
@@ -46,7 +46,7 @@ const RectOnCanvas:FC<Props> = ({
         x={x}
         y={y}
         cornerRadius={5}
-        draggable
+        draggable={canMove}
         onDragEnd={canMove ? rectDE : undefined}
     />
 }
