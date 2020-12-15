@@ -546,6 +546,7 @@ export const NoteComponent = styled('div')<NoteProps>`
     background-size: cover;
     overflow: hidden;
     padding: 5px;
+
     &:hover {
         box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
         z-index: 5;
@@ -553,6 +554,7 @@ export const NoteComponent = styled('div')<NoteProps>`
             display: flex;
         }
     }
+
     .head {
         text-shadow: ${props => props.src ? '0 1px 5px #000' : 'none'};
         width: 100%;
@@ -562,18 +564,7 @@ export const NoteComponent = styled('div')<NoteProps>`
         padding-bottom: .5rem;
         white-space: break-spaces;
     }
-    @media screen and (max-width: 800px) {
-        font-size: 10px;
-        div.head {
-            font-size: 14px;
-        }
-    }
-    @media screen and (max-width: 500px) {
-        font-size: 8px;
-        div.head {
-            font-size: 12px;
-        }
-    }
+
     & > pre {
         text-shadow: ${props => props.src ? '0 1px 5px #000' : 'none'};
         width: 100%;
@@ -581,6 +572,27 @@ export const NoteComponent = styled('div')<NoteProps>`
         text-overflow: ellipsis;
         padding: 5px;
         white-space: break-spaces;
+    }
+
+    @media screen and (max-width: 800px) {
+        font-size: 10px;
+
+        .head {
+            font-size: 14px;
+            padding-bottom: .2rem;
+        }
+
+        & > pre {
+            padding: 2px;
+        }
+    }
+    @media screen and (max-width: 500px) {
+        font-size: 8px;
+
+        .head {
+            font-size: 12px;
+            padding-bottom: .1rem;
+        }
     }
 `;
 

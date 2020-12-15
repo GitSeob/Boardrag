@@ -1165,16 +1165,19 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                 </Layer>
             </Stage>
             { canMove &&
-                <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    left: '10px'
-                }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '10px',
+                        left: '10px'
+                    }}
+                >
                     <OnModeAlt
                         onClick={() => {
                             setCanMove(false);
                             initStates();
-                        }}>
+                        }}
+                    >
                         <span>돌아가기</span>
                         <img src="/public/close.svg" />
                     </OnModeAlt>
