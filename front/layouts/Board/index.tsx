@@ -62,12 +62,12 @@ const Board:FC = () => {
             BOARDRevalidate();
         })
         return () => {
-            socket?.off('refresh'); //
+            socket?.off('refresh');
         }
     }, [socket]);
 
     if (!userData)
-        return <Redirect to="/auth" />
+        return <Redirect to={`/auth?prev=/board/${board}`} />
 
     if (!boardData)
         return <LoadingCircle />

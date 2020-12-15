@@ -70,7 +70,16 @@ router.post('/logout', isLoggedIn, (req, res) => {
 	res.send('logout 성공');
 });
 
-router.get(`/board/:boardId`, async (req, res, next) => {
+router.get(`/board`, isLoggedIn, async (req, res, next) => {
+    try {
+        return res.send(await db.Board.findAll());
+    } catch (e) {
+        console.error(e);
+        next(e);
+    }
+})
+
+router.get(`/board/:boardId`, isLoggedIn, async (req, res, next) => {
     try {
         const boardData = await db.Board.findOne({
             where: {name: req.params.boardId},
