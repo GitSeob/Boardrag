@@ -7,8 +7,14 @@ import { Redirect } from 'react-router-dom';
 import { IUser, IBoard } from '@typings/datas';
 import {
     Menu,
-    Container
+    Container,
+    RelBox,
+    BoardContainer,
+    BoardCard,
+    BCHeader,
+    SearchForm
 } from './style';
+import useInput from '@hooks/useInput';
 
 interface IBL {
     name: string,
@@ -17,6 +23,8 @@ interface IBL {
 const MainPage = () => {
     const { data:userData, revalidate:USERRevalidate, error:UserError } = useSWR<IUser | false>('/api/auth', fetcher);
     const { data:boardList, revalidate:BLRevalidate} = useSWR<IBL[]>('/api/board', fetcher);
+
+    const [text, OCText] = useInput('');
 
     if (!userData)
         return <Redirect to="/auth" />
@@ -29,26 +37,52 @@ const MainPage = () => {
     return (
         <>
             <Menu>
-                <div>
-                    <h2>LOGO</h2>
-                </div>
+                <RelBox>
+                    <div className="logo">
+                        <img src="/public/42_logo.svg" />
+                        <h2>BOARD</h2>
+                    </div>
+                    <div>
+                        <img src="/public/add.svg" />BOARD 만들기
+                    </div>
+                    <div className="logout">
+                        <img src="/public/exit.svg" />로그아웃
+                    </div>
+                </RelBox>
             </Menu>
             <Container>
-                <div>
-                    <h3>My Boards</h3>
+                <BCHeader>
+                    My Boards
+                </BCHeader>
+                <BoardContainer>
                     {boardList?.map((c, i) => {
                         return (
-                            <div
-                                onClick={e => {
+                            <BoardCard
+                                key={(i)}
+                                onClick={() => {
                                     location.href = `/board/${c.name}`
                                 }}
                             >
                                 {c.name}
-                            </div>
+                            </BoardCard>
                         );
                     })}
-                </div>
-                <div>New Boards</div>
+                </BoardContainer>
+                <BCHeader>
+                    New Boards
+                    <SearchForm>
+                        <img src="/public/search.svg" />
+                        <input
+                            type="text"
+                            value={text}
+                            onChange={OCText}
+                            placeholder="Search Board"
+                        />
+                    </SearchForm>
+                </BCHeader>
+                <BoardContainer>
+                    <div></div>
+                </BoardContainer>
             </Container>
         </>
     )
