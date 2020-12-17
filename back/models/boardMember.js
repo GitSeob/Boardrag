@@ -10,6 +10,11 @@ module.exports = class BoardMember extends Model {
                 type: DataTypes.DATE,
                 defaultValue: DataTypes.NOW,
             },
+            avail_blocks: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 30,
+            }
         },
         {
             modelName: "BoardMember",

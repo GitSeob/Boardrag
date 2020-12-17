@@ -9,10 +9,27 @@ module.exports = class Board extends Model {
                     type: DataTypes.STRING(50),
                     allowNull: false
                 },
-                // password: {
-                //     type: DataTypes.STRING(100),
-                //     allowNull: true,
-                // },
+                is_lock: {
+                    type: DataTypes.BOOLEAN,
+                    allowNull: false,
+                },
+                password: {
+                    type: DataTypes.STRING(100),
+                    allowNull: true,
+                },
+                description: {
+                    type: DataTypes.TEXT,
+                    allowNull: true,
+                },
+                default_blocks: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                    defaultValue: 30,
+                },
+                expiry_times: {
+                    type: DataTypes.INTEGER,
+                    allowNull: true,
+                }
             },
             {
                 modelName: "Board",
