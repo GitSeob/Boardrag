@@ -70,6 +70,38 @@ router.post('/logout', isLoggedIn, (req, res) => {
 	res.send('logout 성공');
 });
 
+router.get(`/checkBoardName/:boardName`, isLoggedIn, async (req, res, next) => {
+    try {
+        const board = await db.Board.findOne({
+            where: { name: req.params.boardName }
+        });
+        if (board)
+            return res.send(false);
+        return res.send(true);
+    } catch (e) {
+        next(e);
+    }
+})
+
+router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
+    try {
+        const query = {
+            password: req.body.is_lock ? req.body.password : null,
+            expriy_times: req.body.ETime === 0 ? null : req.body.ETime
+        }
+        await db.Board.create({
+            ...query,
+            name: req.body.title,
+            description: req.body.des,
+            default_blocks: req.body.defaultBlocks,
+            is_lock: req.body.is_lock,
+        })
+        return res.send('create OK');
+    } catch (e) {
+        next(e);
+    }
+});
+
 router.get(`/board`, isLoggedIn, async (req, res, next) => {
     try {
         return res.send(await db.Board.findAll());
@@ -77,12 +109,12 @@ router.get(`/board`, isLoggedIn, async (req, res, next) => {
         console.error(e);
         next(e);
     }
-})
+});
 
-router.get(`/board/:boardId`, isLoggedIn, async (req, res, next) => {
+router.get(`/board/:boardName`, isLoggedIn, async (req, res, next) => {
     try {
         const boardData = await db.Board.findOne({
-            where: {name: req.params.boardId},
+            where: {name: req.params.boardName},
             attributes: ['id', 'name'],
             include: [{
                 model: db.TextContent,
@@ -129,10 +161,10 @@ router.get(`/board/:boardId`, isLoggedIn, async (req, res, next) => {
     }
 });
 
-router.post('/board/:boardId/write/text', isLoggedIn, async (req, res, next) => {
+router.post('/board/:boardName/write/text', isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName }
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
@@ -149,7 +181,7 @@ router.post('/board/:boardId/write/text', isLoggedIn, async (req, res, next) => 
             content: req.body.content,
             expiry_date: now.setDate(now.getDate() + 7),
             UserId: req.user.id,
-            BoardId: req.params.boardId
+            BoardId: board.id
         })
         await db.User.update({
             avail_blocks: availBlocks
@@ -166,10 +198,10 @@ router.post('/board/:boardId/write/text', isLoggedIn, async (req, res, next) => 
     }
 })
 
-router.post('/board/:boardId/write/note', isLoggedIn, async (req, res, next) => {
+router.post('/board/:boardName/write/note', isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName}
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
@@ -188,7 +220,7 @@ router.post('/board/:boardId/write/note', isLoggedIn, async (req, res, next) => 
             background_img: req.body.background_img,
             expiry_date: now.setDate(now.getDate() + 7),
             UserId: req.user.id,
-            BoardId: req.params.boardId
+            BoardId: board.id
         })
         await db.User.update({
             avail_blocks: availBlocks
@@ -211,10 +243,10 @@ router.post('/uploadImage', isLoggedIn, upload.single('image'), async (req, res)
     });
 });
 
-router.post('/board/:boardId/write/image', isLoggedIn, async (req, res, next) => {
+router.post('/board/:boardName/write/image', isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName}
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
@@ -233,7 +265,7 @@ router.post('/board/:boardId/write/image', isLoggedIn, async (req, res, next) =>
             height: req.body.height,
             expiry_date: now.setDate(now.getDate() + 7),
             UserId: req.user.id,
-            BoardId: req.params.boardId
+            BoardId: board.id
         });
 
         await db.User.update({
@@ -251,17 +283,13 @@ router.post('/board/:boardId/write/image', isLoggedIn, async (req, res, next) =>
     }
 });
 
-router.post('/board/:boardId/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
+router.post('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName}
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-
-        let query = {
-            BoardId: req.params.boardId
-        };
         if (req.params.cid === '1') {
             query.TextContentId = parseInt(req.params.id);
         } else if (req.params.cid === '2') {
@@ -275,9 +303,8 @@ router.post('/board/:boardId/comment/:cid/:id', isLoggedIn, async (req, res, nex
             content_category: req.params.cid,
             content_id: req.params.id,
             content: req.body.content,
-            BoardId: req.params.boardId,
             UserId: req.user.id,
-            ...query,
+            BoardId: board.id
         })
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
@@ -288,16 +315,13 @@ router.post('/board/:boardId/comment/:cid/:id', isLoggedIn, async (req, res, nex
     }
 });
 
-router.get('/board/:boardId/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
+router.get('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName}
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-        let query = {
-            BoardId: req.params.boardId
-        };
         if (req.params.cid === '1') {
             query.TextContentId = parseInt(req.params.id);
         } else if (req.params.cid === '2') {
@@ -308,7 +332,7 @@ router.get('/board/:boardId/comment/:cid/:id', isLoggedIn, async (req, res, next
             return res.status(401).send({reason: 'category parameter is wrong.'});
         }
         const comments = await db.Comment.findAll({
-            where: query,
+            where: { BoardId: board.id },
             order: [["createdAt", "ASC"]],
             include: [{
                 model: db.User
@@ -321,10 +345,10 @@ router.get('/board/:boardId/comment/:cid/:id', isLoggedIn, async (req, res, next
     }
 });
 
-router.patch('/board/:boardId/comment/:id', isLoggedIn, async (req, res, next) => {
+router.patch('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName}
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
@@ -377,10 +401,10 @@ router.delete('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next
     }
 })
 
-router.delete('/board/:boardId/delete/text/:id', isLoggedIn, async (req, res, next) => {
+router.delete('/board/:boardName/delete/text/:id', isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName}
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
@@ -405,10 +429,10 @@ router.delete('/board/:boardId/delete/text/:id', isLoggedIn, async (req, res, ne
     }
 })
 
-router.delete('/board/:boardId/delete/image/:id', isLoggedIn, async (req, res, next) => {
+router.delete('/board/:boardName/delete/image/:id', isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName}
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
@@ -437,10 +461,10 @@ router.delete('/board/:boardId/delete/image/:id', isLoggedIn, async (req, res, n
     }
 })
 
-router.delete('/board/:boardId/delete/note/:id', isLoggedIn, async (req, res, next) => {
+router.delete('/board/:boardName/delete/note/:id', isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName}
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
@@ -470,10 +494,10 @@ router.delete('/board/:boardId/delete/note/:id', isLoggedIn, async (req, res, ne
     }
 });
 
-router.patch('/board/:boardId/text/:id', isLoggedIn, async (req, res, next) => {
+router.patch('/board/:boardName/text/:id', isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName}
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
@@ -511,10 +535,10 @@ router.patch('/board/:boardId/text/:id', isLoggedIn, async (req, res, next) => {
     }
 });
 
-router.patch('/board/:boardId/note/:id', isLoggedIn, async (req, res, next) => {
+router.patch('/board/:boardName/note/:id', isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName}
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
@@ -554,10 +578,10 @@ router.patch('/board/:boardId/note/:id', isLoggedIn, async (req, res, next) => {
     }
 });
 
-router.patch('/board/:boardId/image/:id', isLoggedIn, async (req, res, next) => {
+router.patch('/board/:boardName/image/:id', isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName}
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
@@ -594,10 +618,10 @@ router.patch('/board/:boardId/image/:id', isLoggedIn, async (req, res, next) => 
     }
 });
 
-router.get(`/board/:boardId/chats`, isLoggedIn, async (req, res, next) => {
+router.get(`/board/:boardName/chats`, isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName}
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
@@ -616,10 +640,10 @@ router.get(`/board/:boardId/chats`, isLoggedIn, async (req, res, next) => {
     }
 })
 
-router.post(`/board/:boardId/chat`, isLoggedIn, async (req, res, next) => {
+router.post(`/board/:boardName/chat`, isLoggedIn, async (req, res, next) => {
     try {
         const board = await db.Board.findOne({
-            where: {name: req.params.boardId}
+            where: {name: req.params.boardName}
         });
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });

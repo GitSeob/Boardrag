@@ -1,7 +1,7 @@
 import React, {FC, useState, useCallback, Children} from 'react';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
-
+import axios from 'axios';
 import LoadingCircle from '@components/LoadingCircle';
 import { Redirect } from 'react-router-dom';
 import { IUser, IBoard } from '@typings/datas';
@@ -53,7 +53,11 @@ const TopComponentContainer:FC<ITCC> = ({ children, setValue }) => {
     )
 }
 
-const CreateBoardForm = () => {
+interface ICBF {
+    BLRevalidate: () => void
+}
+
+const CreateBoardForm:FC<ICBF> = ({ BLRevalidate }) => {
     const [title, OCTitle] = useInput('');
     const [des, OCDes] = useInput('');
     const [defaultBlocks, OCDB] = useInput(30);
@@ -70,30 +74,50 @@ const CreateBoardForm = () => {
         error: ''
     });
 
-    const NextPage = useCallback(() => {
+    const NextPage = () => {
         if (pageState === 0 && (title.trim() === '' || des.trim() === ''))
             return setWarn('작성되지 않은 항목이 있습니다.');
         else if (pageState === 0 && title.length < 5 )
             return setWarn('Board 이름은 최소 4자 이상으로 설정해야합니다.');
+        else if (pageState === 0) {
+            return axios.get(`/api/checkBoardName/${title}`).then(res => {
+                if (res)
+                {
+                    setWarn('');
+                    setAniCN('next');
+                    setPS(pageState + 1);
+                }
+                else
+                    setWarn('이미 존재하는 Board name입니다.');
+            }).catch(e => { setWarn( e.response.data )});
+        }
         setWarn('');
         setAniCN('next');
         if (pageState === 2)
         {
-            // post request
             setCS({
                 ...createState,
                 loading: true,
-            })
-            setTimeout(() => {
+            });
+            axios.post(`/api/createBoard`, {
+                title, des, defaultBlocks, is_lock, pw, ETime
+            }).then(() => {
                 setCS({
                     ...createState,
                     loading: false,
                     success: true,
                 })
-            }, 3000);
+                BLRevalidate();
+            }).catch(e => {
+                setCS({
+                    ...createState,
+                    loading: false,
+                    error: e.response.data
+                })
+            })
         }
         setPS(pageState + 1);
-    }, [pageState, title, des]);
+    };
 
     return (
         <>
@@ -199,7 +223,9 @@ const MainPage = () => {
                 <TopComponentContainer
                     setValue={setIsAddBoard}
                 >
-                    <CreateBoardForm />
+                    <CreateBoardForm
+                        BLRevalidate={BLRevalidate}
+                    />
                 </TopComponentContainer>
             }
             <Menu>
