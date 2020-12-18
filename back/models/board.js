@@ -31,6 +31,15 @@ module.exports = class Board extends Model {
                     type: DataTypes.INTEGER,
                     allowNull: true,
                 },
+                tags: {
+                    type: DataTypes.TEXT,
+                    get: () => {
+                        return JSON.parse(this.getDataValue('value'));
+                    },
+                    set: function (value) {
+                        this.setDataValue('value', JSON.stringify(value));
+                    },
+                }
             },
             {
                 modelName: "Board",
