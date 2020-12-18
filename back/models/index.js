@@ -27,6 +27,7 @@ const image = require('./image');
 const board = require('./board');
 const boardMember = require('./boardMember');
 const chat = require('./chat');
+const tag = require('./tag');
 
 //////// DB that import from require connect to db var
 db.User = user;
@@ -37,6 +38,7 @@ db.Image = image;
 db.Board = board;
 db.BoardMember = boardMember;
 db.Chat = chat;
+db.Tag = tag;
 
 Object.keys(db).forEach(async (modelName) => {
 	await db[modelName].init(sequelize);

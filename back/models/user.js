@@ -27,7 +27,7 @@ module.exports = class User extends Model {
                     allowNull: true,
                 },
                 avail_blocks: {
-                    type: DataTypes.TEXT(),
+                    type: DataTypes.INTEGER,
                     allowNull: true,
                     defaultValue: 30,
                 }
