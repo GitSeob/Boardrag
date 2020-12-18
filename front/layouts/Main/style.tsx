@@ -1,10 +1,70 @@
 import styled from '@emotion/styled';
+import { keyframes } from '@emotion/react';
+
+const lds_ellipsis1  = keyframes`
+	0% {
+		transform: scale(0);
+	}
+	100% {
+		transform: scale(1);
+	}
+}`;
+
+const lds_ellipsis3  = keyframes`
+	0% {
+		transform: scale(1);
+	}
+	100% {
+		transform: scale(0);
+	}
+`;
+
+const lds_ellipsis2  = keyframes`
+	0% {
+		transform: translate(0, 0);
+	}
+	100% {
+		transform: translate(24px, 0);
+	}
+}
+`;
+
+const appearUp = keyframes`
+    0% {
+        opacity: 0;
+        display: none;
+        transform: translateY(10%);
+    }
+    50% {
+        opacity: 1;
+        display: block;
+    }
+`;
+
+const appearDown = keyframes`
+    0% {
+        opacity: 0;
+        display: none;
+        transform: translateY(-10%);
+    }
+    50% {
+        opacity: 1;
+        display: block;
+    }
+`;
 
 export const Menu = styled.div`
     position: fixed;
     height: 100%;
     width: 200px;
     background: rgba(0, 0, 0, .5);
+
+    @media screen and (max-width: 600px) {
+        height: 2rem;
+        display: flex;
+        box-shadow: 0 0 4px 1px #888;
+        width: 100%;
+    }
 `;
 
 export const RelBox = styled.div`
@@ -43,12 +103,37 @@ export const RelBox = styled.div`
             background: none;
         }
     }
+
+    @media screen and (max-width: 600px) {
+        display: flex;
+
+        & > div {
+            width: fit-content;
+            padding: 1rem;
+        }
+
+        .logout {
+            position: relative;
+        }
+
+        .logo {
+            padding: 1rem;
+            h2 { font-size: 16px; }
+            img { height: 1.5rem; }
+        }
+    }
 `;
 
 export const Container = styled.div`
     margin-left: 200px;
     width: calc(100% - 200px);
     padding: 2rem;
+
+    @media screen and (max-width: 600px) {
+        margin-left: 0;
+        margin-top: 2rem;
+        width: 100%;
+    }
 `;
 
 export const BCHeader = styled.div`
@@ -87,6 +172,16 @@ export const BoardContainer = styled.div`
     display: flex;
     flex-flow: row wrap;
     margin: 1rem 0;
+    min-height: 10rem;
+
+    & > .guide {
+        height: 100%;
+        display: flex;
+        text-align: center;
+        font-size: 12px;
+        width: 100%;
+        color: #555;
+    }
 `;
 
 export const BoardCard = styled.div`
@@ -104,3 +199,149 @@ export const BoardCard = styled.div`
     }
 `;
 
+export const DarkBackground = styled.div`
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    z-index: 20;
+    background: rgba(0, 0, 0, .3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`;
+
+export const FormBox = styled.div`
+    position: absolute;
+    z-index: 21;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 1rem;
+    width: 400px;
+    border-radius: 10px;
+    background: #000;
+    box-shadow: 0 0 6px 1px #afafaf;
+
+    input, h2 {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    p.info {
+        font-size: 10px;
+        color: #aaa;
+
+    }
+
+    input {
+        padding: .5rem;
+        background: #fafafa;
+        border-radius: 5px;
+        margin-top: .5rem;
+    }
+
+    input[type="checkbox"] {
+        width: fit-content;
+        margin: 0;
+        margin-right: .5rem;
+    }
+
+    input[type="password"]:disabled {
+        background: #bababa;
+        color: #444;
+    }
+
+    & > div {
+        display: none;
+
+        &.next {
+            animation: ${appearUp} .6s ease-in-out 1;
+            display: block;
+        }
+
+        &.before {
+            animation: ${appearDown} .6s ease-in-out 1;
+            display: block;
+        }
+
+        &.created {
+            display: block;
+        }
+    }
+
+    p.warn {
+        color: #ff4444;
+        font-size: 10px;
+    }
+
+    @media screen and (max-width: 600px) {
+        width: 300px;
+    }
+`;
+
+export const PageButtonBox = styled.div`
+    position: relative;
+    display: flex !important;
+    align-items: center;
+    width: 100%;
+    padding: .5rem 0;
+    min-height: 2rem;
+
+    & > div {
+        cursor: pointer;
+        transition: .3s;
+        display: flex;
+        align-items: center;
+
+        &.next {
+            position: absolute;
+            right: 0;
+        }
+
+        img {
+            transition: .3s;
+            width: 0;
+            height: 1rem;
+        }
+
+        &:hover {
+            img {
+                width: 1rem;
+            }
+        }
+    }
+`
+
+export const LoadingBalls = styled.div`
+	position: relative;
+	margin: 0 auto;
+	width: 80px;
+	height: 80px;
+
+	& > div {
+		position: absolute;
+		top: 33px;
+		width: 13px !important;
+		height: 13px !important;
+		border-radius: 50%;
+		background: #7990ff;
+		animation-timing-function: cubic-bezier(0, 1, 1, 0);
+
+		&:nth-of-type(1) {
+			left: 8px;
+			animation: ${lds_ellipsis1} 0.6s infinite;
+		}
+		&:nth-of-type(2) {
+			left: 8px;
+			animation: ${lds_ellipsis2} 0.6s infinite;
+		}
+		&:nth-of-type(3) {
+			left: 32px;
+			animation: ${lds_ellipsis2} 0.6s infinite;
+		}
+		&:nth-of-type(4) {
+			left: 56px;
+			animation: ${lds_ellipsis3} 0.6s infinite;
+		}
+	}
+`;
