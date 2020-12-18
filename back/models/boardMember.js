@@ -5,7 +5,11 @@ module.exports = class BoardMember extends Model {
     static init(sequelize) {
         return super.init(
         {
-            // id가 기본적으로 들어있다.
+            // id가 기본적으로 들어있다.\
+            nickName: {
+                type: DataTypes.STRING(100),
+                allowNull: false,
+            },
             loggedInAt: {
                 type: DataTypes.DATE,
                 defaultValue: DataTypes.NOW,

@@ -7,7 +7,8 @@ module.exports = class Board extends Model {
             {
                 name: {
                     type: DataTypes.STRING(50),
-                    allowNull: false
+                    allowNull: false,
+                    unique: true,
                 },
                 is_lock: {
                     type: DataTypes.BOOLEAN,
@@ -29,7 +30,7 @@ module.exports = class Board extends Model {
                 expiry_times: {
                     type: DataTypes.INTEGER,
                     allowNull: true,
-                }
+                },
             },
             {
                 modelName: "Board",
