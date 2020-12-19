@@ -22,10 +22,11 @@ import useInput from '@hooks/useInput';
 
 interface IBL {
     name: string,
+    description: string,
+    is_lock: boolean,
 }
 
 interface ITCC {
-    // children: () => FC<HTMLElement>,
     setValue: (data:boolean) => void
 }
 
@@ -54,10 +55,11 @@ const TopComponentContainer:FC<ITCC> = ({ children, setValue }) => {
 }
 
 interface ICBF {
-    BLRevalidate: () => void
+    BLRevalidate: () => void,
+    username: string
 }
 
-const CreateBoardForm:FC<ICBF> = ({ BLRevalidate }) => {
+const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
     const [title, OCTitle] = useInput('');
     const [des, OCDes] = useInput('');
     const [defaultBlocks, OCDB] = useInput(30);
@@ -68,6 +70,7 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate }) => {
     const [pageState, setPS] = useState(0);
     const [aniCN, setAniCN] = useState('next');
     const [warn, setWarn] = useState('');
+    const [nickName, OCNN] = useInput(username);
     const [createState, setCS] = useState({
         loading: false,
         success: false,
@@ -77,8 +80,8 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate }) => {
     const NextPage = () => {
         if (pageState === 0 && (title.trim() === '' || des.trim() === ''))
             return setWarn('작성되지 않은 항목이 있습니다.');
-        else if (pageState === 0 && title.length < 5 )
-            return setWarn('Board 이름은 최소 4자 이상으로 설정해야합니다.');
+        else if (pageState === 0 && title.length < 2 )
+            return setWarn('Board 이름은 최소 2자 이상으로 설정해야합니다.');
         else if (pageState === 0) {
             return axios.get(`/api/checkBoardName/${title}`).then(res => {
                 if (res)
@@ -90,17 +93,19 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate }) => {
                 else
                     setWarn('이미 존재하는 Board name입니다.');
             }).catch(e => { setWarn( e.response.data )});
+        } else if (pageState === 2 && pw.length < 8) {
+            return setWarn('비밀번호는 최소 8자 이상으로 설정해야합니다.');
         }
         setWarn('');
         setAniCN('next');
-        if (pageState === 2)
+        if (pageState === 3)
         {
             setCS({
                 ...createState,
                 loading: true,
             });
             axios.post(`/api/createBoard`, {
-                title, des, defaultBlocks, is_lock, pw, ETime
+                title, des, defaultBlocks, is_lock, pw, ETime, nickName
             }).then(() => {
                 setCS({
                     ...createState,
@@ -182,18 +187,27 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate }) => {
                         placeholder="Board 비밀번호를 설정해주세요."
                     />
                 </div>
-                <div className={`${pageState === 3 ? 'created' : ""}`}>
+                <div className={`${pageState === 3 ? aniCN : ""}`}>
+                    <p>User nickname in Board</p>
+                    <input
+                        type="text"
+                        value={nickName}
+                        onChange={OCNN}
+                        placeholder="Board에서 사용할 닉네임을 입력해주세요."
+                    />
+                </div>
+                <div className={`${pageState === 4 ? 'created' : ""}`}>
                     { createState.loading && <LoadingBall /> }
                     { createState.success && '생성완료!' }
                 </div>
                 <PageButtonBox>
-                    { pageState < 3 &&
+                    { pageState < 4 &&
                         <div className="next" onClick={NextPage}>
-                            {pageState < 2 ? 'Next' : 'Create'}
+                            {pageState < 3 ? 'Next' : 'Create'}
                             <img src="/public/arrow.svg" />
                         </div>
                     }
-                    { 3 > pageState && pageState > 0 &&
+                    { 4 > pageState && pageState > 0 &&
                         <div onClick={() => {setAniCN('before'); setPS(pageState - 1);}}>
                             <img src="/public/arrow.svg" style={{transform: "rotate(180deg)"}}/>
                             Prev
@@ -207,14 +221,15 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate }) => {
 
 const MainPage = () => {
     const { data:userData, revalidate:USERRevalidate, error:UserError } = useSWR<IUser | false>('/api/auth', fetcher);
-    const { data:boardList, revalidate:BLRevalidate} = useSWR<IBL[]>('/api/board', fetcher);
+    const { data:joinedBoardList, revalidate:BLRevalidate} = useSWR<IBL[]>('/api/board', fetcher);
+    const { data:notJoinedBoardList, revalidate:NJBLRevalidate} = useSWR<IBL[]>('/api/notJoinedBoards', fetcher);
     const [isAddBoard, setIsAddBoard] = useState(false);
     const [text, OCText] = useInput('');
 
     if (!userData)
         return <Redirect to="/auth" />
 
-    if (!boardList)
+    if (!joinedBoardList)
         <LoadingCircle />
 
     return (
@@ -225,6 +240,7 @@ const MainPage = () => {
                 >
                     <CreateBoardForm
                         BLRevalidate={BLRevalidate}
+                        username={userData.username}
                     />
                 </TopComponentContainer>
             }
@@ -237,7 +253,11 @@ const MainPage = () => {
                     <div
                         onClick={() => { setIsAddBoard(true) }}
                     >
-                        <img src="/public/add.svg" /><p>BOARD 만들기</p>
+                        <img src="/public/board_add.svg" /><p>BOARD 만들기</p>
+                    </div>
+                    <div>
+                        <img src="/public/setting.svg" />
+                        <p>BOARD 관리</p>
                     </div>
                     <div className="logout">
                         <img src="/public/exit.svg" /><p>로그아웃</p>
@@ -249,10 +269,10 @@ const MainPage = () => {
                     참여한 보드들
                 </BCHeader>
                 <BoardContainer>
-                    {boardList?.length === 0 &&
+                    {joinedBoardList?.length === 0 &&
                         <div className="guide">새로운 보드를 만드시거나 다른 보드에 참여해보세요</div>
                     }
-                    {boardList?.map((c, i) => {
+                    {joinedBoardList?.map((c, i) => {
                         return (
                             <BoardCard
                                 key={(i)}
@@ -260,7 +280,8 @@ const MainPage = () => {
                                     location.href = `/board/${c.name}`
                                 }}
                             >
-                                {c.name}
+                                <h3>{c.name}</h3>
+                                <p></p>
                             </BoardCard>
                         );
                     })}
@@ -278,7 +299,29 @@ const MainPage = () => {
                     </SearchForm>
                 </BCHeader>
                 <BoardContainer>
-                    <div></div>
+                    {notJoinedBoardList?.length === 0 &&
+                        <div className="guide">새로운 보드를 만드시거나 다른 보드에 참여해보세요</div>
+                    }
+                    {notJoinedBoardList?.map((c, i) => {
+                        return (
+                            <BoardCard
+                                key={(i)}
+                                onClick={() => {
+                                    location.href = `/board/${c.name}`
+                                }}
+                            >
+                                <h3>
+                                    {c.name}
+                                </h3>
+                                <div className="description">
+                                    {c.description}asdnkajsndksaasdnkajsndksaasdnkajsndksaasdnkajsndksaasdnkajsndksaasdnkajsndksa
+                                </div>
+                                <div className="iconBox">
+                                    <img className="lock" src="/public/lock.svg" />
+                                </div>
+                            </BoardCard>
+                        );
+                    })}
                 </BoardContainer>
             </Container>
         </>

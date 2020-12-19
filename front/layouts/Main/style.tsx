@@ -163,6 +163,7 @@ export const SearchForm = styled.form`
         background: transparent;
         padding: .1rem .5rem;
         color: #fff;
+        width: 200px;
     }
 `;
 
@@ -192,10 +193,41 @@ export const BoardCard = styled.div`
     cursor: pointer;
     margin: .5rem 1rem .5rem 0;
     transition: .3s;
+    width: 120px;
+    height: 12rem;
 
     &:hover {
         box-shadow: 0 0 8px 1px #aaa;
         transform: scale(1.05);
+    }
+
+    .description {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 6;
+        -webkit-box-orient: vertical;
+        word-wrap:break-word;
+        line-height: 1.2rem;
+        height: 7.2rem;
+        color: #999;
+        margin: .5rem 0;
+    }
+
+    .iconBox {
+        display: flex;
+        color: #888;
+        position: relative;
+
+        & > img {
+            height: .8rem;
+            color: #ff0000;
+
+            &.lock {
+                position: absolute;
+                right: 0;
+            }
+        }
     }
 `;
 

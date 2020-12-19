@@ -10,6 +10,7 @@ import { UserList, LogOutButton, MenuContainer, UserMenu, DetailBackground } fro
 import ChatBox from '@components/ChatBox';
 import WorkSpace from '@pages/WorkSpace';
 import { IUser, IBoard } from '@typings/datas';
+import { type } from 'os';
 
 interface IUserList {
     id: number,
@@ -21,7 +22,7 @@ const Board:FC = () => {
     const { board } = params;
     const [socket, disconnectSocket] = useSocket(board);
     const { data:userData, revalidate:USERRevalidate, error:UserError } = useSWR<IUser | false>('/api/auth', fetcher);
-    const { data:boardData, revalidate:BOARDRevalidate } = useSWR<IBoard>(userData ? `/api/board/${board}` : null, fetcher);
+    const { data:boardData, revalidate:BOARDRevalidate } = useSWR<IBoard | string>(userData ? `/api/board/${board}` : null, fetcher);
     const [menuFlg, setMFlg] = useState<boolean>(false);
     const [userList, setUserList] = useState<IUserList[] | null | undefined>();
 
@@ -71,7 +72,11 @@ const Board:FC = () => {
 
     if (!boardData)
         return <LoadingCircle />
-
+    else if (boardData === 'not assigned')
+    {
+        alert("참여하지 않은 보드입니다.");
+        return <Redirect to="/main" />
+    }
     return (
         <>
         {menuFlg &&
@@ -118,12 +123,14 @@ const Board:FC = () => {
                 </LogOutButton>
             </MenuContainer>
         </UserMenu>
-        <WorkSpace
-            boardData={boardData}
-            dataReval={BOARDRevalidate}
-            userData={userData}
-            board={board ? board : ''}
-        />
+        { typeof(boardData) !== 'string' &&
+            <WorkSpace
+                boardData={boardData}
+                dataReval={BOARDRevalidate}
+                userData={userData}
+                board={board ? board : ''}
+            />
+        }
         </>
     );
 }
