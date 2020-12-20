@@ -11,7 +11,7 @@ import LoadingCircle from '@components/LoadingCircle';
 const Auth:FC = () => {
     const OAuthURL:string = `${OAUTH}/authorize?client_id=${FT_UID}&redirect_uri=${FRONT_URL}&response_type=code`
     const { data:userData, revalidate } = useSWR('/api/auth', fetcher);
-    let query = qs.parse(location.search, {
+    const query = qs.parse(location.search, {
         ignoreQueryPrefix: true // /about?details=true 같은 쿼리 주소의 '?'를 생략해주는 옵션입니다.
     });
 

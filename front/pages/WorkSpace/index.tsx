@@ -1239,7 +1239,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                 pauseOnFocusLoss
                 draggable
                 pauseOnHover
-                />
+            />
         </KonvaContainer>
     )
 };

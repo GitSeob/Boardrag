@@ -24,6 +24,7 @@ interface IBL {
     name: string,
     description: string,
     is_lock: boolean,
+    memberCount: number
 }
 
 interface ITCC {
@@ -93,7 +94,7 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
                 else
                     setWarn('이미 존재하는 Board name입니다.');
             }).catch(e => { setWarn( e.response.data )});
-        } else if (pageState === 2 && pw.length < 8) {
+        } else if (pageState === 2 && (is_lock && pw.length < 8)) {
             return setWarn('비밀번호는 최소 8자 이상으로 설정해야합니다.');
         }
         setWarn('');
@@ -281,7 +282,13 @@ const MainPage = () => {
                                 }}
                             >
                                 <h3>{c.name}</h3>
-                                <p></p>
+                                <div className="description">
+                                    {c.description}
+                                </div>
+                                <div className="iconBox">
+                                    <img src="/public/person.svg" /> {c.memberCount}
+                                    { c.is_lock === true && <img className="lock" src="/public/lock.svg" /> }
+                                </div>
                             </BoardCard>
                         );
                     })}
@@ -314,10 +321,11 @@ const MainPage = () => {
                                     {c.name}
                                 </h3>
                                 <div className="description">
-                                    {c.description}asdnkajsndksaasdnkajsndksaasdnkajsndksaasdnkajsndksaasdnkajsndksaasdnkajsndksa
+                                    {c.description}
                                 </div>
                                 <div className="iconBox">
-                                    <img className="lock" src="/public/lock.svg" />
+                                    <img src="/public/person.svg" /> {c.memberCount}
+                                    { c.is_lock === true && <img className="lock" src="/public/lock.svg" /> }
                                 </div>
                             </BoardCard>
                         );

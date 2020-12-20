@@ -121,7 +121,17 @@ router.get(`/board`, isLoggedIn, async (req, res, next) => {
             })
         })
         const joinedBoards = await db.Board.findAll({
-            where: { id: boardIds }
+            where: { id: boardIds },
+            attributes: [
+                "id", "name", "is_lock", "description",
+                [fn('COUNT', col('Member.username')), 'memberCount']
+            ],
+            include: [{
+                model: db.BoardMember,
+                as: "Member",
+                attributes: []
+            }],
+            group: ['Board.id']
         });
         return res.send(joinedBoards);
     } catch (e) {
