@@ -344,6 +344,7 @@ router.post('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, n
         const board = await db.Board.findOne({
             where: {name: req.params.boardName}
         });
+        let query = {};
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
         if (req.params.cid === '1') {
@@ -356,6 +357,7 @@ router.post('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, n
             return res.status(401).send({reason: 'category parameter is wrong.'});
         }
         await db.Comment.create({
+            ...query,
             content_category: req.params.cid,
             content_id: req.params.id,
             content: req.body.content,
@@ -376,6 +378,7 @@ router.get('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, ne
         const board = await db.Board.findOne({
             where: {name: req.params.boardName}
         });
+        let query = {};
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
         if (req.params.cid === '1') {
@@ -388,7 +391,7 @@ router.get('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, ne
             return res.status(401).send({reason: 'category parameter is wrong.'});
         }
         const comments = await db.Comment.findAll({
-            where: { BoardId: board.id },
+            where: { ...query, BoardId: board.id },
             order: [["createdAt", "ASC"]],
             include: [{
                 model: db.User
