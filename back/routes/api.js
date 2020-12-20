@@ -98,6 +98,7 @@ router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
         })
         await db.BoardMember.create({
             username: req.body.nickName,
+            profile_img: req.user.profile_img,
             avail_blocks: 640,
             UserId: req.user.id,
             BoardId: newBoard.id
@@ -146,7 +147,16 @@ router.get(`/notJoinedBoards`, isLoggedIn, async (req, res, next) => {
                     [Op.not]: boardIds
                 }
             },
-            attributes: ["id", "name", "is_lock", "description"],
+            attributes: [
+                "id", "name", "is_lock", "description",
+                [fn('COUNT', col('Member.username')), 'memberCount']
+            ],
+            include: [{
+                model: db.BoardMember,
+                as: "Member",
+                attributes: []
+            }],
+            group: ['Board.id']
         });
         return res.send(notJoinedBoards);
     } catch(e) {

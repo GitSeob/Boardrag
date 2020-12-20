@@ -10,6 +10,10 @@ module.exports = class BoardMember extends Model {
                 type: DataTypes.STRING(100),
                 allowNull: false,
             },
+            profile_img: {
+                type: DataTypes.TEXT,
+                allowNull: true
+            },
             loggedInAt: {
                 type: DataTypes.DATE,
                 defaultValue: DataTypes.NOW,
@@ -18,7 +22,7 @@ module.exports = class BoardMember extends Model {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 defaultValue: 30,
-            }
+            },
         },
         {
             modelName: "BoardMember",
@@ -29,5 +33,7 @@ module.exports = class BoardMember extends Model {
         }
         );
     }
-    static associate(db) {}
+    static associate(db) {
+        db.BoardMember.belongsTo(db.Board);
+    }
 };

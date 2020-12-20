@@ -33,6 +33,10 @@ module.exports = class Board extends Model {
                 },
                 tags: {
                     type: DataTypes.TEXT,
+                },
+                recent_time: {
+                    type: DataTypes.DATE,
+                    defaultValue: DataTypes.NOW,
                 }
             },
             {
@@ -50,6 +54,10 @@ module.exports = class Board extends Model {
         db.Board.belongsToMany(db.User, {
             through: db.BoardMember,
             as: "Members",
+        });
+        db.Board.hasMany(db.BoardMember, {
+            as: "Member",
+            foreignKey: "BoardId"
         });
         db.Board.hasMany(db.TextContent);
         db.Board.hasMany(db.Image);
