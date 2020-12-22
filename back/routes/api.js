@@ -29,6 +29,30 @@ const upload = multer({
 	}),
 });
 
+const uploadBoardImage = multer({
+	storage: multer.diskStorage({
+		destination(req, file, done) {
+			done(null, 'board_bgs')
+		},
+		filename(req, file, done){
+			const savename = req.query.name + "_bg_image" + path.extname(file.originalname);
+			done(null, savename);
+		}
+	}),
+});
+
+const uploadProfileImage = multer({
+	storage: multer.diskStorage({
+		destination(req, file, done) {
+			done(null, 'board_profileImages')
+		},
+		filename(req, file, done){
+			const savename = req.query.name + "_" + req.user.username + path.extname(file.originalname);
+			done(null, savename);
+		}
+	}),
+});
+
 router.get('/auth', async (req, res, next) => {
     try {
         return res.send(req.user || false);
@@ -94,11 +118,12 @@ router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
             description: req.body.des,
             default_blocks: req.body.defaultBlocks,
             is_lock: req.body.is_lock,
-            AdminId: req.user.id
+            AdminId: req.user.id,
+            background: req.body.background,
         })
         await db.BoardMember.create({
             username: req.body.nickName,
-            profile_img: req.user.profile_img,
+            profile_img: req.body.profileImage,
             avail_blocks: 640,
             UserId: req.user.id,
             BoardId: newBoard.id
@@ -123,7 +148,7 @@ router.get(`/board`, isLoggedIn, async (req, res, next) => {
         const joinedBoards = await db.Board.findAll({
             where: { id: boardIds },
             attributes: [
-                "id", "name", "is_lock", "description",
+                "id", "name", "is_lock", "description", "background",
                 [fn('COUNT', col('Member.username')), 'memberCount']
             ],
             include: [{
@@ -158,7 +183,7 @@ router.get(`/notJoinedBoards`, isLoggedIn, async (req, res, next) => {
                 }
             },
             attributes: [
-                "id", "name", "is_lock", "description",
+                "id", "name", "is_lock", "description", "background",
                 [fn('COUNT', col('Member.username')), 'memberCount']
             ],
             include: [{
@@ -191,7 +216,7 @@ router.get(`/board/:boardName`, isLoggedIn, async (req, res, next) => {
 
         const boardData = await db.Board.findOne({
             where: {name: req.params.boardName},
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'background'],
             include: [{
                 model: db.TextContent,
                 include: [{
@@ -317,6 +342,18 @@ router.post('/uploadImage', isLoggedIn, upload.single('image'), async (req, res)
     res.json({
         url: `${env === "development" ? 'http://localhost:3095' : 'https://api.42board.com'}/${req.file.filename}`
     });
+});
+
+router.post('/uploadBoardBackground', isLoggedIn, uploadBoardImage.single('image'), async (req, res) => {
+    res.json({
+        url: `${env === "development" ? 'http://localhost:3095' : 'https://api.42board.com'}/board_bgs/${req.file.filename}`
+    })
+});
+
+router.post('/uploadProfileImage', isLoggedIn, uploadProfileImage.single('image'), async (req, res) => {
+    res.json({
+        url: `${env === "development" ? 'http://localhost:3095' : 'https://api.42board.com'}/board_profileImages/${req.file.filename}`
+    })
 });
 
 router.post('/board/:boardName/write/image', isLoggedIn, async (req, res, next) => {
