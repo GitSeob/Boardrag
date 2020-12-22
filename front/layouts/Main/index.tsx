@@ -16,7 +16,9 @@ import {
     DarkBackground,
     FormBox,
     PageButtonBox,
-    LoadingBalls
+    LoadingBalls,
+    ProfileImageBox,
+    BackgroundImageBox
 } from './style';
 import useInput from '@hooks/useInput';
 
@@ -24,7 +26,8 @@ interface IBL {
     name: string,
     description: string,
     is_lock: boolean,
-    memberCount: number
+    memberCount: number,
+    background: string
 }
 
 interface ITCC {
@@ -72,11 +75,71 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
     const [aniCN, setAniCN] = useState('next');
     const [warn, setWarn] = useState('');
     const [nickName, OCNN] = useInput(username);
+    const [backgroundImage, setBI] = useState({
+        url: '',
+        loading: false,
+    });
+    const [profileImage, setPI] = useState({
+        url: '',
+        loading: false,
+    });
     const [createState, setCS] = useState({
         loading: false,
         success: false,
         error: ''
     });
+    const imageInput = React.useRef() as React.MutableRefObject<HTMLInputElement>;
+    const backgroundInput = React.useRef() as React.MutableRefObject<HTMLInputElement>;
+
+    const onClickImageUpload = useCallback(() => {
+		imageInput.current.click();
+    }, [imageInput.current]);
+
+    const onClickBImageUpload = useCallback(() => {
+		backgroundInput.current.click();
+    }, [backgroundInput.current]);
+
+    const onChangeProfileImg = useCallback( async (e) => {
+		const imageFormData = new FormData();
+        imageFormData.append('image', e.target.files[0]);
+        await setPI({
+            ...profileImage,
+            loading: true
+        });
+		await axios.post(`/api/uploadProfileImage?name=${title}`, imageFormData).then(res => {
+            setPI({
+                url: res.data.url,
+                loading: false
+            });
+        }).catch(e => {
+            setPI({
+                ...profileImage,
+                loading: false,
+            });
+        })
+    }, [title]);
+
+    const onChangeBackgroundImg = useCallback( async (e) => {
+		const imageFormData = new FormData();
+        imageFormData.append('image', e.target.files[0]);
+        imageFormData.append('boardname', title);
+        console.log(imageFormData);
+        await setBI({
+            ...profileImage,
+            loading: true
+        });
+		await axios.post(`/api/uploadBoardBackground?name=${title}`, imageFormData).then(res => {
+            setBI({
+                url: res.data.url,
+                loading: false
+            });
+        }).catch(e => {
+            setBI({
+                ...profileImage,
+                loading: false,
+            });
+        })
+	}, [title]);
 
     const NextPage = () => {
         if (pageState === 0 && (title.trim() === '' || des.trim() === ''))
@@ -99,14 +162,16 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
         }
         setWarn('');
         setAniCN('next');
-        if (pageState === 3)
+        if (pageState === 4)
         {
             setCS({
                 ...createState,
                 loading: true,
             });
             axios.post(`/api/createBoard`, {
-                title, des, defaultBlocks, is_lock, pw, ETime, nickName
+                title, des, defaultBlocks, is_lock, pw, ETime, nickName,
+                profileImage: profileImage.url,
+                background: backgroundImage.url
             }).then(() => {
                 setCS({
                     ...createState,
@@ -189,7 +254,58 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
                     />
                 </div>
                 <div className={`${pageState === 3 ? aniCN : ""}`}>
-                    <p>User nickname in Board</p>
+                    <p>Set Board's background image</p>
+                    <p className="info">Board는 32x20 size입니다.</p>
+                    <p className="info">이미지를 선택하지 않으면 기본 배경으로 설정됩니다.</p>
+                    <BackgroundImageBox>
+                        {backgroundImage.loading ? (
+                            "loading..."
+                        ) : (
+                            <div
+                                style={backgroundImage.url !== '' ? {
+                                    backgroundImage: `url(${backgroundImage.url})`,
+                                } : {
+                                    background: `radial-gradient(ellipse at bottom, #002534 0%, #090a0f 100%) no-repeat`
+                                }}
+                            >
+                                <button onClick={onClickBImageUpload}>
+                                    <img src="/public/camera.svg" style={{ color: 'white' }} />
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={backgroundInput}
+                                    onChange={onChangeBackgroundImg}
+                                />
+                            </div>
+                        )}
+                    </BackgroundImageBox>
+                </div>
+                <div className={`${pageState === 4 ? aniCN : ""}`}>
+                    <p>Your profile image in Board</p>
+                    <ProfileImageBox>
+                        {profileImage.loading ? (
+                            "loading..."
+                        ) : (
+                            <div
+                                style={profileImage.url !== '' ? {
+                                    backgroundImage: `url(${profileImage.url})`,
+                                } : {
+                                    background: `radial-gradient(ellipse at bottom, #002534 0%, #090a0f 100%) no-repeat`
+                                }}
+                            >
+                                {profileImage.url === '' && <img src="/public/person.svg" />}
+                                <button onClick={onClickImageUpload}>
+                                    <img src="/public/camera.svg" style={{ color: 'white' }} />
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={imageInput}
+                                    onChange={onChangeProfileImg}
+                                />
+                            </div>
+                        )}
+                    </ProfileImageBox>
+                    <p>Your nickname in Board</p>
                     <input
                         type="text"
                         value={nickName}
@@ -197,18 +313,18 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
                         placeholder="Board에서 사용할 닉네임을 입력해주세요."
                     />
                 </div>
-                <div className={`${pageState === 4 ? 'created' : ""}`}>
+                <div className={`${pageState === 5 ? 'created' : ""}`}>
                     { createState.loading && <LoadingBall /> }
                     { createState.success && '생성완료!' }
                 </div>
                 <PageButtonBox>
-                    { pageState < 4 &&
+                    { pageState < 5 &&
                         <div className="next" onClick={NextPage}>
-                            {pageState < 3 ? 'Next' : 'Create'}
+                            {pageState < 4 ? 'Next' : 'Create'}
                             <img src="/public/arrow.svg" />
                         </div>
                     }
-                    { 4 > pageState && pageState > 0 &&
+                    { 5 > pageState && pageState > 0 &&
                         <div onClick={() => {setAniCN('before'); setPS(pageState - 1);}}>
                             <img src="/public/arrow.svg" style={{transform: "rotate(180deg)"}}/>
                             Prev
@@ -277,6 +393,7 @@ const MainPage = () => {
                         return (
                             <BoardCard
                                 key={(i)}
+                                url={c.background}
                                 onClick={() => {
                                     location.href = `/board/${c.name}`
                                 }}
@@ -312,6 +429,7 @@ const MainPage = () => {
                     {notJoinedBoardList?.map((c, i) => {
                         return (
                             <BoardCard
+                                url={c.background}
                                 key={(i)}
                                 onClick={() => {
                                     location.href = `/board/${c.name}`

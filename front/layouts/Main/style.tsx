@@ -1,6 +1,10 @@
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
 
+type BC = {
+    url: string
+}
+
 const lds_ellipsis1  = keyframes`
 	0% {
 		transform: scale(0);
@@ -185,7 +189,7 @@ export const BoardContainer = styled.div`
     }
 `;
 
-export const BoardCard = styled.div`
+export const BoardCard = styled('div')<BC>`
     padding: 1rem;
     background: rgba(0, 0, 0, .5);
     border-radius: 10px;
@@ -195,6 +199,21 @@ export const BoardCard = styled.div`
     transition: .3s;
     width: 120px;
     height: 12rem;
+    overflow: hidden;
+    position: relative;
+
+    &::before {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        content: "";
+        top: 0;
+        left: 0;
+        background: url(${props => props.url});
+        background-size: cover;
+        background-position: center;
+        z-index: -1;
+    }
 
     &:hover {
         box-shadow: 0 0 8px 1px #aaa;
@@ -376,4 +395,108 @@ export const LoadingBalls = styled.div`
 			animation: ${lds_ellipsis3} 0.6s infinite;
 		}
 	}
+`;
+
+export const ProfileImageBox = styled.div`
+    width: 100%;
+    margin: .5rem 0;
+
+    & > div {
+        position: relative;
+        margin: auto;
+        width: 120px;
+        height: 120px;
+        border-radius: 90px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-size: cover;
+
+        & > img {
+            width: 72px;
+            height: 72px;
+        }
+
+        & > input {
+            width: 1px;
+            height: 1px;
+            position: absolute;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        & > button {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
+            padding: 8px;
+            background: #002534;
+            border: 1px solid #aaa;
+            cursor: pointer;
+
+            img {
+                width: 18px;
+                height: 18px;
+            }
+        }
+    }
+`;
+
+export const BackgroundImageBox = styled.div`
+    width: 100%;
+    margin: .5rem 0;
+
+    & > div {
+        position: relative;
+        margin: .5rem auto;
+        width: 100%;
+        height: calc((400px - 2rem) * 5 / 8);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 1xp solid #cacaca;
+        background-size: cover;
+
+        & > img {
+            width: 72px;
+            height: 72px;
+        }
+
+        & > input {
+            width: 1px;
+            height: 1px;
+            position: absolute;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        & > button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
+            padding: 8px;
+            background: rgba(0, 0, 0, .6);
+            border: 1px solid #111;
+            cursor: pointer;
+
+            img {
+                width: 18px;
+                height: 18px;
+            }
+        }
+    }
 `;
