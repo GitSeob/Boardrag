@@ -45,6 +45,10 @@ module.exports = class User extends Model {
             through: db.BoardMember,
             as: "Boards",
         });
+        db.User.hasMany(db.BoardMember, {
+            as: "Member",
+            foreignKey: "UserId"
+        });
         db.User.hasMany(db.Image);
         db.User.hasMany(db.Comment);
         // db.User.hasMany(db.Chat);

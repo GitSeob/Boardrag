@@ -35,5 +35,6 @@ module.exports = class BoardMember extends Model {
     }
     static associate(db) {
         db.BoardMember.belongsTo(db.Board);
+        db.BoardMember.belongsTo(db.User);
     }
 };

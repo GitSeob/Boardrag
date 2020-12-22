@@ -37,6 +37,10 @@ module.exports = class Board extends Model {
                 recent_time: {
                     type: DataTypes.DATE,
                     defaultValue: DataTypes.NOW,
+                },
+                background: {
+                    type: DataTypes.TEXT,
+                    allowNull: true,
                 }
             },
             {
