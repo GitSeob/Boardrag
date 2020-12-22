@@ -19,6 +19,12 @@ type NoteProps = {
     src: string
 }
 
+type SC = {
+    url: string,
+    op: number,
+    height: number
+}
+
 const apperMenu = keyframes`
     from {
         max-width: 0;
@@ -159,7 +165,7 @@ export const BottomFixContent = styled('div')`
 
     & > div {
         width: 2rem;
-        background: #radial-gradient(ellipse at bottom, #002534 0%, #090a0f 100%) no-repeat;
+        background: radial-gradient(ellipse at bottom, #002534 0%, #090a0f 100%) no-repeat;
         cursor: pointer;
         color: #fff;
         transition: .3s;
@@ -691,4 +697,20 @@ export const BoardFooter = styled.div`
     padding: 1rem;
     height: 100%;
     background: rgba(0, 0, 0, .1);
+`;
+
+export const StageContainer = styled('div')<SC>`
+    position: relative;
+
+    &::before {
+        width: 100%;
+        height: ${props => props.height};
+        position: absolute;
+        content: "";
+        top: 0;
+        left: 0;
+        background: url(${props => props.url});
+        background-size: cover;
+        opacity: ${props => props.op};
+    }
 `;

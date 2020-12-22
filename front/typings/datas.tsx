@@ -62,6 +62,7 @@ export interface IBoard {
     TextContents: IText[],
     Images: IImage[],
     Notes: INote[],
+    background: string
 }
 
 export interface IText {

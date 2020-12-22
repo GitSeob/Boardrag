@@ -120,7 +120,7 @@ const ChatBox:FC<IChatBox> = ({ userData, board }) => {
                     autoHide
                     ref={scrollbarRef}
                     onScrollFrame={onScroll}
-                    style={{height: "100%", overflow: 'hidden'}}
+                    style={{height: "100%", overflowX: 'hidden'}}
                 >
                     {Object.entries(chatSections).map(([date, chats]) => {
                         return (
@@ -131,7 +131,7 @@ const ChatBox:FC<IChatBox> = ({ userData, board }) => {
                                         <p>{c.username}</p>
                                         <div>
                                             <div>{c.content}</div>
-                                            <p>{dayjs(c.createdAt).diff(now, 'day') > -1 ? dayjs(c.createdAt).format('LT') : dayjs(c.createdAt).format('YYYY년 MM월 DD일')}</p>
+                                            <p>{dayjs(c.createdAt).format('YYYYMMDD') === dayjs(now).format('YYYYMMDD') ? dayjs(c.createdAt).format('LT') : dayjs(c.createdAt).format('YYYY년 MM월 DD일')}</p>
                                         </div>
                                     </Chat>
                                 ))}

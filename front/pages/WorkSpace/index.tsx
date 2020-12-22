@@ -37,7 +37,8 @@ import {
     ImageComponent,
     NoteComponent,
     OnModeAlt,
-    ResizeRemote
+    ResizeRemote,
+    StageContainer
 } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
@@ -156,6 +157,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
     const detailScrollbarRef = useRef<Scrollbars>(null);
 
     const now = new Date();
+    const bg = boardData?.background ? boardData.background : '';
 
     const detailWindowStyle = {
         transform: openDetail.flg ? 'translateX(0%)' : 'translateX(-100%)',
@@ -1139,31 +1141,39 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                     </ComponentBox>
                 )
             })}
-            <Stage
-                style={{
-                    height: height,
-                    zIndex: canMove ? 20 : 1,
-                    background: canMove ? 'rgba(0, 0, 0, .2)' : ''
-                }}
-                width={width}
+            <StageContainer
+                url={bg}
+                op={canMove ? 0.1 : 0.8}
                 height={height}
-                onMouseMove={!(canMove) ? mouseMove : undefined}
-                onMouseDown={!(canMove) ? mouseDown : undefined}
-                onMouseUp={!(canMove) ? mouseUp : undefined}
+                style={{
+                    zIndex: canMove ? 20 : 1,
+                }}
             >
-                <Layer ref={layerRef}>
-                    <Group>
-                        <RectOnCanvas
-                            x={rPos.x}
-                            y={rPos.y}
-                            canMove={canMove}
-                            openDetail={openDetail}
-                            rectSize={rectSize}
-                            rectDE={rectDE}
-                        />
-                    </Group>
-                </Layer>
-            </Stage>
+                <Stage
+                    style={{
+                        height: height,
+                        background: canMove ? 'rgba(0, 0, 0, .2)' : '',
+                    }}
+                    width={width}
+                    height={height}
+                    onMouseMove={!(canMove) ? mouseMove : undefined}
+                    onMouseDown={!(canMove) ? mouseDown : undefined}
+                    onMouseUp={!(canMove) ? mouseUp : undefined}
+                >
+                    <Layer ref={layerRef}>
+                        <Group>
+                            <RectOnCanvas
+                                x={rPos.x}
+                                y={rPos.y}
+                                canMove={canMove}
+                                openDetail={openDetail}
+                                rectSize={rectSize}
+                                rectDE={rectDE}
+                            />
+                        </Group>
+                    </Layer>
+                </Stage>
+            </StageContainer>
             { canMove &&
                 <div
                     style={{
