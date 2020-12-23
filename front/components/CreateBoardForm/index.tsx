@@ -1,4 +1,4 @@
-import React, {FC, useState, useCallback} from 'react';
+import React, {FC, useState, useCallback, useEffect} from 'react';
 import axios from 'axios';
 
 import useInput from '@hooks/useInput';
@@ -21,6 +21,7 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
     const [defaultBlocks, OCDB] = useInput(30);
     const [ETime, OCETime] = useInput(14);
     const [pw, OCPW] = useInput('');
+    const [repw, OCREPW] = useInput('');
     const [is_lock, set_lock] = useState(false);
     // const [tags, setTags] = useState([]);
     const [pageState, setPS] = useState(0);
@@ -96,8 +97,8 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
     const NextPage = () => {
         if (pageState === 0 && (title.trim() === '' || des.trim() === ''))
             return setWarn('작성되지 않은 항목이 있습니다.');
-        else if (pageState === 0 && title.length < 2 )
-            return setWarn('Board 이름은 최소 2자 이상으로 설정해야합니다.');
+        else if (pageState === 0 && title.length < 4 )
+            return setWarn('Board 이름은 최소 4자 이상으로 설정해야합니다.');
         else if (pageState === 0) {
             return axios.get(`/api/checkBoardName/${title}`).then(res => {
                 if (res)
@@ -109,8 +110,13 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
                 else
                     setWarn('이미 존재하는 Board name입니다.');
             }).catch(e => { setWarn( e.response.data )});
-        } else if (pageState === 2 && (is_lock && pw.length < 8)) {
-            return setWarn('비밀번호는 최소 8자 이상으로 설정해야합니다.');
+        } else if (pageState === 2)
+        {
+            if (is_lock && pw.length < 8) {
+                return setWarn('비밀번호는 최소 8자 이상으로 설정해야합니다.');
+            } else if (pw !== repw) {
+                return setWarn('비밀번호를 확인해주세요.');
+            }
         }
         setWarn('');
         setAniCN('next');
@@ -161,7 +167,6 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
                         onChange={OCDes}
                         placeholder="Board 설명을 작성해주세요."
                     />
-                    {warn !== '' && <p className="warn">{warn}</p> }
                 </div>
                 <div className={`${pageState === 1 ? aniCN : ""}`}>
                     <p>Availble Blocks</p>
@@ -203,6 +208,13 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
                         onChange={OCPW}
                         disabled={!is_lock}
                         placeholder="Board 비밀번호를 설정해주세요."
+                    />
+                    <input
+                        type="password"
+                        value={repw}
+                        onChange={OCREPW}
+                        disabled={!is_lock}
+                        placeholder="설정한 Board 비밀번호를 다시 입력해주세요."
                     />
                 </div>
                 <div className={`${pageState === 3 ? aniCN : ""}`}>
@@ -271,6 +283,7 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
                     { createState.loading && <LoadingBall /> }
                     { createState.success && '생성완료!' }
                 </div>
+                {warn !== '' && <p className="warn">{warn}</p> }
                 <PageButtonBox>
                     { pageState < 5 &&
                         <div className="next" onClick={NextPage}>

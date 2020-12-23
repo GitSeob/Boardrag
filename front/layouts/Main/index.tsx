@@ -4,8 +4,9 @@ import fetcher from '@utils/fetcher';
 import axios from 'axios';
 import LoadingCircle from '@components/LoadingCircle';
 import { Redirect } from 'react-router-dom';
-import { IUser, IBoard } from '@typings/datas';
+import { IUser, IBL } from '@typings/datas';
 import CreateBoardForm from '@components/CreateBoardForm';
+import JoinBoardForm from '@components/JoinBoardForm';
 import {
     Menu,
     Container,
@@ -17,14 +18,6 @@ import {
     DarkBackground,
 } from './style';
 import useInput from '@hooks/useInput';
-
-interface IBL {
-    name: string,
-    description: string,
-    is_lock: boolean,
-    memberCount: number,
-    background: string
-}
 
 interface ITCC {
     setValue: (data:boolean) => void
@@ -47,6 +40,23 @@ const MainPage = () => {
     const { data:notJoinedBoardList, revalidate:NJBLRevalidate} = useSWR<IBL[]>('/api/notJoinedBoards', fetcher);
     const [isAddBoard, setIsAddBoard] = useState(false);
     const [text, OCText] = useInput('');
+    const [joinInfo, setJI] = useState({
+        clicked: false,
+        board: null
+    });
+    const setJIClicked = useCallback((value:any) => {
+        setJI({
+            board: null,
+            clicked: value,
+        })
+    }, []);
+
+    const onClickNewBoard = useCallback((board:any) => {
+        setJI({
+            clicked: true,
+            board: board
+        });
+    }, []);
 
     if (!userData)
         return <Redirect to="/auth" />
@@ -63,6 +73,16 @@ const MainPage = () => {
                     <CreateBoardForm
                         BLRevalidate={BLRevalidate}
                         username={userData.username}
+                    />
+                </TopComponentContainer>
+            }
+            { (joinInfo.clicked && joinInfo.board) &&
+                <TopComponentContainer
+                    setValue={setJIClicked}
+                >
+                    <JoinBoardForm
+                        userData={userData}
+                        board={joinInfo.board}
                     />
                 </TopComponentContainer>
             }
@@ -137,7 +157,7 @@ const MainPage = () => {
                                 url={c.background}
                                 key={(i)}
                                 onClick={() => {
-                                    location.href = `/board/${c.name}`
+                                    onClickNewBoard(c)
                                 }}
                             >
                                 <h3>

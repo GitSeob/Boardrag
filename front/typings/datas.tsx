@@ -163,3 +163,11 @@ export interface DetailProps {
     Comments: IComment[],
     BoardMember: IBM,
 }
+
+export interface IBL {
+    name: string,
+    description: string,
+    is_lock: boolean,
+    memberCount: number,
+    background: string
+}
