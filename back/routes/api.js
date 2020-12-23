@@ -905,4 +905,30 @@ router.post(`/board/:boardName/chat`, isLoggedIn, async (req, res, next) => {
     }
 })
 
+router.post(`/join/:boardName`, isLoggedIn, async (req, res, next) => {
+    try {
+        const board = await db.Board.findOne({
+            where: {name: req.params.boardName}
+        });
+        if (!board)
+            return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
+        if (board.is_lock)
+        {
+            const compPW = await bcrypt.compare(req.body.pw, board.password);
+            if (!compPW)
+                return res.status(401).send({ reason: '비밀번호가 일치하지 않습니다.' });
+        }
+        await db.BoardMember.create({
+            username: req.body.nickname,
+            profile_img: req.body.profile_img,
+            avail_blocks: board.default_blocks,
+            UserId: req.user.id,
+            BoardId: board.id
+        })
+        return res.send(`${board.name}`);
+    } catch(e) {
+        next(e);
+    }
+})
+
 module.exports = router;

@@ -15,7 +15,7 @@ module.exports = class Board extends Model {
                     allowNull: false,
                 },
                 password: {
-                    type: DataTypes.STRING(100),
+                    type: DataTypes.TEXT,
                     allowNull: true,
                 },
                 description: {
