@@ -192,10 +192,24 @@ export const UserInfo = styled.div`
         margin-right: 1rem;
     }
 
+    & > .no_profile_img {
+        width: 5rem;
+        height: 5rem;
+        border-radius: 100%;
+        margin-right: 1rem;
+        background: linear-gradient(#002534 , #090a0f) no-repeat;
+        display: flex;
+
+        img {
+            width: 2rem;
+            margin: auto;
+        }
+    }
+
     & > p {
         font-size: 18px;
         font-weight: 700;
-        width: 100%;
+        width: calc(100% - 9.6rem);
     }
 `;
 
@@ -207,6 +221,7 @@ export const UDButtonBox = styled.div`
     & > button {
         background: transparent !important;
         cursor: pointer;
+        width: 1.2rem;
     }
 `;
 
@@ -338,6 +353,20 @@ export const Comment = styled.div`
         height: 3rem;
         border-radius: 100%;
         margin-right: 1rem;
+    }
+
+    .no_profile_img {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 100%;
+        margin-right: 1rem;
+        background: linear-gradient(#002534 , #090a0f) no-repeat;
+        display: flex;
+
+        img {
+            width: 1.5rem;
+            margin: auto;
+        }
     }
 
     .content {

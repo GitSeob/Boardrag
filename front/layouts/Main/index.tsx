@@ -273,6 +273,7 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
                                 </button>
                                 <input
                                     type="file"
+                                    accept=".jpg, .png"
                                     ref={backgroundInput}
                                     onChange={onChangeBackgroundImg}
                                 />
@@ -290,7 +291,7 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
                                 style={profileImage.url !== '' ? {
                                     backgroundImage: `url(${profileImage.url})`,
                                 } : {
-                                    background: `radial-gradient(ellipse at bottom, #002534 0%, #090a0f 100%) no-repeat`
+                                    background: `linear-gradient(#002534 , #090a0f) no-repeat`
                                 }}
                             >
                                 {profileImage.url === '' && <img src="/public/person.svg" />}
@@ -299,6 +300,7 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
                                 </button>
                                 <input
                                     type="file"
+                                    accept=".jpg, .png"
                                     ref={imageInput}
                                     onChange={onChangeProfileImg}
                                 />

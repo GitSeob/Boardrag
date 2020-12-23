@@ -21,7 +21,7 @@ interface UploadProps {
     message: string,
 }
 
-const TextAdd: FC<boxProps> = ({ toast, x, y, width, height, offset, initStates, board }) => {
+const TextAdd: FC<boxProps> = ({ BMID, toast, x, y, width, height, offset, initStates, board }) => {
     const [head, OCHead] = useInput('');
     const [para, OCPara] = useInput('');
     const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
@@ -72,6 +72,7 @@ const TextAdd: FC<boxProps> = ({ toast, x, y, width, height, offset, initStates,
             y: offset.y,
             width: offset.width,
             height: offset.height,
+            BoardMemberId: BMID
         }).then(res => {
             if (res.status === 202) {
                 setUploading({

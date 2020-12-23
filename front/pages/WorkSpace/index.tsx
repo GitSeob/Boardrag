@@ -9,7 +9,7 @@ import {Stage, Layer, Group} from 'react-konva';
 import Konva from 'konva';
 import RectOnCanvas from '@components/RectOnCanvas';
 import ImageEditButton from '@components/ImageEditButton';
-import { IUser, IBoard, IComment, IDetail } from '@typings/datas';
+import { IUser, IBoard, IComment, IDetail, IBM } from '@typings/datas';
 
 import {
     UDButtonBox,
@@ -78,7 +78,7 @@ type offset = {
 
 interface IBoardProps {
     boardData: IBoard | undefined,
-    userData: IUser,
+    userData: IBM,
     dataReval: () => void,
     board: string,
 }
@@ -411,7 +411,8 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
         e.preventDefault();
         if (commentContent !== '') {
             axios.post(`/api/board/${board}/comment/${openDetail.category}/${openDetail.content?.id}`, {
-                content: commentContent
+                content: commentContent,
+                BoardMemberId: userData.id
             }).then(() => {
                 setCC('');
                 if (detailScrollbarRef.current)
@@ -814,9 +815,15 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                     <>
                     <TopFixContent>
                         <UserInfo>
-                            <img src={openDetail.content?.User.profile_img} />
-                            <p>{openDetail.content?.User.username}</p>
-                            {( userData.is_admin || (openDetail.content && openDetail.content.UserId === userData.id )) &&
+                            { openDetail.content?.BoardMember.profile_img ?
+                                <img src={openDetail.content?.BoardMember.profile_img} />
+                                :
+                                <div className="no_profile_img">
+                                    <img src="/public/person.svg"/>
+                                </div>
+                            }
+                            <p>{openDetail.content?.BoardMember.username}</p>
+                            {( (openDetail.content && openDetail.content.BoardMemberId === userData.id )) &&
                                 <UDButtonBox>
                                     <button
                                         onClick={() => onEdit(openDetail.category)}
@@ -959,9 +966,15 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                                 <Comment
                                     key={(i)}
                                 >
-                                    <img src={c.User.profile_img} />
+                                    { c.BoardMember.profile_img ?
+                                        <img src={c.BoardMember.profile_img} />
+                                        :
+                                        <div className="no_profile_img">
+                                            <img src="/public/person.svg" />
+                                        </div>
+                                    }
                                     <div className="content">
-                                        <p>{c.User.username}</p>
+                                        <p>{c.BoardMember.username}</p>
                                         <div>
                                             { c.id === editCommnetIdx ?
                                                 <div>
@@ -979,7 +992,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                                                 </>
                                             }
                                         </div>
-                                        { (c.UserId === userData.id ) &&
+                                        { (c.BoardMemberId === userData.id ) &&
                                             <div className="edit-box">
                                                 { c.id === editCommnetIdx ?
                                                     <>
@@ -1046,6 +1059,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                     offset={offset}
                     initStates={initStates}
                     board={board}
+                    BMID={userData.id}
                     // dataReval={dataReval}
                 />
             }
@@ -1059,6 +1073,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                     offset={offset}
                     initStates={initStates}
                     board={board}
+                    BMID={userData.id}
                     // dataReval={dataReval}
                 />
             }
@@ -1072,6 +1087,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                     offset={offset}
                     initStates={initStates}
                     board={board}
+                    BMID={userData.id}
                     // dataReval={dataReval}
                 />
             }
@@ -1089,7 +1105,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                         >
                             {c.content}
                             <AltBox className="alt">
-                                {c.User.username}
+                                {c.BoardMember.username}
                             </AltBox>
                         </TextComponent>
                     </ComponentBox>
@@ -1108,7 +1124,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                             onClick={() => openDetailWindow(3, c.id, c)}
                         >
                             <AltBox className="alt">
-                                {c.User.username}
+                                {c.BoardMember.username}
                             </AltBox>
                             <img src={c.url} />
                         </ImageComponent>
@@ -1129,7 +1145,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                             src={c.background_img ? c.background_img : ''}
                         >
                             <AltBox className="alt">
-                                {c.User.username}
+                                {c.BoardMember.username}
                             </AltBox>
                             <h3 className="head">
                                 {c.head}
