@@ -39,8 +39,6 @@ module.exports = class User extends Model {
     }
     static associate(db) {
         db.User.hasMany(db.Board, { as: "Admin", foreignKey: "AdminId" });
-        db.User.hasMany(db.TextContent);
-        db.User.hasMany(db.Note);
         db.User.belongsToMany(db.Board, {
             through: db.BoardMember,
             as: "Boards",
@@ -49,8 +47,6 @@ module.exports = class User extends Model {
             as: "Member",
             foreignKey: "UserId"
         });
-        db.User.hasMany(db.Image);
-        db.User.hasMany(db.Comment);
         // db.User.hasMany(db.Chat);
     }
 };

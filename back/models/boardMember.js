@@ -5,7 +5,11 @@ module.exports = class BoardMember extends Model {
     static init(sequelize) {
         return super.init(
         {
-            // id가 기본적으로 들어있다.\
+            id: {
+                type: DataTypes.INTEGER,
+                primaryKey: true,
+                autoIncrement: true
+            },
             username: {
                 type: DataTypes.STRING(100),
                 allowNull: false,
@@ -36,5 +40,9 @@ module.exports = class BoardMember extends Model {
     static associate(db) {
         db.BoardMember.belongsTo(db.Board);
         db.BoardMember.belongsTo(db.User);
+        db.BoardMember.hasMany(db.TextContent);
+        db.BoardMember.hasMany(db.Note);
+        db.BoardMember.hasMany(db.Image);
+        db.BoardMember.hasMany(db.Comment);
     }
 };
