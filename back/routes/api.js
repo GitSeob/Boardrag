@@ -26,7 +26,8 @@ const upload = multer({
 			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
 		}
-	}),
+    }),
+    limits: {fileSize: 20*1024*1024},
 });
 
 const uploadBoardImage = multer({
@@ -38,7 +39,8 @@ const uploadBoardImage = multer({
 			const savename = req.query.name + "_bg_image" + path.extname(file.originalname);
 			done(null, savename);
 		}
-	}),
+    }),
+    limits: {fileSize: 20*1024*1024},
 });
 
 const uploadProfileImage = multer({
@@ -50,7 +52,8 @@ const uploadProfileImage = multer({
 			const savename = req.query.name + "_" + req.user.username + path.extname(file.originalname);
 			done(null, savename);
 		}
-	}),
+    }),
+    limits: {fileSize: 4*1024*1024},
 });
 
 router.get('/auth', async (req, res, next) => {
@@ -222,11 +225,11 @@ router.get(`/board/:boardName`, isLoggedIn, async (req, res, next) => {
                 include: [{
                     model: db.Comment,
                     include: {
-                        model: db.User
+                        model: db.BoardMember
                     },
                     order: [["createdAt", "DESC"]],
                 }, {
-                    model: db.User
+                    model: db.BoardMember
                 }],
                 order: [["createdAt", "DESC"]],
             }, {
@@ -234,11 +237,11 @@ router.get(`/board/:boardName`, isLoggedIn, async (req, res, next) => {
                 include: [{
                     model: db.Comment,
                     include: [{
-                        model: db.User
+                        model: db.BoardMember
                     }],
                     order: [["createdAt", "DESC"]],
                 }, {
-                    model: db.User
+                    model: db.BoardMember
                 }],
                 order: [["createdAt", "DESC"]],
             }, {
@@ -246,11 +249,11 @@ router.get(`/board/:boardName`, isLoggedIn, async (req, res, next) => {
                 include: [{
                     model: db.Comment,
                     include: [{
-                        model: db.User
+                        model: db.BoardMember
                     }],
                     order: [["createdAt", "DESC"]],
                 }, {
-                    model: db.User
+                    model: db.BoardMember
                 }],
                 order: [["createdAt", "DESC"]],
             }]
@@ -258,6 +261,24 @@ router.get(`/board/:boardName`, isLoggedIn, async (req, res, next) => {
         return res.send(boardData);
     } catch (e) {
         console.error(e);
+        next(e);
+    }
+});
+
+router.get(`/board/:boardName/me`, isLoggedIn, async (req, res, next) => {
+    try {
+        const board = await db.Board.findOne({
+            where: { name: req.params.boardName }
+        });
+        if (!board)
+            return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
+        return res.send(await db.BoardMember.findOne({
+                where: {
+                    UserId: req.user.id,
+                    BoardId: board.id
+                }
+            }) || false);
+    } catch(e) {
         next(e);
     }
 });
@@ -270,9 +291,16 @@ router.post('/board/:boardName/write/text', isLoggedIn, async (req, res, next) =
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
         const now = new Date();
-        const availBlocks = await req.user.avail_blocks - (req.body.width * req.body.height);
+        const member = await db.BoardMember.findOne({where: {
+            id: req.body.BoardMemberId,
+            UserId: req.user.id,
+            BoardId: board.id
+        }});
+        if (!member)
+            return res.status(404).send({ reason: "알 수 없는 문제가 발생했습니다." });
+        const availBlocks = await member.avail_blocks - (req.body.width * req.body.height);
         if (availBlocks < 0)
-            return res.status(403).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
+            return res.status(403).send({ reason: `생성 가능한 블록 수는 ${member.avail_blocks}입니다.`});
 
         const newText = await db.TextContent.create({
             x: req.body.x,
@@ -280,24 +308,29 @@ router.post('/board/:boardName/write/text', isLoggedIn, async (req, res, next) =
             width: req.body.width,
             height: req.body.height,
             content: req.body.content,
-            expiry_date: now.setDate(now.getDate() + 7),
-            UserId: req.user.id,
+            expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
+            BoardMemberId: member.id,
             BoardId: board.id
         })
-        await db.User.update({
+        await db.BoardMember.update({
             avail_blocks: availBlocks
         }, {
-            where: {id: req.user.id}
+            where: {id: member.id}
         });
+        await db.Board.update({
+            recent_time: fn('NOW')
+        },{
+            where: {id: board.id}
+        })
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
-        return res.send(`${req.user.avail_blocks - (req.body.width * req.body.height)}`);
+        return res.send(`${availBlocks}`);
     } catch (e) {
         console.error(e);
         next(e);
     }
-})
+});
 
 router.post('/board/:boardName/write/note', isLoggedIn, async (req, res, next) => {
     try {
@@ -307,9 +340,16 @@ router.post('/board/:boardName/write/note', isLoggedIn, async (req, res, next) =
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
         const now = new Date();
-        const availBlocks = await req.user.avail_blocks - (req.body.width * req.body.height);
+        const member = await db.BoardMember.findOne({where: {
+            id: req.body.BoardMemberId,
+            UserId: req.user.id,
+            BoardId: board.id
+        }});
+        if (!member)
+            return res.status(404).send({ reason: "알 수 없는 문제가 발생했습니다." });
+        const availBlocks = await member.avail_blocks - (req.body.width * req.body.height);
         if (availBlocks < 0)
-            return res.status(403).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
+            return res.status(403).send({ reason: `생성 가능한 블록 수는 ${member.avail_blocks}입니다.`});
 
         const newText = await db.Note.create({
             x: req.body.x,
@@ -319,19 +359,24 @@ router.post('/board/:boardName/write/note', isLoggedIn, async (req, res, next) =
             head: req.body.head,
             paragraph: req.body.paragraph,
             background_img: req.body.background_img,
-            expiry_date: now.setDate(now.getDate() + 7),
-            UserId: req.user.id,
+            expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
+            BoardMemberId: member.id,
             BoardId: board.id
         })
-        await db.User.update({
+        await db.BoardMember.update({
             avail_blocks: availBlocks
         }, {
-            where: {id: req.user.id}
+            where: {id: member.id}
         });
+        await db.Board.update({
+            recent_time: fn('NOW')
+        },{
+            where: {id: board.id}
+        })
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
-        return res.send(`${req.user.avail_blocks - (req.body.width * req.body.height)}`);
+        return res.send(`${availBlocks}`);
     } catch (e) {
         console.error(e);
         next(e);
@@ -364,10 +409,17 @@ router.post('/board/:boardName/write/image', isLoggedIn, async (req, res, next) 
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
         const now = new Date();
-        const availBlocks = await req.user.avail_blocks - (req.body.width * req.body.height);
+        const member = await db.BoardMember.findOne({where: {
+            id: req.body.BoardMemberId,
+            UserId: req.user.id,
+            BoardId: board.id
+        }});
+        if (!member)
+            return res.status(404).send({ reason: "알 수 없는 문제가 발생했습니다." });
+        const availBlocks = await member.avail_blocks - (req.body.width * req.body.height);
 
         if (availBlocks < 0)
-            return res.status(403).send({ reason: `생성 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
+            return res.status(403).send({ reason: `생성 가능한 블록 수는 ${member.avail_blocks}입니다.`});
         if (!req.body.url)
             return res.status(403).send({ reason: `이미지가 등록되지 않았습니다.`});
         const newImage = await db.Image.create({
@@ -376,20 +428,25 @@ router.post('/board/:boardName/write/image', isLoggedIn, async (req, res, next) 
             y: req.body.y,
             width: req.body.width,
             height: req.body.height,
-            expiry_date: now.setDate(now.getDate() + 7),
-            UserId: req.user.id,
+            expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
+            BoardMemberId: member.id,
             BoardId: board.id
         });
 
-        await db.User.update({
+        await db.BoardMember.update({
             avail_blocks: availBlocks
         }, {
-            where: {id: req.user.id}
+            where: {id: member.id}
         });
+        await db.Board.update({
+            recent_time: fn('NOW')
+        },{
+            where: {id: board.id}
+        })
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
-        return res.send(`${req.user.avail_blocks - (req.body.width * req.body.height)}`);
+        return res.send(`${availBlocks}`);
     } catch(e) {
         console.error(e);
         next(e);
@@ -418,7 +475,7 @@ router.post('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, n
             content_category: req.params.cid,
             content_id: req.params.id,
             content: req.body.content,
-            UserId: req.user.id,
+            BoardMemberId: req.body.BoardMemberId,
             BoardId: board.id
         })
         const io = req.app.get("io");
@@ -451,7 +508,7 @@ router.get('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, ne
             where: { ...query, BoardId: board.id },
             order: [["createdAt", "ASC"]],
             include: [{
-                model: db.User
+                model: db.BoardMember
             }]
         });
         return res.send(comments);
@@ -473,8 +530,17 @@ router.patch('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next)
         });
         if (!comment)
             return res.status(404).send({ reason: '존재하지 않는 댓글입니다.' });
-        if (comment.UserId !== req.user.id)
+        const member = await db.BoardMember.findOne({
+            where: {
+                UserId: req.user.id,
+                BoardId: board.id
+            }
+        })
+        if (!member)
+            return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
+        if (comment.BoardMemberId !== member.id)
             return res.status(401).send({ reason: '다른 사람의 덧글은 수정할 수 없습니다.' });
+
         await db.Comment.update({
             content: req.body.content,
         }, {
@@ -503,8 +569,16 @@ router.delete('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next
         });
         if (!comment)
             return res.status(404).send({ reason: '존재하지 않는 댓글입니다.' });
-        if (comment.UserId !== req.user.id)
-            return res.status(401).send({ reason: '다른 사람의 덧글은 수정할 수 없습니다.' });
+        const member = await db.BoardMember.findOne({
+            where: {
+                UserId: req.user.id,
+                BoardId: board.id
+            }
+        })
+        if (!member)
+            return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
+        if (comment.BoardMemberId !== member.id)
+            return res.status(401).send({ reason: '다른 사람의 덧글은 삭제할 수 없습니다.' });
         await db.Comment.destroy({
             where: { id: req.params.id }
         });
@@ -529,12 +603,21 @@ router.delete('/board/:boardName/delete/text/:id', isLoggedIn, async (req, res, 
         });
         if (!content)
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-        if (req.user.id !== content.UserId && !req.user.is_admin)
+        const member = await db.BoardMember.findOne({
+            where: {
+                UserId: req.user.id,
+                BoardId: board.id
+            }
+        })
+        if (!member)
+            return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
+        if (member.id !== content.BoardMemberId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
+
         const size = content.width * content.height;
         await db.TextContent.destroy({ where: {id: req.params.id }});
         await db.Comment.destroy({ where: { TextContentId: req.params.id }});
-        await db.User.increment({ avail_blocks: size }, {where: { id: content.UserId }});
+        await db.BoardMember.increment({ avail_blocks: size }, {where: { id: content.BoardMemberId }});
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
@@ -558,12 +641,21 @@ router.delete('/board/:boardName/delete/image/:id', isLoggedIn, async (req, res,
         const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
         if (!content)
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-        if (req.user.id !== content.UserId && !req.user.is_admin)
+        const member = await db.BoardMember.findOne({
+            where: {
+                UserId: req.user.id,
+                BoardId: board.id
+            }
+        })
+        if (!member)
+            return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
+        if (member.id !== content.BoardMemberId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
+
         const size = content.width * content.height;
         await db.Image.destroy({ where: {id: req.params.id }});
         await db.Comment.destroy({ where: { ImageId: req.params.id }});
-        await db.User.increment({ avail_blocks: size }, {where: { id: content.UserId }});
+        await db.BoardMember.increment({ avail_blocks: size }, {where: { id: content.BoardMemberId }});
         fs.unlink(`./uploads/${content.url.replace(delURL, "")}`, () => {
             return;
         });
@@ -591,11 +683,19 @@ router.delete('/board/:boardName/delete/note/:id', isLoggedIn, async (req, res, 
         const size = content.width * content.height;
         if (!content)
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-        if (req.user.id !== content.UserId && !req.user.is_admin)
+        const member = await db.BoardMember.findOne({
+            where: {
+                UserId: req.user.id,
+                BoardId: board.id
+            }
+        })
+        if (!member)
+            return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
+        if (member.id !== content.BoardMemberId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
         await db.Note.destroy({ where: {id: req.params.id }});
         await db.Comment.destroy({ where: { NoteId: req.params.id }});
-        await db.User.increment({ avail_blocks: size }, {where: { id: content.UserId }});
+        await db.BoardMember.increment({ avail_blocks: size }, {where: { id: content.BoardMemberId }});
         if (content.background_img)
             fs.unlink(`./uploads/${content.background_img.replace(delURL, "")}`, () => {
                 return;
@@ -620,12 +720,21 @@ router.patch('/board/:boardName/text/:id', isLoggedIn, async (req, res, next) =>
         const content = await db.TextContent.findOne({ where: {id: req.params.id }});
         if (!content)
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-        if (req.user.id !== content.UserId && !req.user.is_admin)
+        const member = await db.BoardMember.findOne({
+            where: {
+                UserId: req.user.id,
+                BoardId: board.id
+            }
+        })
+        if (!member)
+            return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
+        if (member.id !== content.BoardMemberId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
+
         const oldSize = content.width * content.height;
-        if (req.user.avail_blocks - ( req.body.width * req.body.height - oldSize ) < 0)
-            return res.status(403).send({ reason: `현재 추가 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
-        const editedContent = await db.TextContent.update({
+        if (member.avail_blocks - ( req.body.width * req.body.height - oldSize ) < 0)
+            return res.status(403).send({ reason: `현재 추가 가능한 블록 수는 ${member.avail_blocks}입니다.`});
+        await db.TextContent.update({
             content: req.body.content,
             x: req.body.x,
             y: req.body.y,
@@ -634,17 +743,17 @@ router.patch('/board/:boardName/text/:id', isLoggedIn, async (req, res, next) =>
         }, {
             where: {id: req.params.id}
         });
-        await db.User.increment({
+        await db.BoardMember.increment({
             avail_blocks: oldSize - (req.body.width * req.body.height)
         }, {
-            where: {id: content.UserId}
+            where: {id: content.BoardMemberId}
         })
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
         if (req.body.width * req.body.height === oldSize)
             return res.send(false);
-        return res.send(`${req.user.avail_blocks - (req.body.width * req.body.height)}`);
+        return res.send(`${member.avail_blocks + oldSize - (req.body.width * req.body.height)}`);
     } catch(e) {
         console.error(e);
         next(e);
@@ -661,12 +770,21 @@ router.patch('/board/:boardName/note/:id', isLoggedIn, async (req, res, next) =>
         const content = await db.Note.findOne({ where: {id: req.params.id }});
         if (!content)
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-        if (req.user.id !== content.UserId && !req.user.is_admin)
+        const member = await db.BoardMember.findOne({
+            where: {
+                UserId: req.user.id,
+                BoardId: board.id
+            }
+        })
+        if (!member)
+            return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
+        if (member.id !== content.BoardMemberId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
+
         const oldSize = content.width * content.height;
-        if (req.user.avail_blocks - ( req.body.width * req.body.height - oldSize ) < 0)
-            return res.status(403).send({ reason: `현재 추가 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
-        const editedContent = await db.Note.update({
+        if (member.avail_blocks - ( req.body.width * req.body.height - oldSize ) < 0)
+            return res.status(403).send({ reason: `현재 추가 가능한 블록 수는 ${member.avail_blocks}입니다.`});
+        await db.Note.update({
             background_img: req.body.background_img,
             head: req.body.head,
             paragraph: req.body.paragraph,
@@ -677,17 +795,17 @@ router.patch('/board/:boardName/note/:id', isLoggedIn, async (req, res, next) =>
         }, {
             where: {id: req.params.id}
         });
-        await db.User.increment({
+        await db.BoardMember.increment({
             avail_blocks: oldSize - (req.body.width * req.body.height)
         }, {
-            where: {id: content.UserId}
+            where: {id: content.BoardMemberId}
         });
 
         const io = req.app.get("io");
         io.of(`/board-${board.name}`).emit('refresh');
         if (req.body.width * req.body.height === oldSize)
             return res.send(false);
-        return res.send(`${req.user.avail_blocks - (req.body.width * req.body.height)}`);
+        return res.send(`${member.avail_blocks + oldSize - (req.body.width * req.body.height)}`);
     } catch(e) {
         console.error(e);
         next(e);
@@ -704,12 +822,21 @@ router.patch('/board/:boardName/image/:id', isLoggedIn, async (req, res, next) =
         const content = await db.Image.findOne({ where: {id: req.params.id }});
         if (!content)
             return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-        if (req.user.id !== content.UserId && !req.user.is_admin)
+        const member = await db.BoardMember.findOne({
+            where: {
+                UserId: req.user.id,
+                BoardId: board.id
+            }
+        })
+        if (!member)
+            return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
+        if (member.id !== content.BoardMemberId && !req.user.is_admin)
             return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
+
         const oldSize = await content.width * content.height;
-        if (req.user.avail_blocks - ( req.body.width * req.body.height - oldSize ) < 0)
-            return res.status(403).send({ reason: `현재 추가 가능한 블록 수는 ${req.user.avail_blocks}입니다.`});
-        const editedContent = await db.Image.update({
+        if (member.avail_blocks - ( req.body.width * req.body.height - oldSize ) < 0)
+            return res.status(403).send({ reason: `현재 추가 가능한 블록 수는 ${member.avail_blocks}입니다.`});
+        await db.Image.update({
             url: req.body.url,
             x: req.body.x,
             y: req.body.y,
@@ -718,7 +845,7 @@ router.patch('/board/:boardName/image/:id', isLoggedIn, async (req, res, next) =
         }, {
             where: {id: req.params.id}
         });
-        await db.User.increment({
+        await db.BoardMember.increment({
             avail_blocks: oldSize - (req.body.width * req.body.height)
         }, {
             where: {id: content.UserId}
@@ -727,7 +854,7 @@ router.patch('/board/:boardName/image/:id', isLoggedIn, async (req, res, next) =
         io.of(`/board-${board.name}`).emit('refresh');
         if (req.body.width * req.body.height === oldSize)
             return res.send(false);
-        return res.send(`${req.user.avail_blocks - (req.body.width * req.body.height)}`);
+            return res.send(`${member.avail_blocks + oldSize - (req.body.width * req.body.height)}`);
     } catch(e) {
         console.error(e);
         next(e);
@@ -764,7 +891,7 @@ router.post(`/board/:boardName/chat`, isLoggedIn, async (req, res, next) => {
         if (!board)
             return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
         const newChat = await db.Chat.create({
-            userId: req.body.userId,
+            boardMemberId: req.body.BoardMemberId,
             username: req.body.username,
             content: req.body.content,
             BoardId: board.id

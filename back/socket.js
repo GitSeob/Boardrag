@@ -11,8 +11,6 @@ module.exports = (server, app) => {
     const dynamicNsp = io.of(/^\/board-.+$/).on("connect", (socket) => {
         const newNamespace = socket.nsp; // newNamespace.name === '/dynamic-101'
 
-        console.log(newNamespace.name);
-
         if (!onlineMap[socket.nsp.name]) {
             onlineMap[socket.nsp.name] = {};
         }
@@ -20,14 +18,13 @@ module.exports = (server, app) => {
         // broadcast to all clients in the given sub-namespace
         socket.emit("hello", socket.nsp.name);
 
-        socket.on("login", ({ id, username, board }) => {
+        socket.on("login", ({ id, username }) => {
             onlineMap[socket.nsp.name][socket.id] = {id, username};
             newNamespace.emit(
                 "onlineList",
                 Object.values(onlineMap[socket.nsp.name])
             );
-
-            socket.join(`${socket.nsp.name}-${board}`);
+            socket.join(`${socket.nsp.name}`);
         });
 
         socket.on('newContent', () => {
