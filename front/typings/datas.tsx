@@ -169,5 +169,6 @@ export interface IBL {
     description: string,
     is_lock: boolean,
     memberCount: number,
-    background: string
+    background: string,
+    recent_time: Date,
 }

@@ -24,47 +24,64 @@ export const Box = styled.div`
     background: #000;
     box-shadow: 0 0 6px 1px #afafaf;
     animation: ${appearUp} .3s ease-in-out 1;
+    overflow: hidden;
+    transition: .5s;
 
-    p {
-        font-size: 11px;
-    }
-
-    input {
-        background: rgba(255, 255, 255, .95);
-        border-radius: 1rem;
-        color: #444;
-        margin-top: .5rem;
+    & > div {
+        position: relative;
         width: 100%;
-        padding: .5rem 1rem;
-    }
+        height: 100%;
 
-    input[type="password"] {
-        padding: .3rem 1rem;
-    }
+        p {
+            font-size: 11px;
+        }
 
-    .description {
-        max-height: 300px;
-        overflow: auto;
-        padding: .5rem;
-        font-size: 11px;
-        color: #ddd;
-    }
+        .description {
+            margin-top: .2rem;
+            border-left: 2px solid #777;
+            overflow: auto;
+            padding: .5rem;
+            font-size: 11px;
+            color: #ddd;
+            max-height: 300px;
+        }
 
-    .row {
-        border-top: 1px solid #666;
-        margin-top: 1rem;
-        padding-top: .5rem;
-        width: 100%;
-        display: flex;
-        color: #ddd;
+        div {
+            margin-bottom: .5rem;
+        }
     }
+`;
 
-    & > button {
-        width: 100%;
-        border-radius: 5px;
-        padding: .5rem;
-        background: linear-gradient(#a7dfaf, #879f8f);
-        cursor: pointer;
-        margin-top: 1rem;
+export const FLEXDIV = styled.div`
+    position: relative;
+    display: flex;
+    align-items: center;
+`;
+
+export const PageButton = styled.button`
+    width: 100%;
+    border-radius: 5px;
+    padding: .5rem;
+    margin-top: 1rem;
+    border: 1px solid #444;
+    transition: .3s;
+    background: #111;
+    color: #fff;
+
+    &:hover {
+        background: #444;
+    }
+`;
+
+export const Input = styled.input`
+    padding: .5rem;
+    width: 100%;
+    border-radius: 1rem;
+    font-size: 12px;
+    margin: .5rem auto;
+    text-align: center;
+
+    &.nickname {
+        width: 50%;
     }
 `;

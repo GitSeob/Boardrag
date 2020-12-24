@@ -182,17 +182,18 @@ export const BoardCard = styled('div')<BC>`
     }
 
     .iconBox {
-        display: flex;
         color: #888;
         position: relative;
 
-        & > img {
+        img {
             height: .8rem;
             color: #ff0000;
 
             &.lock {
                 position: absolute;
                 right: 0;
+                top: 50%;
+                transform: translateY(-50%);
             }
         }
     }
@@ -207,4 +208,17 @@ export const DarkBackground = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+`;
+
+
+
+export const PersonCount = styled.div`
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+
+    & > img {
+        margin-right: .2rem;
+        height: 0.8rem;
+    }
 `;

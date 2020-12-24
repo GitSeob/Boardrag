@@ -110,13 +110,16 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
                 else
                     setWarn('이미 존재하는 Board name입니다.');
             }).catch(e => { setWarn( e.response.data )});
-        } else if (pageState === 2)
-        {
+        }
+        else if (pageState === 2) {
             if (is_lock && pw.length < 8) {
                 return setWarn('비밀번호는 최소 8자 이상으로 설정해야합니다.');
             } else if (pw !== repw) {
                 return setWarn('비밀번호를 확인해주세요.');
             }
+        }
+        else if (pageState === 4 && nickName.length < 2 ) {
+                setWarn('닉네임은 2자이상으로 설정해야합니다.');
         }
         setWarn('');
         setAniCN('next');

@@ -16,6 +16,7 @@ import {
     BCHeader,
     SearchForm,
     DarkBackground,
+    PersonCount
 } from './style';
 import useInput from '@hooks/useInput';
 
@@ -128,7 +129,9 @@ const MainPage = () => {
                                     {c.description}
                                 </div>
                                 <div className="iconBox">
-                                    <img src="/public/person.svg" /> {c.memberCount}
+                                    <PersonCount>
+                                        <img src="/public/person.svg" /> {c.memberCount}
+                                    </PersonCount>
                                     { c.is_lock === true && <img className="lock" src="/public/lock.svg" /> }
                                 </div>
                             </BoardCard>
@@ -167,7 +170,9 @@ const MainPage = () => {
                                     {c.description}
                                 </div>
                                 <div className="iconBox">
-                                    <img src="/public/person.svg" /> {c.memberCount}
+                                    <PersonCount>
+                                        <img src="/public/person.svg" /> {c.memberCount}
+                                    </PersonCount>
                                     { c.is_lock === true && <img className="lock" src="/public/lock.svg" /> }
                                 </div>
                             </BoardCard>
