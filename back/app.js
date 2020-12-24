@@ -109,7 +109,8 @@ const deleter = schedule.scheduleJob('0 0 * * * *', async () => {
     await TextContent.findAll({
         where: {
             expiry_date: {
-                [Sequelize.Op.lte]: now
+                [Sequelize.Op.lte]: now,
+                [Sequelize.Op.ne]: null
             }
         },
         attributes: ["id"],
@@ -123,7 +124,8 @@ const deleter = schedule.scheduleJob('0 0 * * * *', async () => {
     await Image.findAll({
         where: {
             expiry_date: {
-                [Sequelize.Op.lte]: now
+                [Sequelize.Op.lte]: now,
+                [Sequelize.Op.ne]: null
             }
         },
         attributes: ["id", "url"],
@@ -138,7 +140,8 @@ const deleter = schedule.scheduleJob('0 0 * * * *', async () => {
     await Note.findAll({
         where: {
             expiry_date: {
-                [Sequelize.Op.lte]: now
+                [Sequelize.Op.lte]: now,
+                [Sequelize.Op.ne]: null
             }
         },
         attributes: ["id", "background_img"],
