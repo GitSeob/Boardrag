@@ -159,7 +159,8 @@ router.get(`/board`, isLoggedIn, async (req, res, next) => {
                 as: "Member",
                 attributes: []
             }],
-            group: ['Board.id']
+            group: ['Board.id'],
+            order: [["createdAt", "DESC"]],
         });
         return res.send(joinedBoards);
     } catch (e) {
@@ -194,7 +195,8 @@ router.get(`/notJoinedBoards`, isLoggedIn, async (req, res, next) => {
                 as: "Member",
                 attributes: []
             }],
-            group: ['Board.id']
+            group: ['Board.id'],
+            order: [["createdAt", "DESC"]],
         });
         return res.send(notJoinedBoards);
     } catch(e) {
