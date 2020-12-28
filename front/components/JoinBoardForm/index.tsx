@@ -73,7 +73,8 @@ const JoinBoardForm:FC<IJBF> = ({ board, userData}) => {
             loading: true
         });
         await axios.post(`/api/join/${board?.name}`, {
-            pw, nickname
+            pw, nickname,
+            profile_img: profileImage.url
         }).then(res => {
             setResult({
                 ...result,

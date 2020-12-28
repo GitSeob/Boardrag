@@ -76,9 +76,8 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
 		const imageFormData = new FormData();
         imageFormData.append('image', e.target.files[0]);
         imageFormData.append('boardname', title);
-        console.log(imageFormData);
         await setBI({
-            ...profileImage,
+            ...backgroundImage,
             loading: true
         });
 		await axios.post(`/api/uploadBoardBackground?name=${title}`, imageFormData).then(res => {
@@ -88,7 +87,7 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
             });
         }).catch(e => {
             setBI({
-                ...profileImage,
+                ...backgroundImage,
                 loading: false,
             });
         })

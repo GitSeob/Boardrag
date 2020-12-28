@@ -67,6 +67,28 @@ const padeLeftToRight = keyframes`
     }
 `
 
+const padeAppearUp = keyframes`
+    from {
+        opacity: 0;
+        transform: translate(-50%, -40%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+`
+
+const padeDisappearDown = keyframes`
+    from {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -40%);
+    }
+`
+
 const enlarge = keyframes`
     0% {
         width: 0%;
@@ -115,6 +137,27 @@ export const DetailBackground = styled('div')`
     animation: ${padeIn} .5s ease-in-out 1;
 `;
 
+type Tflgs = {
+    flg: boolean
+}
+
+// export const DetailWindow = styled('div')<Tflgs>`
+//     position: fixed;
+//     min-height: 100vh;
+//     // height: 100%;
+//     min-height: 500px;
+//     width: 400px;
+//     background: rgba(0, 0, 0, .85);
+//     top: 50%;
+//     left: 50%;
+//     z-index: 13;
+//     transition: .3s;
+//     color: #fff;
+//     transform: translate(-50%, -50%);
+//     box-shadow: 0 0 6px 1px #999;
+//     opacity: ${props => props.flg ? 1 : 0};
+//     animation: ${props => props.flg ? padeAppearUp : padeDisappearDown} .5s ease-in-out 1;
+// `;
 
 export const DetailWindow = styled('div')`
     position: fixed;

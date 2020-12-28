@@ -159,10 +159,6 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
     const now = new Date();
     const bg = boardData?.background ? boardData.background : '';
 
-    const detailWindowStyle = {
-        transform: openDetail.flg ? 'translateX(0%)' : 'translateX(-100%)',
-    }
-
     useEffect(() => {
         setRPos({
             x: rPos.x / defaultRectSize * window.innerWidth / 32,
@@ -792,6 +788,10 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
         setComments(editedContent);
     }, [boardData, openDetail]);
 
+    const detailWindowStyle = {
+        transform: openDetail.flg ? 'translateX(0%)' : 'translateX(-100%)',
+    }
+
     return (
         <KonvaContainer>
             {warning !== ''&&
@@ -804,7 +804,10 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                     onClick={onInitContent}
                 />
             }
-            <DetailWindow style={detailWindowStyle}>
+            <DetailWindow
+                // flg={openDetail.flg}
+                style={ detailWindowStyle }
+            >
                 <Scrollbars
                     autoHide
                     ref={detailScrollbarRef}
@@ -822,7 +825,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                                     <img src="/public/person.svg"/>
                                 </div>
                             }
-                            <p>{openDetail.content?.BoardMember.username}</p>
+                            <p>{openDetail.content?.BoardMember? openDetail.content.BoardMember.username : "unknown user"}</p>
                             {( (openDetail.content && openDetail.content.BoardMemberId === userData.id )) &&
                                 <UDButtonBox>
                                     <button
@@ -974,7 +977,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                                         </div>
                                     }
                                     <div className="content">
-                                        <p>{c.BoardMember.username}</p>
+                                        <p>{c.BoardMember ? c.BoardMember.username : "unknown user"}</p>
                                         <div>
                                             { c.id === editCommnetIdx ?
                                                 <div>
@@ -1105,7 +1108,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                         >
                             {c.content}
                             <AltBox className="alt">
-                                {c.BoardMember.username}
+                                {c.BoardMember ? c.BoardMember.username : "unknown user" }
                             </AltBox>
                         </TextComponent>
                     </ComponentBox>
@@ -1124,7 +1127,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                             onClick={() => openDetailWindow(3, c.id, c)}
                         >
                             <AltBox className="alt">
-                                {c.BoardMember.username}
+                                {c.BoardMember ? c.BoardMember.username : "unknown user" }
                             </AltBox>
                             <img src={c.url} />
                         </ImageComponent>
@@ -1145,7 +1148,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                             src={c.background_img ? c.background_img : ''}
                         >
                             <AltBox className="alt">
-                                {c.BoardMember.username}
+                                {c.BoardMember ? c.BoardMember.username : "unknown user" }
                             </AltBox>
                             <h3 className="head">
                                 {c.head}
