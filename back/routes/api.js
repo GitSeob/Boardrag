@@ -36,7 +36,8 @@ const uploadBoardImage = multer({
 			done(null, 'board_bgs')
 		},
 		filename(req, file, done){
-			const savename = req.query.name + "_bg_image" + path.extname(file.originalname);
+            let savename = req.query.name + "_bg_image" + path.extname(file.originalname);
+			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
 		}
     }),
@@ -49,7 +50,8 @@ const uploadProfileImage = multer({
 			done(null, 'board_profileImages')
 		},
 		filename(req, file, done){
-			const savename = req.query.name + "_" + req.user.username + path.extname(file.originalname);
+            let savename = req.query.name + "_" + req.user.username + path.extname(file.originalname);
+			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
 		}
     }),
