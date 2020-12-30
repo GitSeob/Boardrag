@@ -16,7 +16,7 @@ type PostState = {
     warning: string,
 }
 
-const TextAdd: FC<boxProps> = ({ toast, x, y, width, height, offset, initStates, board }) => {
+const TextAdd: FC<boxProps> = ({ BMID, toast, x, y, width, height, offset, initStates, board }) => {
     const [value, setValue] = useState('');
     const [postState, setPostState] = useState<PostState>({
         loading: false,
@@ -40,6 +40,7 @@ const TextAdd: FC<boxProps> = ({ toast, x, y, width, height, offset, initStates,
             y: offset.y,
             width: offset.width,
             height: offset.height,
+            BoardMemberId: BMID
         }).then(res => {
             if (res.status === 202)
             {

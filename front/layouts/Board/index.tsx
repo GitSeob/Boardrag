@@ -9,7 +9,8 @@ import useSocket from '@hooks/useSocket';
 import { UserList, LogOutButton, MenuContainer, UserMenu, DetailBackground } from './style';
 import ChatBox from '@components/ChatBox';
 import WorkSpace from '@pages/WorkSpace';
-import { IUser, IBoard } from '@typings/datas';
+import { IUser, IBoard, IBM } from '@typings/datas';
+import { type } from 'os';
 
 interface IUserList {
     id: number,
@@ -21,7 +22,8 @@ const Board:FC = () => {
     const { board } = params;
     const [socket, disconnectSocket] = useSocket(board);
     const { data:userData, revalidate:USERRevalidate, error:UserError } = useSWR<IUser | false>('/api/auth', fetcher);
-    const { data:boardData, revalidate:BOARDRevalidate } = useSWR<IBoard>(userData ? `/api/board/${board}` : null, fetcher);
+    const { data:boardData, revalidate:BOARDRevalidate } = useSWR<IBoard | string>(userData ? `/api/board/${board}` : null, fetcher);
+    const { data:myDataInBoard, revalidate: MDIBReval} = useSWR<IBM | false>((boardData && userData) ? `/api/board/${board}/me` : null, fetcher);
     const [menuFlg, setMFlg] = useState<boolean>(false);
     const [userList, setUserList] = useState<IUserList[] | null | undefined>();
 
@@ -42,11 +44,11 @@ const Board:FC = () => {
     }, [disconnectSocket]);
 
     useEffect(() => {
-        if (boardData && userData) {
+        if (boardData && userData && myDataInBoard) {
             console.info('로그인');
-            socket?.emit('login', { id: userData?.id, username: userData?.username, boards: 42 });
+            socket?.emit('login', { id: myDataInBoard.id, username: myDataInBoard.username });
         }
-    }, [socket, userData, boardData]);
+    }, [socket, userData, boardData, myDataInBoard]);
 
     useEffect(() => {
         socket?.on('onlineList', async (data: IUserList[]) => {
@@ -71,6 +73,13 @@ const Board:FC = () => {
 
     if (!boardData)
         return <LoadingCircle />
+    else if (boardData === 'not assigned')
+    {
+        alert("참여하지 않은 보드입니다.");
+        return <Redirect to="/main" />
+    }
+    if (!myDataInBoard)
+        return <LoadingCircle />
 
     return (
         <>
@@ -90,15 +99,15 @@ const Board:FC = () => {
                         {userList?.map((c, i) => {
                             return (
                                 <li key={(i)}>
-                                    {c.id === userData.id ? `${c.username} (me)` : c.username}
+                                    {c.username === myDataInBoard?.username ? `${c.username} (me)` : c.username}
                                 </li>
                             );
                         })}
                     </ul>
                 </UserList>
-                {(board && userData && boardData ) &&
+                {(board && myDataInBoard && boardData ) &&
                     <ChatBox
-                        userData={userData}
+                        userData={myDataInBoard}
                         board={board}
                     />
                 }
@@ -118,12 +127,14 @@ const Board:FC = () => {
                 </LogOutButton>
             </MenuContainer>
         </UserMenu>
-        <WorkSpace
-            boardData={boardData}
-            dataReval={BOARDRevalidate}
-            userData={userData}
-            board={board ? board : ''}
-        />
+        { typeof(boardData) !== 'string' &&
+            <WorkSpace
+                boardData={boardData}
+                dataReval={BOARDRevalidate}
+                userData={myDataInBoard}
+                board={board ? board : ''}
+            />
+        }
         </>
     );
 }

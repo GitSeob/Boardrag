@@ -27,7 +27,7 @@ module.exports = class TextContent extends Model {
                 },
                 expiry_date: {
                     type: DataTypes.DATE,
-                    allowNull: false,
+                    allowNull: true,
                 }
             },
             {
@@ -41,7 +41,7 @@ module.exports = class TextContent extends Model {
         );
     }
     static associate(db) {
-        db.TextContent.belongsTo(db.User);
+        db.TextContent.belongsTo(db.BoardMember);
         db.TextContent.belongsTo(db.Board);
         db.TextContent.hasMany(db.Comment);
     }

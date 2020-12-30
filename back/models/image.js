@@ -27,7 +27,7 @@ module.exports = class Image extends Model {
                 },
                 expiry_date: {
                     type: DataTypes.DATE,
-                    allowNull: false,
+                    allowNull: true,
                 }
             },
             {
@@ -41,7 +41,7 @@ module.exports = class Image extends Model {
         );
     }
     static associate(db) {
-        db.Image.belongsTo(db.User);
+        db.Image.belongsTo(db.BoardMember);
         db.Image.belongsTo(db.Board);
         db.Image.hasMany(db.Comment);
     }

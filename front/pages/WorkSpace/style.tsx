@@ -19,6 +19,12 @@ type NoteProps = {
     src: string
 }
 
+type SC = {
+    url: string,
+    op: number,
+    height: number
+}
+
 const apperMenu = keyframes`
     from {
         max-width: 0;
@@ -58,6 +64,28 @@ const padeLeftToRight = keyframes`
     to {
         opacity: 1;
         transform: translateX(0%);
+    }
+`
+
+const padeAppearUp = keyframes`
+    from {
+        opacity: 0;
+        transform: translate(-50%, -40%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+`
+
+const padeDisappearDown = keyframes`
+    from {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -40%);
     }
 `
 
@@ -109,6 +137,27 @@ export const DetailBackground = styled('div')`
     animation: ${padeIn} .5s ease-in-out 1;
 `;
 
+type Tflgs = {
+    flg: boolean
+}
+
+// export const DetailWindow = styled('div')<Tflgs>`
+//     position: fixed;
+//     min-height: 100vh;
+//     // height: 100%;
+//     min-height: 500px;
+//     width: 400px;
+//     background: rgba(0, 0, 0, .85);
+//     top: 50%;
+//     left: 50%;
+//     z-index: 13;
+//     transition: .3s;
+//     color: #fff;
+//     transform: translate(-50%, -50%);
+//     box-shadow: 0 0 6px 1px #999;
+//     opacity: ${props => props.flg ? 1 : 0};
+//     animation: ${props => props.flg ? padeAppearUp : padeDisappearDown} .5s ease-in-out 1;
+// `;
 
 export const DetailWindow = styled('div')`
     position: fixed;
@@ -159,7 +208,7 @@ export const BottomFixContent = styled('div')`
 
     & > div {
         width: 2rem;
-        background: #radial-gradient(ellipse at bottom, #002534 0%, #090a0f 100%) no-repeat;
+        background: radial-gradient(ellipse at bottom, #002534 0%, #090a0f 100%) no-repeat;
         cursor: pointer;
         color: #fff;
         transition: .3s;
@@ -186,10 +235,24 @@ export const UserInfo = styled.div`
         margin-right: 1rem;
     }
 
+    & > .no_profile_img {
+        width: 5rem;
+        height: 5rem;
+        border-radius: 100%;
+        margin-right: 1rem;
+        background: linear-gradient(#002534 , #090a0f) no-repeat;
+        display: flex;
+
+        img {
+            width: 2rem;
+            margin: auto;
+        }
+    }
+
     & > p {
         font-size: 18px;
         font-weight: 700;
-        width: 100%;
+        width: calc(100% - 9.6rem);
     }
 `;
 
@@ -201,6 +264,7 @@ export const UDButtonBox = styled.div`
     & > button {
         background: transparent !important;
         cursor: pointer;
+        width: 1.2rem;
     }
 `;
 
@@ -332,6 +396,20 @@ export const Comment = styled.div`
         height: 3rem;
         border-radius: 100%;
         margin-right: 1rem;
+    }
+
+    .no_profile_img {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 100%;
+        margin-right: 1rem;
+        background: linear-gradient(#002534 , #090a0f) no-repeat;
+        display: flex;
+
+        img {
+            width: 1.5rem;
+            margin: auto;
+        }
     }
 
     .content {
@@ -691,4 +769,20 @@ export const BoardFooter = styled.div`
     padding: 1rem;
     height: 100%;
     background: rgba(0, 0, 0, .1);
+`;
+
+export const StageContainer = styled('div')<SC>`
+    position: relative;
+
+    &::before {
+        width: 100%;
+        height: ${props => props.height};
+        position: absolute;
+        content: "";
+        top: 0;
+        left: 0;
+        background: url(${props => props.url});
+        background-size: cover;
+        opacity: ${props => props.op};
+    }
 `;

@@ -62,6 +62,16 @@ export interface IBoard {
     TextContents: IText[],
     Images: IImage[],
     Notes: INote[],
+    background: string
+}
+
+export interface IBM {
+    id: number,
+    username: string,
+    profile_img: string,
+    avail_blocks: number,
+    UserId: number,
+    BoardId: number
 }
 
 export interface IText {
@@ -76,7 +86,7 @@ export interface IText {
     updatedAt: Date,
     expiry_date: Date,
     Comments: IComment[],
-    User: IUser,
+    BoardMember: IBM,
 }
 
 export interface IImage {
@@ -91,7 +101,7 @@ export interface IImage {
     updatedAt: Date,
     expiry_date: Date,
     Comments: IComment[],
-    User: IUser,
+    BoardMember: IBM,
 }
 
 export interface INote {
@@ -108,7 +118,7 @@ export interface INote {
     updatedAt: Date,
     expiry_date: Date,
     Comments: IComment[],
-    User: IUser,
+    BoardMember: IBM,
 }
 
 export interface IComment {
@@ -123,8 +133,8 @@ export interface IComment {
     content: string,
     content_category: number,
     content_id: number,
-    User: IUser,
-    UserId: number,
+    BoardMember: IUser,
+    BoardMemberId: number,
 }
 
 export interface IDetail {
@@ -144,12 +154,21 @@ export interface DetailProps {
     createdAt: Date,
     updatedAt: Date,
     expiry_date: Date,
-    UserId: number,
+    BoardMemberId: number,
     content: null | string,
     head: null | string,
     paragraph: null | string,
     url: string,
     background_img: string,
     Comments: IComment[],
-    User: IUser,
+    BoardMember: IBM,
+}
+
+export interface IBL {
+    name: string,
+    description: string,
+    is_lock: boolean,
+    memberCount: number,
+    background: string,
+    recent_time: Date,
 }

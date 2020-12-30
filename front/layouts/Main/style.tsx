@@ -1,57 +1,9 @@
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
 
-const lds_ellipsis1  = keyframes`
-	0% {
-		transform: scale(0);
-	}
-	100% {
-		transform: scale(1);
-	}
-}`;
-
-const lds_ellipsis3  = keyframes`
-	0% {
-		transform: scale(1);
-	}
-	100% {
-		transform: scale(0);
-	}
-`;
-
-const lds_ellipsis2  = keyframes`
-	0% {
-		transform: translate(0, 0);
-	}
-	100% {
-		transform: translate(24px, 0);
-	}
+type BC = {
+    url: string
 }
-`;
-
-const appearUp = keyframes`
-    0% {
-        opacity: 0;
-        display: none;
-        transform: translateY(10%);
-    }
-    50% {
-        opacity: 1;
-        display: block;
-    }
-`;
-
-const appearDown = keyframes`
-    0% {
-        opacity: 0;
-        display: none;
-        transform: translateY(-10%);
-    }
-    50% {
-        opacity: 1;
-        display: block;
-    }
-`;
 
 export const Menu = styled.div`
     position: fixed;
@@ -163,6 +115,7 @@ export const SearchForm = styled.form`
         background: transparent;
         padding: .1rem .5rem;
         color: #fff;
+        width: 200px;
     }
 `;
 
@@ -184,7 +137,7 @@ export const BoardContainer = styled.div`
     }
 `;
 
-export const BoardCard = styled.div`
+export const BoardCard = styled('div')<BC>`
     padding: 1rem;
     background: rgba(0, 0, 0, .5);
     border-radius: 10px;
@@ -192,10 +145,57 @@ export const BoardCard = styled.div`
     cursor: pointer;
     margin: .5rem 1rem .5rem 0;
     transition: .3s;
+    width: 120px;
+    height: 12rem;
+    overflow: hidden;
+    position: relative;
+
+    &::before {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        content: "";
+        top: 0;
+        left: 0;
+        background: url(${props => props.url});
+        background-size: cover;
+        background-position: center;
+        z-index: -1;
+    }
 
     &:hover {
         box-shadow: 0 0 8px 1px #aaa;
         transform: scale(1.05);
+    }
+
+    .description {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 6;
+        -webkit-box-orient: vertical;
+        word-wrap:break-word;
+        line-height: 1.2rem;
+        height: 7.2rem;
+        color: #999;
+        margin: .5rem 0;
+    }
+
+    .iconBox {
+        color: #888;
+        position: relative;
+
+        img {
+            height: .8rem;
+            color: #ff0000;
+
+            &.lock {
+                position: absolute;
+                right: 0;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+        }
     }
 `;
 
@@ -210,138 +210,15 @@ export const DarkBackground = styled.div`
     justify-content: center;
 `;
 
-export const FormBox = styled.div`
-    position: absolute;
-    z-index: 21;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 1rem;
-    width: 400px;
-    border-radius: 10px;
-    background: #000;
-    box-shadow: 0 0 6px 1px #afafaf;
 
-    input, h2 {
-        width: 100%;
-        margin-bottom: 1rem;
-    }
 
-    p.info {
-        font-size: 10px;
-        color: #aaa;
-
-    }
-
-    input {
-        padding: .5rem;
-        background: #fafafa;
-        border-radius: 5px;
-        margin-top: .5rem;
-    }
-
-    input[type="checkbox"] {
-        width: fit-content;
-        margin: 0;
-        margin-right: .5rem;
-    }
-
-    input[type="password"]:disabled {
-        background: #bababa;
-        color: #444;
-    }
-
-    & > div {
-        display: none;
-
-        &.next {
-            animation: ${appearUp} .6s ease-in-out 1;
-            display: block;
-        }
-
-        &.before {
-            animation: ${appearDown} .6s ease-in-out 1;
-            display: block;
-        }
-
-        &.created {
-            display: block;
-        }
-    }
-
-    p.warn {
-        color: #ff4444;
-        font-size: 10px;
-    }
-
-    @media screen and (max-width: 600px) {
-        width: 300px;
-    }
-`;
-
-export const PageButtonBox = styled.div`
-    position: relative;
-    display: flex !important;
+export const PersonCount = styled.div`
+    display: flex;
     align-items: center;
-    width: 100%;
-    padding: .5rem 0;
-    min-height: 2rem;
+    font-size: 12px;
 
-    & > div {
-        cursor: pointer;
-        transition: .3s;
-        display: flex;
-        align-items: center;
-
-        &.next {
-            position: absolute;
-            right: 0;
-        }
-
-        img {
-            transition: .3s;
-            width: 0;
-            height: 1rem;
-        }
-
-        &:hover {
-            img {
-                width: 1rem;
-            }
-        }
+    & > img {
+        margin-right: .2rem;
+        height: 0.8rem;
     }
-`
-
-export const LoadingBalls = styled.div`
-	position: relative;
-	margin: 0 auto;
-	width: 80px;
-	height: 80px;
-
-	& > div {
-		position: absolute;
-		top: 33px;
-		width: 13px !important;
-		height: 13px !important;
-		border-radius: 50%;
-		background: #7990ff;
-		animation-timing-function: cubic-bezier(0, 1, 1, 0);
-
-		&:nth-of-type(1) {
-			left: 8px;
-			animation: ${lds_ellipsis1} 0.6s infinite;
-		}
-		&:nth-of-type(2) {
-			left: 8px;
-			animation: ${lds_ellipsis2} 0.6s infinite;
-		}
-		&:nth-of-type(3) {
-			left: 32px;
-			animation: ${lds_ellipsis2} 0.6s infinite;
-		}
-		&:nth-of-type(4) {
-			left: 56px;
-			animation: ${lds_ellipsis3} 0.6s infinite;
-		}
-	}
 `;

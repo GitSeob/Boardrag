@@ -15,7 +15,7 @@ module.exports = class Board extends Model {
                     allowNull: false,
                 },
                 password: {
-                    type: DataTypes.STRING(100),
+                    type: DataTypes.TEXT,
                     allowNull: true,
                 },
                 description: {
@@ -33,6 +33,14 @@ module.exports = class Board extends Model {
                 },
                 tags: {
                     type: DataTypes.TEXT,
+                },
+                recent_time: {
+                    type: DataTypes.DATE,
+                    defaultValue: DataTypes.NOW,
+                },
+                background: {
+                    type: DataTypes.TEXT,
+                    allowNull: true,
                 }
             },
             {
@@ -50,6 +58,10 @@ module.exports = class Board extends Model {
         db.Board.belongsToMany(db.User, {
             through: db.BoardMember,
             as: "Members",
+        });
+        db.Board.hasMany(db.BoardMember, {
+            as: "Member",
+            foreignKey: "BoardId"
         });
         db.Board.hasMany(db.TextContent);
         db.Board.hasMany(db.Image);

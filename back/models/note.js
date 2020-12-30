@@ -35,7 +35,7 @@ module.exports = class Note extends Model {
                 },
                 expiry_date: {
                     type: DataTypes.DATE,
-                    allowNull: false,
+                    allowNull: true,
                 }
             },
             {
@@ -49,7 +49,7 @@ module.exports = class Note extends Model {
         );
     }
     static associate(db) {
-        db.Note.belongsTo(db.User);
+        db.Note.belongsTo(db.BoardMember);
         db.Note.belongsTo(db.Board);
         db.Note.hasMany(db.Comment);
     }

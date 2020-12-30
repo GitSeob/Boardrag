@@ -5,7 +5,7 @@ import localizedFormat from 'dayjs/plugin/localizedFormat';
 dayjs.extend(localizedFormat);
 import axios from 'axios';
 import { Scrollbars } from 'react-custom-scrollbars';
-import { IUser } from '@typings/datas';
+import { IBM } from '@typings/datas';
 import fetcher from '@utils/fetcher';
 import { Chat, ChatForm, ChatRoom, StickyHeader } from './style';
 import createSection from '@utils/createSection';
@@ -15,13 +15,13 @@ import useInput from '@hooks/useInput';
 const PAGE_SIZE = 20;
 
 interface IChatBox {
-    userData: IUser,
+    userData: IBM,
     board: string
 }
 
 interface IChat {
     id: number,
-    userId: number,
+    BoardMemberId: number,
     username: string,
     content: string,
     createdAt: Date,
@@ -34,7 +34,6 @@ const ChatBox:FC<IChatBox> = ({ userData, board }) => {
         fetcher
     );
     const [chat, OCChat, setChat] = useInput('');
-    const [isFirst, setIsFirst] = React.useState(true);
     const now = new Date();
     const scrollbarRef = useRef<Scrollbars>(null);
 
@@ -50,7 +49,7 @@ const ChatBox:FC<IChatBox> = ({ userData, board }) => {
             mutateChat((prevChatData) => {
                 prevChatData[0].unshift({
                     id: (chatData[0][0]?.id || 0) + 1,
-                    userId: userData.id,
+                    BoardMemberId: userData.id,
                     username: userData.username,
                     content: savedChat,
                     createdAt: new Date(),
@@ -79,7 +78,7 @@ const ChatBox:FC<IChatBox> = ({ userData, board }) => {
     }, [chat]);
 
     const onMessage = (data: IChat) => {
-        if (userData && data.userId !== userData?.id) {
+        if (userData && data.BoardMemberId !== userData?.id) {
             mutateChat((chatData) => {
                 chatData[0].unshift(data);
                 return chatData;
@@ -108,7 +107,6 @@ const ChatBox:FC<IChatBox> = ({ userData, board }) => {
     useEffect(() => {
         if (chatData?.length === 1) {
             scrollbarRef.current?.scrollToBottom();
-            setIsFirst(false);
         }
     }, [chatData, isReachingEnd, isEmpty]);
 
@@ -120,18 +118,18 @@ const ChatBox:FC<IChatBox> = ({ userData, board }) => {
                     autoHide
                     ref={scrollbarRef}
                     onScrollFrame={onScroll}
-                    style={{height: "100%", overflow: 'hidden'}}
+                    style={{height: "100%", overflowX: 'hidden'}}
                 >
                     {Object.entries(chatSections).map(([date, chats]) => {
                         return (
                             <section key={date}>
                                 <StickyHeader>{date}</StickyHeader>
                                 { chats.map(c => (
-                                    <Chat key={(c.id)} className={`${c.userId === userData?.id ? 'myChat' : '' }`}>
+                                    <Chat key={(c.id)} className={`${c.BoardMemberId === userData?.id ? 'myChat' : '' }`}>
                                         <p>{c.username}</p>
                                         <div>
                                             <div>{c.content}</div>
-                                            <p>{dayjs(c.createdAt).diff(now, 'day') > -1 ? dayjs(c.createdAt).format('LT') : dayjs(c.createdAt).format('YYYY년 MM월 DD일')}</p>
+                                            <p>{dayjs(c.createdAt).format('YYYYMMDD') === dayjs(now).format('YYYYMMDD') ? dayjs(c.createdAt).format('LT') : dayjs(c.createdAt).format('YYYY년 MM월 DD일')}</p>
                                         </div>
                                     </Chat>
                                 ))}

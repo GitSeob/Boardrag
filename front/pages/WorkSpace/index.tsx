@@ -9,7 +9,7 @@ import {Stage, Layer, Group} from 'react-konva';
 import Konva from 'konva';
 import RectOnCanvas from '@components/RectOnCanvas';
 import ImageEditButton from '@components/ImageEditButton';
-import { IUser, IBoard, IComment, IDetail } from '@typings/datas';
+import { IUser, IBoard, IComment, IDetail, IBM } from '@typings/datas';
 
 import {
     UDButtonBox,
@@ -37,7 +37,8 @@ import {
     ImageComponent,
     NoteComponent,
     OnModeAlt,
-    ResizeRemote
+    ResizeRemote,
+    StageContainer
 } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
@@ -77,7 +78,7 @@ type offset = {
 
 interface IBoardProps {
     boardData: IBoard | undefined,
-    userData: IUser,
+    userData: IBM,
     dataReval: () => void,
     board: string,
 }
@@ -156,10 +157,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
     const detailScrollbarRef = useRef<Scrollbars>(null);
 
     const now = new Date();
-
-    const detailWindowStyle = {
-        transform: openDetail.flg ? 'translateX(0%)' : 'translateX(-100%)',
-    }
+    const bg = boardData?.background ? boardData.background : '';
 
     useEffect(() => {
         setRPos({
@@ -409,7 +407,8 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
         e.preventDefault();
         if (commentContent !== '') {
             axios.post(`/api/board/${board}/comment/${openDetail.category}/${openDetail.content?.id}`, {
-                content: commentContent
+                content: commentContent,
+                BoardMemberId: userData.id
             }).then(() => {
                 setCC('');
                 if (detailScrollbarRef.current)
@@ -789,6 +788,10 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
         setComments(editedContent);
     }, [boardData, openDetail]);
 
+    const detailWindowStyle = {
+        transform: openDetail.flg ? 'translateX(0%)' : 'translateX(-100%)',
+    }
+
     return (
         <KonvaContainer>
             {warning !== ''&&
@@ -801,7 +804,10 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                     onClick={onInitContent}
                 />
             }
-            <DetailWindow style={detailWindowStyle}>
+            <DetailWindow
+                // flg={openDetail.flg}
+                style={ detailWindowStyle }
+            >
                 <Scrollbars
                     autoHide
                     ref={detailScrollbarRef}
@@ -812,9 +818,15 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                     <>
                     <TopFixContent>
                         <UserInfo>
-                            <img src={openDetail.content?.User.profile_img} />
-                            <p>{openDetail.content?.User.username}</p>
-                            {( userData.is_admin || (openDetail.content && openDetail.content.UserId === userData.id )) &&
+                            { openDetail.content?.BoardMember.profile_img ?
+                                <img src={openDetail.content?.BoardMember.profile_img} />
+                                :
+                                <div className="no_profile_img">
+                                    <img src="/public/person.svg"/>
+                                </div>
+                            }
+                            <p>{openDetail.content?.BoardMember? openDetail.content.BoardMember.username : "unknown user"}</p>
+                            {( (openDetail.content && openDetail.content.BoardMemberId === userData.id )) &&
                                 <UDButtonBox>
                                     <button
                                         onClick={() => onEdit(openDetail.category)}
@@ -957,9 +969,15 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                                 <Comment
                                     key={(i)}
                                 >
-                                    <img src={c.User.profile_img} />
+                                    { c.BoardMember.profile_img ?
+                                        <img src={c.BoardMember.profile_img} />
+                                        :
+                                        <div className="no_profile_img">
+                                            <img src="/public/person.svg" />
+                                        </div>
+                                    }
                                     <div className="content">
-                                        <p>{c.User.username}</p>
+                                        <p>{c.BoardMember ? c.BoardMember.username : "unknown user"}</p>
                                         <div>
                                             { c.id === editCommnetIdx ?
                                                 <div>
@@ -977,7 +995,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                                                 </>
                                             }
                                         </div>
-                                        { (c.UserId === userData.id ) &&
+                                        { (c.BoardMemberId === userData.id ) &&
                                             <div className="edit-box">
                                                 { c.id === editCommnetIdx ?
                                                     <>
@@ -1044,6 +1062,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                     offset={offset}
                     initStates={initStates}
                     board={board}
+                    BMID={userData.id}
                     // dataReval={dataReval}
                 />
             }
@@ -1057,6 +1076,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                     offset={offset}
                     initStates={initStates}
                     board={board}
+                    BMID={userData.id}
                     // dataReval={dataReval}
                 />
             }
@@ -1070,6 +1090,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                     offset={offset}
                     initStates={initStates}
                     board={board}
+                    BMID={userData.id}
                     // dataReval={dataReval}
                 />
             }
@@ -1087,7 +1108,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                         >
                             {c.content}
                             <AltBox className="alt">
-                                {c.User.username}
+                                {c.BoardMember ? c.BoardMember.username : "unknown user" }
                             </AltBox>
                         </TextComponent>
                     </ComponentBox>
@@ -1106,7 +1127,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                             onClick={() => openDetailWindow(3, c.id, c)}
                         >
                             <AltBox className="alt">
-                                {c.User.username}
+                                {c.BoardMember ? c.BoardMember.username : "unknown user" }
                             </AltBox>
                             <img src={c.url} />
                         </ImageComponent>
@@ -1127,7 +1148,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                             src={c.background_img ? c.background_img : ''}
                         >
                             <AltBox className="alt">
-                                {c.User.username}
+                                {c.BoardMember ? c.BoardMember.username : "unknown user" }
                             </AltBox>
                             <h3 className="head">
                                 {c.head}
@@ -1139,31 +1160,39 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                     </ComponentBox>
                 )
             })}
-            <Stage
-                style={{
-                    height: height,
-                    zIndex: canMove ? 20 : 1,
-                    background: canMove ? 'rgba(0, 0, 0, .2)' : ''
-                }}
-                width={width}
+            <StageContainer
+                url={bg}
+                op={canMove ? 0.1 : 0.8}
                 height={height}
-                onMouseMove={!(canMove) ? mouseMove : undefined}
-                onMouseDown={!(canMove) ? mouseDown : undefined}
-                onMouseUp={!(canMove) ? mouseUp : undefined}
+                style={{
+                    zIndex: canMove ? 20 : 1,
+                }}
             >
-                <Layer ref={layerRef}>
-                    <Group>
-                        <RectOnCanvas
-                            x={rPos.x}
-                            y={rPos.y}
-                            canMove={canMove}
-                            openDetail={openDetail}
-                            rectSize={rectSize}
-                            rectDE={rectDE}
-                        />
-                    </Group>
-                </Layer>
-            </Stage>
+                <Stage
+                    style={{
+                        height: height,
+                        background: canMove ? 'rgba(0, 0, 0, .2)' : '',
+                    }}
+                    width={width}
+                    height={height}
+                    onMouseMove={!(canMove) ? mouseMove : undefined}
+                    onMouseDown={!(canMove) ? mouseDown : undefined}
+                    onMouseUp={!(canMove) ? mouseUp : undefined}
+                >
+                    <Layer ref={layerRef}>
+                        <Group>
+                            <RectOnCanvas
+                                x={rPos.x}
+                                y={rPos.y}
+                                canMove={canMove}
+                                openDetail={openDetail}
+                                rectSize={rectSize}
+                                rectDE={rectDE}
+                            />
+                        </Group>
+                    </Layer>
+                </Stage>
+            </StageContainer>
             { canMove &&
                 <div
                     style={{
@@ -1239,7 +1268,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
                 pauseOnFocusLoss
                 draggable
                 pauseOnHover
-                />
+            />
         </KonvaContainer>
     )
 };

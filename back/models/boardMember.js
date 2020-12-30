@@ -5,10 +5,18 @@ module.exports = class BoardMember extends Model {
     static init(sequelize) {
         return super.init(
         {
-            // id가 기본적으로 들어있다.\
-            nickName: {
+            id: {
+                type: DataTypes.INTEGER,
+                primaryKey: true,
+                autoIncrement: true
+            },
+            username: {
                 type: DataTypes.STRING(100),
                 allowNull: false,
+            },
+            profile_img: {
+                type: DataTypes.TEXT,
+                allowNull: true
             },
             loggedInAt: {
                 type: DataTypes.DATE,
@@ -18,7 +26,7 @@ module.exports = class BoardMember extends Model {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 defaultValue: 30,
-            }
+            },
         },
         {
             modelName: "BoardMember",
@@ -29,5 +37,12 @@ module.exports = class BoardMember extends Model {
         }
         );
     }
-    static associate(db) {}
+    static associate(db) {
+        db.BoardMember.belongsTo(db.Board);
+        db.BoardMember.belongsTo(db.User);
+        db.BoardMember.hasMany(db.TextContent);
+        db.BoardMember.hasMany(db.Note);
+        db.BoardMember.hasMany(db.Image);
+        db.BoardMember.hasMany(db.Comment);
+    }
 };
