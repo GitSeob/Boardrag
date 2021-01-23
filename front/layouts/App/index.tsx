@@ -7,14 +7,14 @@ const Board = loadable(() => import('@layouts/Board'));
 const Main = loadable(() => import('@layouts/Main'));
 
 const App: FC = () => (
-    <Switch>
-        <Route exact path="/">
-            <Redirect to="/auth"/>
-        </Route>
-        <Route path="/auth" component={Auth} />
-        <Route path="/main" component={Main} />
-        <Route path="/board/:board" component={Board} />
-    </Switch>
+	<Switch>
+		<Route exact path="/">
+			<Redirect to="/auth"/>
+		</Route>
+		<Route path="/auth" component={Auth} />
+		<Route path="/main" component={Main} />
+		<Route path="/board/:board" component={Board} />
+	</Switch>
 )
 
 export default App;

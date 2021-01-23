@@ -7,25 +7,25 @@ const backUrl = process.env.NODE_ENV === 'production' ? 'https://api.42board.com
 const sockets: { [key: string]: SocketIOClient.Socket } = {};
 
 const useSocket = (board?: string): [SocketIOClient.Socket | undefined, () => void] => {
-    const disconnect = useCallback(() => {
-        if (board && sockets[board]) {
-            sockets[board].disconnect();
-            delete sockets[board];
-        }
-    }, [board]);
+	const disconnect = useCallback(() => {
+		if (board && sockets[board]) {
+			sockets[board].disconnect();
+			delete sockets[board];
+		}
+	}, [board]);
 
-    if (!board) {
-        return [undefined, disconnect];
-    }
+	if (!board) {
+		return [undefined, disconnect];
+	}
 
-    if (!sockets[board]) {
-        sockets[board] = io(`${backUrl}/board-${board}`, {
-            transports: ['websocket'],
-        });
-        console.info('create socket', board, sockets[board].id);
-    }
+	if (!sockets[board]) {
+		sockets[board] = io(`${backUrl}/board-${board}`, {
+			transports: ['websocket'],
+		});
+		console.info('create socket', board, sockets[board].id);
+	}
 
-    return [sockets[board], disconnect];
+	return [sockets[board], disconnect];
 };
 
 export default useSocket;

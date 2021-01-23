@@ -9,4 +9,4 @@ export const FTAPI_URL = 'https://api.intra.42.fr';
 export const OAUTH = `${FTAPI_URL}/oauth`;
 
 export const getOauthTokenUrl = (code: string): string =>
-    `${OAUTH}/token?code=${code}&grant_type=authorization_code&client_id=${FT_UID}&client_secret=${FT_SECRET}&redirect_uri=${FRONT_URL}${AUTH}`;
+	`${OAUTH}/token?code=${code}&grant_type=authorization_code&client_id=${FT_UID}&client_secret=${FT_SECRET}&redirect_uri=${FRONT_URL}${AUTH}`;

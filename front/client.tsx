@@ -10,8 +10,8 @@ axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? 'https://api.42
 axios.defaults.headers['Access-Control-Allow-Origin'] = '*';
 
 render(
-    <BrowserRouter>
-        <App />
-    </BrowserRouter>,
-    document.querySelector('#app'),
+	<BrowserRouter>
+		<App />
+	</BrowserRouter>,
+	document.querySelector('#app'),
 );
