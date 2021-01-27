@@ -37,22 +37,6 @@ export const MenuContainer = styled.div`
 		margin: 0 auto;
 		border-radius: 10px;
 	}
-
-	.up {
-		position: absolute;
-		cursor: pointer;
-		top: 1rem;
-		padding: .5rem; 1rem;
-		transform: translateX(-150%);
-		width: 30px;
-		height: 30px;
-		background: #000;
-		box-shadow: 0 0 4px 1px #ddd;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 30px;
-	}
 `;
 
 export const OpenMenu = styled.div`
@@ -120,4 +104,44 @@ export const DetailBackground = styled('div')`
 	left: 0;
 	background: rgba(0, 0, 0, .4);
 	animation: ${padeIn} .5s ease-in-out 1;
+`;
+
+export const BoardHeader = styled.div`
+	position: relative;
+	width: 100vw;
+	height: 48px;
+	display: flex;
+	background: #0e0e0e;
+	box-shadow: 0 0 4px 1px #55555e;
+
+	div {
+		top: 0;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+
+		&.logo {
+			padding: 12px;
+			h2 {
+				font-size: 16px;
+				font-weight: 400;
+			}
+			img { height: 24px; }
+		}
+	}
+
+	.up {
+		height: 100%;
+		display: flex;
+		position: absolute;
+		width: 48px;
+		right: 0;
+		cursor: pointer;
+
+		&:hover {
+			background: rgba(255, 255, 255, .1);
+		}
+	}
 `;

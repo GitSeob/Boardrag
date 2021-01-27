@@ -6,7 +6,7 @@ import LoadingCircle from '@components/LoadingCircle';
 import { Redirect } from 'react-router-dom';
 import axios from 'axios';
 import useSocket from '@hooks/useSocket';
-import { UserList, LogOutButton, MenuContainer, UserMenu, DetailBackground } from './style';
+import { BoardHeader, UserList, LogOutButton, MenuContainer, UserMenu, DetailBackground } from './style';
 import ChatBox from '@components/ChatBox';
 import WorkSpace from '@pages/WorkSpace';
 import { IUser, IBoard, IBM } from '@typings/datas';
@@ -111,6 +111,19 @@ const Board:FC = () => {
 						board={board}
 					/>
 				}
+				<LogOutButton
+					onClick={logout}
+				>
+					로그아웃
+				</LogOutButton>
+			</MenuContainer>
+		</UserMenu>
+		{ typeof(boardData) !== 'string' &&
+		<div style={{display: 'flex', flexDirection: 'column'}}>
+			<BoardHeader >
+				<div className="logo">
+					<h2>BOXLOT</h2>
+				</div>
 				<div className="up"
 					onClick={() => setMFlg(!menuFlg)}
 				>
@@ -120,20 +133,14 @@ const Board:FC = () => {
 						<img src="/public/person.svg" />
 					}
 				</div>
-				<LogOutButton
-					onClick={logout}
-				>
-					로그아웃
-				</LogOutButton>
-			</MenuContainer>
-		</UserMenu>
-		{ typeof(boardData) !== 'string' &&
+			</BoardHeader>
 			<WorkSpace
 				boardData={boardData}
 				dataReval={BOARDRevalidate}
 				userData={myDataInBoard}
 				board={board ? board : ''}
 			/>
+			</div>
 		}
 		</>
 	);
