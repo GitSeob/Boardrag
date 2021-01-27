@@ -114,7 +114,7 @@ export const BoardHeader = styled.div`
 	background: #0e0e0e;
 	box-shadow: 0 0 4px 1px #55555e;
 
-	div {
+	& > div {
 		top: 0;
 		height: 100%;
 		display: flex;

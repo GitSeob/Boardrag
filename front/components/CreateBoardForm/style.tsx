@@ -108,7 +108,9 @@ export const ProfileImageBox = styled.div`
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background-size: cover;
+		background-size: contain;
+		background-repeat: no-repeat
+		background-position: center;
 
 		& > img {
 			width: 72px;
@@ -160,7 +162,9 @@ export const BackgroundImageBox = styled.div`
 		align-items: center;
 		justify-content: center;
 		border-radius: 1xp solid #cacaca;
-		background-size: cover;
+		background-size: contain;
+		background-repeat: no-repeat
+		background-position: center;
 
 		& > img {
 			width: 72px;

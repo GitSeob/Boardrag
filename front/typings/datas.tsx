@@ -32,25 +32,6 @@ export interface MenuPosition {
 	disp: boolean,
 }
 
-export interface DetailProps {
-	id: number,
-	x: number,
-	y: number,
-	width: number,
-	height: number,
-	createdAt: Date,
-	updatedAt: Date,
-	expiry_date: Date,
-	UserId: number,
-	content: null | string,
-	head: null | string,
-	paragraph: null | string,
-	url: string,
-	background_img: string,
-	Comments: IComment[],
-	User: IUser,
-}
-
 export interface Position {
 	x: number,
 	y: number
@@ -87,6 +68,7 @@ export interface IText {
 	expiry_date: Date,
 	Comments: IComment[],
 	BoardMember: IBM,
+	BoardMemberId: number,
 }
 
 export interface IImage {
@@ -102,6 +84,7 @@ export interface IImage {
 	expiry_date: Date,
 	Comments: IComment[],
 	BoardMember: IBM,
+	BoardMemberId: number,
 }
 
 export interface INote {
@@ -119,6 +102,7 @@ export interface INote {
 	expiry_date: Date,
 	Comments: IComment[],
 	BoardMember: IBM,
+	BoardMemberId: number,
 }
 
 export interface IComment {

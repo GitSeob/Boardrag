@@ -38,12 +38,13 @@ import {
 	NoteComponent,
 	OnModeAlt,
 	ResizeRemote,
-	StageContainer
+	StageContainer,
 } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
 import useInput from '@hooks/useInput';
+import ContentContainer from '@components/ContentContainer';
 import Scrollbars from 'react-custom-scrollbars';
 
 type Position = {
@@ -150,13 +151,10 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 	});
 	const [canMove, setCanMove] = useState(false);
 	const [isEditSize, setIsEditSize] = useState(false);
-	const [editCommnetIdx, setEditCommentIdx] = useState(0);
 
 	const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;
 	const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
-	const detailScrollbarRef = useRef<Scrollbars>(null);
 
-	const now = new Date();
 	const bg = boardData?.background ? boardData.background : '';
 
 	useEffect(() => {
@@ -403,49 +401,49 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 		setComments(content.Comments);
 	}, [openDetail]);
 
-	const submitComment = useCallback((e) => {
-		e.preventDefault();
-		if (commentContent !== '') {
-			axios.post(`/api/board/${board}/comment/${openDetail.category}/${openDetail.content?.id}`, {
-				content: commentContent,
-				BoardMemberId: userData.id
-			}).then(() => {
-				setCC('');
-				if (detailScrollbarRef.current)
-					detailScrollbarRef.current.scrollToBottom();
-			}). catch((e) => {
-				console.error(e);
-			})
-		}
-	}, [commentContent, openDetail, detailScrollbarRef]);
+	//const submitComment = useCallback((e) => {
+	//	e.preventDefault();
+	//	if (commentContent !== '') {
+	//		axios.post(`/api/board/${board}/comment/${openDetail.category}/${openDetail.content?.id}`, {
+	//			content: commentContent,
+	//			BoardMemberId: userData.id
+	//		}).then(() => {
+	//			setCC('');
+	//			if (detailScrollbarRef.current)
+	//				detailScrollbarRef.current.scrollToBottom();
+	//		}). catch((e) => {
+	//			console.error(e);
+	//		})
+	//	}
+	//}, [commentContent, openDetail, detailScrollbarRef]);
 
-	const deleteBox = useCallback((e) => {
-		e.preventDefault();
-		if (!confirm('정말 삭제하시겠습니까?'))
-			return ;
-		let category = '';
-		if (openDetail.category === 1)
-			category = 'text';
-		else if (openDetail.category === 2)
-			category = 'note';
-		else if (openDetail.category === 3)
-			category = 'image';
-		else
-			return ;
-		axios.delete(`api/board/${board}/delete/${category}/${openDetail.content?.id}`).then(() => {
-			dataReval();
-			setOpenDetail({
-				category: 0,
-				id: 0,
-				flg: false,
-				loadComment: false,
-				content: null,
-			});
-			toast.dark(`게시물이 삭제되었습니다.`);
-		}).catch((e) => {
-			console.error(e);
-		})
-	}, [openDetail]);
+	//const deleteBox = useCallback((e) => {
+	//	e.preventDefault();
+	//	if (!confirm('정말 삭제하시겠습니까?'))
+	//		return ;
+	//	let category = '';
+	//	if (openDetail.category === 1)
+	//		category = 'text';
+	//	else if (openDetail.category === 2)
+	//		category = 'note';
+	//	else if (openDetail.category === 3)
+	//		category = 'image';
+	//	else
+	//		return ;
+	//	axios.delete(`api/board/${board}/delete/${category}/${openDetail.content?.id}`).then(() => {
+	//		dataReval();
+	//		setOpenDetail({
+	//			category: 0,
+	//			id: 0,
+	//			flg: false,
+	//			loadComment: false,
+	//			content: null,
+	//		});
+	//		toast.dark(`게시물이 삭제되었습니다.`);
+	//	}).catch((e) => {
+	//		console.error(e);
+	//	})
+	//}, [openDetail]);
 
 	const onEdit = useCallback((cid) => {
 		setIsEdit(!isEdit);
@@ -504,7 +502,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 		setIsEdit(false);
 	}, []);
 
-	const cencelEdit = useCallback(() => {
+	const cancelEdit = useCallback(() => {
 		setHead('');
 		setText('');
 		setUploading({
@@ -545,7 +543,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 		})
 	}, []);
 
-	const onSubmitEdit = useCallback(async () => {
+	const onSubmitEdit = useCallback(async (text, head, url) => {
 		let requestURL = '';
 		let data = {
 			x: openDetail.content?.x,
@@ -568,12 +566,12 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 			requestURL = `/api/board/${board}/note/${openDetail.id}`;
 			data = {
 				...data,
-				background_img: uploading.imageURL,
+				background_img: url,
 				head: head,
 				paragraph: text
 			};
 		} else if (openDetail.category === 3) {
-			if (uploading.imageURL === '')
+			if (url === '')
 			{
 				await setWarning('이미지를 다시 업로드해주세요');
 				await setTimeout(() => {
@@ -582,7 +580,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 				return ;
 			}
 			requestURL = `/api/board/${board}/image/${openDetail.id}`;
-			data = { ...data, url: uploading.imageURL };
+			data = { ...data, url: url };
 		} else {
 			await setWarning('잘못된 접근입니다.');
 			await setTimeout(() => {
@@ -606,8 +604,8 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 				setWarning('');
 			}, 2000);
 		});
-		cencelEdit();
-	}, [text, head, openDetail, uploading]);
+		cancelEdit();
+	}, [openDetail]);
 
 	const moveMode = useCallback(( ) => {
 		if (openDetail.content)
@@ -745,29 +743,29 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 		axios.patch
 	};
 
-	const deleteComment = (commentId:number) => {
-		if (confirm('댓글을 삭제하시겠습니까?')) {
-			axios.delete(`/api/board/${board}/comment/${commentId}`)
-			.then(() => {
-				toast.dark('댓글이 삭제되었습니다.');
-			}).catch((e) => {
-				toast.error(e.response.data.reason);
-			});
-		}
-	}
+	//const deleteComment = (commentId:number) => {
+	//	if (confirm('댓글을 삭제하시겠습니까?')) {
+	//		axios.delete(`/api/board/${board}/comment/${commentId}`)
+	//		.then(() => {
+	//			toast.dark('댓글이 삭제되었습니다.');
+	//		}).catch((e) => {
+	//			toast.error(e.response.data.reason);
+	//		});
+	//	}
+	//}
 
-	const updateComment = (commentId:number) => {
-		axios.patch(`/api/board/${board}/comment/${commentId}`, {
-			content: head
-		})
-		.then(() => {
-			toast.dark('댓글이 수정되었습니다.');
-			setHead('');
-			setEditCommentIdx(0);
-		}).catch((e) => {
-			toast.error(e.response.data.reason);
-		});
-	}
+	//const updateComment = (commentId:number) => {
+	//	axios.patch(`/api/board/${board}/comment/${commentId}`, {
+	//		content: head
+	//	})
+	//	.then(() => {
+	//		toast.dark('댓글이 수정되었습니다.');
+	//		setHead('');
+	//		setEditCommentIdx(0);
+	//	}).catch((e) => {
+	//		toast.error(e.response.data.reason);
+	//	});
+	//}
 
 	useEffect(() => {
 		if (addState !== 0)
@@ -788,9 +786,9 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 		setComments(editedContent);
 	}, [boardData, openDetail]);
 
-	const detailWindowStyle = {
-		transform: openDetail.flg ? 'translateX(0%)' : 'translateX(-100%)',
-	}
+	//const detailWindowStyle = {
+	//	transform: openDetail.flg ? 'translateX(0%)' : 'translateX(-100%)',
+	//}
 
 	return (
 		<KonvaContainer>
@@ -804,7 +802,19 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 					onClick={onInitContent}
 				/>
 			}
-			<DetailWindow
+			<ContentContainer
+				openDetail={openDetail}
+				userData={userData}
+				board={board}
+				toast={toast}
+				onSubmitEdit={onSubmitEdit}
+				cancelEdit={cancelEdit}
+				onEdit={onEdit}
+				dataReval={dataReval}
+				setOpenDetail={setOpenDetail}
+				comments={comments}
+			/>
+			{/*<DetailWindow
 				// flg={openDetail.flg}
 				style={ detailWindowStyle }
 			>
@@ -848,7 +858,6 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 						</UserInfo>
 						<MomentBox>
 							<div>작성일 : <p>{dayjs(openDetail.content?.createdAt).format('YYYY년 MM월 DD일')}</p></div>
-							{/* <div>만료일 : <p>{dayjs(openDetail.content?.expiry_date).format('YYYY년 MM월 DD일')}</p></div> */}
 						</MomentBox>
 						Content :
 						<DetailContentBox>
@@ -873,7 +882,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 												>수정</div>
 												<div
 													className="button"
-													onClick={cencelEdit}
+													onClick={cancelEdit}
 												>취소</div>
 											</EditButtonBox>
 										</EditArea>
@@ -923,7 +932,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 												>수정</div>
 												<div
 													className="button"
-													onClick={cencelEdit}
+													onClick={cancelEdit}
 												>취소</div>
 											</EditButtonBox>
 										</EditArea>
@@ -951,7 +960,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 												>수정</div>
 												<div
 													className="button"
-													onClick={cencelEdit}
+													onClick={cancelEdit}
 												>취소</div>
 											</EditButtonBox>
 										</EditArea>
@@ -1046,7 +1055,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 					<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
 					</div>
 				</BottomFixContent>
-			</DetailWindow>
+			</DetailWindow> */}
 			<MenuBox clicked={menuState.flg} x={menuState.x} y={menuState.y} disp={menuState.disp}>
 				<MenuAttr onClick={() => openAddComponent(1)}>Text</MenuAttr>
 				<MenuAttr onClick={() => openAddComponent(2)}>Note</MenuAttr>

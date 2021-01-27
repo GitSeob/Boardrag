@@ -121,7 +121,12 @@ const Board:FC = () => {
 		{ typeof(boardData) !== 'string' &&
 		<div style={{display: 'flex', flexDirection: 'column'}}>
 			<BoardHeader >
-				<div className="logo">
+				<div
+					className="logo"
+					onClick={() => {
+						location.href = "/"
+					}}
+				>
 					<h2>BOXLOT</h2>
 				</div>
 				<div className="up"

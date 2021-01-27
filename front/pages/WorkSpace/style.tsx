@@ -128,12 +128,13 @@ export const WarnMessage = styled.div`
 
 export const DetailBackground = styled('div')`
 	width: 100%;
-	height: 100%;
+	height: calc( 100% + 40px );
 	z-index: 12;
 	position: absolute;
 	top: 0;
 	left: 0;
 	background: rgba(0, 0, 0, .4);
+	transform: translateY(-48px);
 	animation: ${padeIn} .5s ease-in-out 1;
 `;
 
@@ -781,8 +782,14 @@ export const StageContainer = styled('div')<SC>`
 		content: "";
 		top: 0;
 		left: 0;
-		background: url(${props => props.url});
-		background-size: cover;
+		background-image: url(${props => props.url});
+		background-size: contain;
+		background-repeat: no-repeat;
+		background-position: center;
 		opacity: ${props => props.op};
 	}
+`;
+
+export const ContentContainer = styled.div`
+	position: fixed;
 `;
