@@ -663,7 +663,8 @@ router.delete('/board/:boardName/delete/image/:id', isLoggedIn, async (req, res,
 		fs.unlink(`./uploads/${content.url.replace(delURL, "")}`, () => {
 			return;
 		});
-
+		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+		fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.url.replace(delURL, "")}`);
 		const io = req.app.get("io");
 		io.of(`/board-${board.name}`).emit('refresh');
 		return res.send(`delete done`);
@@ -704,7 +705,8 @@ router.delete('/board/:boardName/delete/note/:id', isLoggedIn, async (req, res, 
 			fs.unlink(`./uploads/${content.background_img.replace(delURL, "")}`, () => {
 				return;
 			});
-
+		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+		fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.url.replace(delURL, "")}`);
 		const io = req.app.get("io");
 		io.of(`/board-${board.name}`).emit('refresh');
 		return res.send(`delete done`);
