@@ -14,7 +14,8 @@ import {
 	CommentBox,
 	MoreButton,
 	Comment,
-	WriteComment
+	WriteComment,
+	MoreList
 } from './style';
 import { IDetail, IBM, IComment, DetailProps } from '@typings/datas';
 import TextC from '@components/DisplayContents/TextC';
@@ -76,7 +77,9 @@ interface ICContainer {
 const ContentContainer:FC<ICContainer> = ({
 	openDetail, userData, board, toast, onSubmitEdit, cancelEdit, dataReval, setOpenDetail, onEdit, comments
 }) => {
-	const [editCommnetIdx, setEditCommentIdx] = useState(0);
+	const [editCommnetIdx, setEditCommentIdx] = useState(-1);
+	const [commentMenuIdx, setCMI] = useState(-1);
+	const [contentMenu, setContentMenu] = useState(false);
 	const [commentContent, OCCC, setCC] = useInput('');
 	const [head, OCHead, setHead] = useInput('');
 	const detailScrollbarRef = useRef<Scrollbars>(null);
@@ -142,6 +145,7 @@ const ContentContainer:FC<ICContainer> = ({
 
 	const deleteComment = (commentId:number) => {
 		if (confirm('댓글을 삭제하시겠습니까?')) {
+			setCMI(-1);
 			axios.delete(`/api/board/${board}/comment/${commentId}`)
 			.then(() => {
 				toast.dark('댓글이 삭제되었습니다.');
@@ -152,8 +156,12 @@ const ContentContainer:FC<ICContainer> = ({
 	};
 
 	useEffect(() => {
-		console.log(comments);
-	}, [comments]);
+		setEditCommentIdx(-1);
+		setCMI(-1);
+		setContentMenu(false);
+		setCC('');
+		setHead('');
+	}, [openDetail]);
 
 	return (
 		<ContentBox
@@ -175,9 +183,26 @@ const ContentContainer:FC<ICContainer> = ({
 						}
 						<p>{openDetail.content?.BoardMember? openDetail.content.BoardMember.username : "unknown user"}</p>
 					</div>
-					<MoreButton>
+					<MoreButton
+						onClick={() => { setContentMenu(!contentMenu); setCMI(-1); }}
+					>
 						<img src="/public/more.svg" />
 					</MoreButton>
+					{ contentMenu &&
+						<MoreList className="three">
+							<div>
+								내용 수정
+							</div>
+							<div>
+								위치 수정
+							</div>
+							<div
+								onClick={deleteBox}
+							>
+								삭제
+							</div>
+						</MoreList>
+					}
 				</UserInfoBox>
 				<DetailContentBox>
 					<div className="dayjs">
@@ -190,7 +215,7 @@ const ContentContainer:FC<ICContainer> = ({
 					}
 				</DetailContentBox>
 				<CommentBox
-					style={{ minHeight: `${comments?.length === 0 ? "100px" : "360px" }`}}
+					style={{ minHeight: `${comments?.length === 0 ? "100px" : "300px" }`}}
 				>
 					{comments?.length === 0 &&
 						<div style={{color: "#777", fontSize: "12px"}}>
@@ -201,6 +226,7 @@ const ContentContainer:FC<ICContainer> = ({
 							return (
 								<Comment
 									key={(i)}
+									style={{ background: `${editCommnetIdx === c.id ? "#444" : ""}`}}
 								>
 									{ c.BoardMember.profile_img ?
 										<img src={c.BoardMember.profile_img} />
@@ -211,28 +237,55 @@ const ContentContainer:FC<ICContainer> = ({
 									}
 									<div className="content">
 										<p className="nickname">{c.BoardMember ? c.BoardMember.username : "unknown user"}</p>
-										<div>
-											{ c.id === editCommnetIdx ?
-												<div>
-													<input
-														type="text"
-														autoFocus
-														value={head}
-														onChange={OCHead}
-													/>
+										{ c.id === editCommnetIdx ?
+										<div className="editComment">
+											<input
+												type="text"
+												autoFocus
+												value={head}
+												onChange={OCHead}
+											/>
+											<div className="editButton">
+												<div className="submit"
+													onClick={() => {updateComment(c.id)}}
+												>
+													수정
 												</div>
-											:
-												<>
-													<div>{c.content}</div>
-													<p>{dayjs(c.createdAt).diff(now, 'day') > -1 ? dayjs(c.createdAt).format('LT') : dayjs(c.createdAt).format('YYYY년 MM월 DD일')}</p>
-												</>
-											}
+												<div className="cancel"
+													onClick={() => { setEditCommentIdx(-1); setHead(''); }}
+												>
+													취소
+												</div>
+											</div>
 										</div>
+										:
+										<div>
+											<div className="commentBubble">{c.content}</div>
+											<p>{dayjs(c.createdAt).diff(now, 'day') > -1 ? dayjs(c.createdAt).format('LT') : dayjs(c.createdAt).format('YYYY년 MM월 DD일')}{c.createdAt !== c.updatedAt && "(edited)"}</p>
+										</div>
+										}
 									</div>
-									{(c.BoardMemberId === userData.id ) &&
-										<MoreButton>
-											<img src="/public/more.svg" />
-										</MoreButton>
+									{(c.BoardMemberId === userData.id && c.id !== editCommnetIdx) &&
+										<>
+											<MoreButton
+												onClick={() => {
+													setCMI(c.id === commentMenuIdx ? -1 : c.id)
+												}}
+											>
+												<img src="/public/more.svg" />
+											</MoreButton>
+											{
+												commentMenuIdx === c.id &&
+													<MoreList>
+														<div
+															onClick={() => { setEditCommentIdx(c.id); setCMI(-1); setHead(c.content);}}
+														>수정</div>
+														<div
+															onClick={() => { deleteComment(c.id); }}
+														>삭제</div>
+													</MoreList>
+											}
+										</>
 									}
 								</Comment>
 							);

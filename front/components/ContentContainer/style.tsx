@@ -23,6 +23,17 @@ const padeDisappearDown = keyframes`
 	}
 `;
 
+const moreMenu = keyframes`
+	from {
+		width: 0;
+		height: 0;
+	}
+	to {
+		width: 60px;
+		height: 60px;
+	}
+`;
+
 type Tflg = {
 	flg: boolean
 }
@@ -64,6 +75,7 @@ export const UserInfoBox = styled.div`
 			border-radius: 48px;
 			object-fit: contain;
 			border: 1px solid #444;
+			background: #000;
 		}
 	}
 `;
@@ -71,9 +83,35 @@ export const UserInfoBox = styled.div`
 export const MoreButton = styled.div`
 	position: absolute;
 	right: 0;
-	top: 0;
+	top: 12px;
 	height: 18px;
 	cursor: pointer;
+`;
+
+export const MoreList = styled.div`
+	position: absolute;
+	width: 60px;
+	height: 60px;
+	overflow: hidden;
+	top: 18px;
+	right: 0;
+	animation: ${moreMenu} .3s ease-in-out 1;
+	box-shadow: 0 0 4px 1px #777;
+	background: #000;
+
+	&.three { height: 90px; }
+
+	& > div {
+		cursor: pointer;
+		padding: 6px;
+		height: 30px;
+		overflow: hidden;
+		line-height: 20px;
+		word-break: keep-all;
+		&:hover {
+			background: #444;
+		}
+	}
 `;
 
 export const DetailContentBox = styled.div`
@@ -100,14 +138,17 @@ export const Comment = styled.div`
 	display: flex;
 	position: relative;
 	min-height: 3rem;
-	margin-bottom: .5rem;
+	padding: 12px 0;
 	padding-right: 18px;
+	border-radius: 12px;
 
 	& > img {
 		width: 3rem;
 		height: 3rem;
 		border-radius: 100%;
 		margin-right: 1rem;
+		background: #000;
+		object-fit: contain;
 	}
 
 	.no_profile_img {
@@ -150,7 +191,39 @@ export const Comment = styled.div`
 			align-items: flex-end;
 			width: 100%;
 
-			div {
+			&.editComment {
+				height: 120px;
+			}
+			input[type="text"] {
+				width: calc(100% - 60px);
+				height: 100%;
+				border-radius: 12px 0 0 12px;
+				padding: 1em;
+			}
+			div.editButton {
+				width: 60px;
+				height: 100%;
+				border-radius: 0 12px 12px 0;
+				overflow: hidden;
+
+				& > div {
+					width: 100%;
+					height: 50%;
+					cursor: pointer;
+					text-align: center;
+					vertical-align: middle;
+					line-height: 60px;
+
+					&.submit {
+						background: #5656bf;
+					}
+					&.cancel {
+						background: #bf5656;
+					}
+				}
+			}
+
+			div.commentBubble {
 				background: #f8f8f8;
 				border-radius: 5px;
 				color: #000;
@@ -193,6 +266,8 @@ export const WriteComment = styled.form`
 		height: 48px;
 		border-radius: 48px;
 		border: 1px solid #444;
+		object-fit: contain;
+		background: #000;
 	}
 
 	input {

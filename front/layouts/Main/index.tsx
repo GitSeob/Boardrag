@@ -90,8 +90,7 @@ const MainPage = () => {
 			<Menu>
 				<RelBox>
 					<div className="logo">
-						<img src="/public/42_logo.svg" />
-						<h2>BOARD</h2>
+						<h2>BOXLOT</h2>
 					</div>
 					<div
 						onClick={() => { setIsAddBoard(true) }}

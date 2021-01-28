@@ -14,6 +14,9 @@ export const ImageBox = styled.img`
 
 export const HeadBox = styled.div`
 	width: 100%;
+	margin: 12px 0;
+
+	h2 { font-size: 2em; }
 `;
 
 export const TextBox = styled.pre`

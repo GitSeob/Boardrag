@@ -783,7 +783,7 @@ export const StageContainer = styled('div')<SC>`
 		top: 0;
 		left: 0;
 		background-image: url(${props => props.url});
-		background-size: contain;
+		background-size: cover;
 		background-repeat: no-repeat;
 		background-position: center;
 		opacity: ${props => props.op};
