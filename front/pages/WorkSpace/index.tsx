@@ -1,4 +1,4 @@
-import React, {FC, useEffect, useCallback, useState, useRef, MutableRefObject, ChangeEvent} from 'react';
+import React, {FC, useEffect, useCallback, useState } from 'react';
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 dayjs.extend(localizedFormat);
@@ -8,27 +8,13 @@ import axios from 'axios';
 import {Stage, Layer, Group} from 'react-konva';
 import Konva from 'konva';
 import RectOnCanvas from '@components/RectOnCanvas';
-import ImageEditButton from '@components/ImageEditButton';
-import { IUser, IBoard, IComment, IDetail, IBM } from '@typings/datas';
+import { IBoard, IComment, IDetail, IBM } from '@typings/datas';
 
 import {
-	UDButtonBox,
-	UserInfo,
-	DetailBox,
-	TopFixContent,
-	BottomFixContent,
 	DetailBackground,
-	DetailWindow,
 	KonvaContainer,
 	BoardFooter,
 	WarnMessage,
-	MomentBox,
-	DetailContentBox,
-	EditArea,
-	EditButtonBox,
-	ImageBox,
-	Comment,
-	CommentBox,
 	MenuBox,
 	MenuAttr,
 	ComponentBox,
@@ -43,9 +29,7 @@ import {
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
 import NoteAdd from '@components/NoteAdd';
-import useInput from '@hooks/useInput';
 import ContentContainer from '@components/ContentContainer';
-import Scrollbars from 'react-custom-scrollbars';
 
 type Position = {
 	x: number,
@@ -82,13 +66,6 @@ interface IBoardProps {
 	userData: IBM,
 	dataReval: () => void,
 	board: string,
-}
-
-interface UploadProps {
-	loading: boolean,
-	success: boolean,
-	imageURL: string,
-	message: string,
 }
 
 const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) => {
@@ -136,24 +113,10 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 		width: defaultRectSize,
 		height: defaultRectSize,
 	});
-	const [commentContent, OCCC, setCC] = useInput('');
 	const [height, setHeight] = useState(defaultRectSize * 20);
 	const [comments, setComments] = useState<IComment[]>();
-	const [isEdit, setIsEdit] = useState<boolean>(false);
-	const [text, setText] = useState('');
-	const [head, OCHead, setHead] = useInput('');
-	const [editUrl, setEditUrl] = useState<string>('');
-	const [uploading, setUploading] = useState<UploadProps>({
-		loading: false,
-		success: false,
-		imageURL: '',
-		message: '',
-	});
 	const [canMove, setCanMove] = useState(false);
 	const [isEditSize, setIsEditSize] = useState(false);
-
-	const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;
-	const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
 
 	const bg = boardData?.background ? boardData.background : '';
 
@@ -401,88 +364,6 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 		setComments(content.Comments);
 	}, [openDetail]);
 
-	//const submitComment = useCallback((e) => {
-	//	e.preventDefault();
-	//	if (commentContent !== '') {
-	//		axios.post(`/api/board/${board}/comment/${openDetail.category}/${openDetail.content?.id}`, {
-	//			content: commentContent,
-	//			BoardMemberId: userData.id
-	//		}).then(() => {
-	//			setCC('');
-	//			if (detailScrollbarRef.current)
-	//				detailScrollbarRef.current.scrollToBottom();
-	//		}). catch((e) => {
-	//			console.error(e);
-	//		})
-	//	}
-	//}, [commentContent, openDetail, detailScrollbarRef]);
-
-	//const deleteBox = useCallback((e) => {
-	//	e.preventDefault();
-	//	if (!confirm('정말 삭제하시겠습니까?'))
-	//		return ;
-	//	let category = '';
-	//	if (openDetail.category === 1)
-	//		category = 'text';
-	//	else if (openDetail.category === 2)
-	//		category = 'note';
-	//	else if (openDetail.category === 3)
-	//		category = 'image';
-	//	else
-	//		return ;
-	//	axios.delete(`api/board/${board}/delete/${category}/${openDetail.content?.id}`).then(() => {
-	//		dataReval();
-	//		setOpenDetail({
-	//			category: 0,
-	//			id: 0,
-	//			flg: false,
-	//			loadComment: false,
-	//			content: null,
-	//		});
-	//		toast.dark(`게시물이 삭제되었습니다.`);
-	//	}).catch((e) => {
-	//		console.error(e);
-	//	})
-	//}, [openDetail]);
-
-	const onEdit = useCallback((cid) => {
-		setIsEdit(!isEdit);
-		if (isEdit) {
-			setText('');
-			setHead('');
-			setEditUrl('');
-		}
-		else if (cid === 1)
-		{
-			setText(typeof openDetail.content?.content === 'string' ? openDetail.content?.content : '');
-			if (isEdit) setTAH(`${textScrollRef.current.scrollHeight}px`);
-		}
-		else if (cid === 2)
-		{
-			setHead(typeof openDetail.content?.head === 'string' ? openDetail.content?.head : '');
-			setText(typeof openDetail.content?.paragraph === 'string' ? openDetail.content?.paragraph : '');
-			setUploading({
-				...uploading,
-				imageURL: typeof openDetail.content?.background_img === 'string' ? openDetail.content?.background_img : '',
-			});
-			if (isEdit) setTAH(`${textScrollRef.current.scrollHeight}px`);
-		}
-		else if (cid === 3)
-		{
-			setUploading({
-				...uploading,
-				imageURL: typeof openDetail.content?.url === 'string' ? openDetail.content?.url : '',
-			});
-		}
-	}, [isEdit, openDetail, textScrollRef]);
-
-	const [TAH, setTAH] = useState('auto');
-
-	const OCText = useCallback((e) => {
-		setTAH(`${textScrollRef.current.scrollHeight}px`);
-		setText(e.target.value);
-	}, [textScrollRef]);
-
 	const onInitContent = useCallback(() => {
 		setOpenDetail({
 			category: 0,
@@ -490,56 +371,6 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 			flg: false,
 			loadComment: false,
 			content: null,
-		})
-		setHead('');
-		setText('');
-		setUploading({
-			loading: false,
-			success: false,
-			message: '',
-			imageURL: ''
-		});
-		setIsEdit(false);
-	}, []);
-
-	const cancelEdit = useCallback(() => {
-		setHead('');
-		setText('');
-		setUploading({
-			loading: false,
-			success: false,
-			message: '',
-			imageURL: ''
-		});
-		setIsEdit(false);
-	}, []);
-
-	const onClickImageUpload = useCallback(() => {
-		imageInput.current.click();
-	}, [imageInput.current]);
-
-	const onChangeImg = useCallback( async (e) => {
-		const imageFormData = new FormData();
-		imageFormData.append('image', e.target.files[0]);
-		await setUploading({
-			...uploading,
-			loading: true
-		});
-		await axios.post('/api/uploadImage', imageFormData, {
-			headers: {'Access-Control-Allow-Origin': '*'}
-		}).then(res => {
-			setUploading({
-				...uploading,
-				success: true,
-				loading: false,
-				imageURL: res.data.url
-			});
-		}).catch(e => {
-			setUploading({
-				...uploading,
-				loading: false,
-				message: e.response.data
-			});
 		})
 	}, []);
 
@@ -604,7 +435,6 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 				setWarning('');
 			}, 2000);
 		});
-		cancelEdit();
 	}, [openDetail]);
 
 	const moveMode = useCallback(( ) => {
@@ -743,30 +573,6 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 		axios.patch
 	};
 
-	//const deleteComment = (commentId:number) => {
-	//	if (confirm('댓글을 삭제하시겠습니까?')) {
-	//		axios.delete(`/api/board/${board}/comment/${commentId}`)
-	//		.then(() => {
-	//			toast.dark('댓글이 삭제되었습니다.');
-	//		}).catch((e) => {
-	//			toast.error(e.response.data.reason);
-	//		});
-	//	}
-	//}
-
-	//const updateComment = (commentId:number) => {
-	//	axios.patch(`/api/board/${board}/comment/${commentId}`, {
-	//		content: head
-	//	})
-	//	.then(() => {
-	//		toast.dark('댓글이 수정되었습니다.');
-	//		setHead('');
-	//		setEditCommentIdx(0);
-	//	}).catch((e) => {
-	//		toast.error(e.response.data.reason);
-	//	});
-	//}
-
 	useEffect(() => {
 		if (addState !== 0)
 			setMenu({
@@ -785,10 +591,6 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 		}
 		setComments(editedContent);
 	}, [boardData, openDetail]);
-
-	//const detailWindowStyle = {
-	//	transform: openDetail.flg ? 'translateX(0%)' : 'translateX(-100%)',
-	//}
 
 	return (
 		<KonvaContainer>
@@ -813,248 +615,6 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 				setOpenDetail={setOpenDetail}
 				comments={comments}
 			/>
-			{/*<DetailWindow
-				// flg={openDetail.flg}
-				style={ detailWindowStyle }
-			>
-				<Scrollbars
-					autoHide
-					ref={detailScrollbarRef}
-					style={{height: "calc(100% - 4rem)", overflow: 'hidden',}}
-				>
-				<DetailBox>
-					{ openDetail.id !== 0 &&
-					<>
-					<TopFixContent>
-						<UserInfo>
-							{ openDetail.content?.BoardMember.profile_img ?
-								<img src={openDetail.content?.BoardMember.profile_img} />
-								:
-								<div className="no_profile_img">
-									<img src="/public/person.svg"/>
-								</div>
-							}
-							<p>{openDetail.content?.BoardMember? openDetail.content.BoardMember.username : "unknown user"}</p>
-							{( (openDetail.content && openDetail.content.BoardMemberId === userData.id )) &&
-								<UDButtonBox>
-									<button
-										onClick={() => onEdit(openDetail.category)}
-									>
-										<img src="/public/edit.svg" />
-									</button>
-									<button
-										onClick={deleteBox}
-									>
-										<img src="/public/delete.svg" />
-									</button>
-									<button
-										onClick={moveMode}
-									>
-										<img src="/public/resize.svg" />
-									</button>
-								</UDButtonBox>
-							}
-						</UserInfo>
-						<MomentBox>
-							<div>작성일 : <p>{dayjs(openDetail.content?.createdAt).format('YYYY년 MM월 DD일')}</p></div>
-						</MomentBox>
-						Content :
-						<DetailContentBox>
-							{openDetail.category === 1 &&
-								(!isEdit ?
-									<pre>
-										{openDetail.content?.content}
-									</pre>
-									:
-									<>
-										<EditArea>
-											<textarea
-												value={text}
-												onChange={OCText}
-												ref={textScrollRef}
-												style={{height: TAH}}
-											/>
-											<EditButtonBox>
-												<div
-													className="button edit"
-													onClick={onSubmitEdit}
-												>수정</div>
-												<div
-													className="button"
-													onClick={cancelEdit}
-												>취소</div>
-											</EditButtonBox>
-										</EditArea>
-									</>
-								)
-							}
-							{openDetail.category === 2 &&
-								( !isEdit ?
-									<>
-										{openDetail.content?.background_img && <img src={openDetail.content?.background_img} />}
-										<h2>
-											{openDetail.content?.head}
-										</h2>
-										<pre>
-											{openDetail.content?.paragraph}
-										</pre>
-									</>
-									:
-									<>
-										<EditArea>
-											<ImageBox>
-												{uploading.imageURL !== '' ?
-													<img src={uploading.imageURL} />
-													:
-													<div className="temp"/>
-												}
-												<ImageEditButton
-													onClick={onClickImageUpload}
-													imageInput={imageInput}
-													onChangeImg={onChangeImg}
-												/>
-											</ImageBox>
-											<input
-												value={head}
-												onChange={OCHead}
-											/>
-											<textarea
-												value={text}
-												onChange={OCText}
-												ref={textScrollRef}
-												style={{height: TAH}}
-											/>
-											<EditButtonBox>
-												<div
-													className="button edit"
-													onClick={onSubmitEdit}
-												>수정</div>
-												<div
-													className="button"
-													onClick={cancelEdit}
-												>취소</div>
-											</EditButtonBox>
-										</EditArea>
-									</>
-								)
-							}
-							{openDetail.category === 3 &&
-								( !isEdit ?
-									<img src={openDetail.content?.url} />
-									:
-									<>
-										<EditArea>
-											<ImageBox>
-												<img src={uploading.imageURL} />
-												<ImageEditButton
-													onClick={onClickImageUpload}
-													imageInput={imageInput}
-													onChangeImg={onChangeImg}
-												/>
-											</ImageBox>
-											<EditButtonBox>
-												<div
-													className="button edit"
-													onClick={onSubmitEdit}
-												>수정</div>
-												<div
-													className="button"
-													onClick={cancelEdit}
-												>취소</div>
-											</EditButtonBox>
-										</EditArea>
-									</>
-								)
-							}
-						</DetailContentBox>
-					</TopFixContent>
-					<div
-						style={{borderBottom: '1px solid #444', padding: '.5rem 0'}}
-					>Comment:</div>
-					<CommentBox>
-						{comments?.map((c, i) => {
-							return (
-								<Comment
-									key={(i)}
-								>
-									{ c.BoardMember.profile_img ?
-										<img src={c.BoardMember.profile_img} />
-										:
-										<div className="no_profile_img">
-											<img src="/public/person.svg" />
-										</div>
-									}
-									<div className="content">
-										<p>{c.BoardMember ? c.BoardMember.username : "unknown user"}</p>
-										<div>
-											{ c.id === editCommnetIdx ?
-												<div>
-													<input
-														type="text"
-														autoFocus
-														value={head}
-														onChange={OCHead}
-													/>
-												</div>
-											:
-												<>
-													<div>{c.content}</div>
-													<p>{dayjs(c.createdAt).diff(now, 'day') > -1 ? dayjs(c.createdAt).format('LT') : dayjs(c.createdAt).format('YYYY년 MM월 DD일')}</p>
-												</>
-											}
-										</div>
-										{ (c.BoardMemberId === userData.id ) &&
-											<div className="edit-box">
-												{ c.id === editCommnetIdx ?
-													<>
-														<button onClick={() => { updateComment(c.id) }}>
-															<span>수정하기</span>
-														</button>
-														<span> | </span>
-														<button onClick={() => { setEditCommentIdx(0); setHead(''); }}>
-															<span>취소하기</span>
-														</button>
-													</>
-													:
-													<>
-														<button onClick={() => { setHead(c.content); setEditCommentIdx(c.id) }}>
-															<span>수정</span>
-														</button>
-														<span> | </span>
-														<button onClick={() => { deleteComment(c.id) }}>
-															<span>삭제</span>
-														</button>
-													</>
-												}
-											</div>
-										}
-									</div>
-								</Comment>
-							);
-						})}
-					</CommentBox>
-					</>
-				}
-				</DetailBox>
-				</Scrollbars>
-				<BottomFixContent
-					onClick={submitComment}
-				>
-					<input
-						type="text"
-						value={commentContent}
-						onChange={OCCC}
-						onKeyPress={(e) => {
-							if (e.key === "Enter") {
-								submitComment(e);
-							}
-						}}
-					/>
-					<div>
-					<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-					</div>
-				</BottomFixContent>
-			</DetailWindow> */}
 			<MenuBox clicked={menuState.flg} x={menuState.x} y={menuState.y} disp={menuState.disp}>
 				<MenuAttr onClick={() => openAddComponent(1)}>Text</MenuAttr>
 				<MenuAttr onClick={() => openAddComponent(2)}>Note</MenuAttr>
@@ -1071,7 +631,6 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 					initStates={initStates}
 					board={board}
 					BMID={userData.id}
-					// dataReval={dataReval}
 				/>
 			}
 			{ addState === 2 &&
@@ -1085,7 +644,6 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 					initStates={initStates}
 					board={board}
 					BMID={userData.id}
-					// dataReval={dataReval}
 				/>
 			}
 			{ addState === 3 &&
@@ -1099,7 +657,6 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 					initStates={initStates}
 					board={board}
 					BMID={userData.id}
-					// dataReval={dataReval}
 				/>
 			}
 			{ boardData?.TextContents  && boardData?.TextContents.map((c, i) => {

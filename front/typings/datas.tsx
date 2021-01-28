@@ -149,10 +149,12 @@ export interface DetailProps {
 }
 
 export interface IBL {
+	id: number,
 	name: string,
 	description: string,
 	is_lock: boolean,
 	memberCount: number,
 	background: string,
 	recent_time: Date,
+	AdminId: number
 }

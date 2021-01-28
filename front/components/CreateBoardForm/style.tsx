@@ -109,7 +109,7 @@ export const ProfileImageBox = styled.div`
 		align-items: center;
 		justify-content: center;
 		background-size: cover;
-		background-repeat: no-repeat
+		background-repeat: no-repeat;
 		background-position: center;
 
 		& > img {
@@ -163,7 +163,7 @@ export const BackgroundImageBox = styled.div`
 		justify-content: center;
 		border-radius: 1xp solid #cacaca;
 		background-size: contain;
-		background-repeat: no-repeat
+		background-repeat: no-repeat;
 		background-position: center;
 
 		& > img {

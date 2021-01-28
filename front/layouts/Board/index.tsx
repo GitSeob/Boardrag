@@ -10,7 +10,6 @@ import { BoardHeader, UserList, LogOutButton, MenuContainer, UserMenu, DetailBac
 import ChatBox from '@components/ChatBox';
 import WorkSpace from '@pages/WorkSpace';
 import { IUser, IBoard, IBM } from '@typings/datas';
-import { type } from 'os';
 
 interface IUserList {
 	id: number,

@@ -1,7 +1,0 @@
-/node_modules
-.env
-/uploads
-/board_bgs
-/board_profileImages
-delete_log.txt
-/logs
