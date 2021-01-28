@@ -192,11 +192,13 @@ const deleter = schedule.scheduleJob('0 0 * * * *', async () => {
 			}, {
 				transaction: t
 			});
+			const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
 			await deleteUrl.image.forEach(elem => {
 				console.log("delete => ", elem);
 				fs.unlink(`./uploads/${elem.replace(delURL, "")}`, () => {
 					return;
 				});
+				fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.url.replace(delURL, "")}\n`);
 			});
 		}
 	}
@@ -216,12 +218,14 @@ const deleter = schedule.scheduleJob('0 0 * * * *', async () => {
 	})
 	if (availFiles.length > 0)
 	{
+		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
 		fs.readdir("./uploads", (error, filelist) => {
-			filelist.filter(elem => !(availFiles.find(file => file === elem))).forEach(e => {
+			filelist.filter(elem => !(availFiles.find(file => String(file).replace(`${delURL}/uploads/`, "") === elem))).forEach(e => {
 				console.log("delete => ", e);
 				fs.unlink(`./uploads/${e.replace(delURL, "")}`, () => {
 					return;
 				});
+				fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.url.replace(delURL, "")}\n`);
 			})
 		});
 	}
