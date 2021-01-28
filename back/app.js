@@ -198,7 +198,7 @@ const deleter = schedule.scheduleJob('0 0 * * * *', async () => {
 				fs.unlink(`./uploads/${elem.replace(delURL, "")}`, () => {
 					return;
 				});
-				fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.url.replace(delURL, "")}`);
+				fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.url.replace(delURL, "")}\n`);
 			});
 		}
 	}
@@ -208,24 +208,24 @@ const deleter = schedule.scheduleJob('0 0 * * * *', async () => {
 	await Image.findAll({
 		attributes: ["url"]
 	}).then(res => {
-		availFiles.push(res.url.replace(`${delURL}/uploads/`, ""));
+		availFiles.push(res.url);
 	})
 	await Note.findAll({
 		attributes: ["background_img"]
 	}).then(res => {
 		if (res.background_img)
-			availFiles.push(res.background_img.replace(`${delURL}/uploads/`, ""));
+			availFiles.push(res.background_img);
 	})
 	if (availFiles.length > 0)
 	{
 		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
 		fs.readdir("./uploads", (error, filelist) => {
-			filelist.filter(elem => !(availFiles.find(file => file === elem))).forEach(e => {
+			filelist.filter(elem => !(availFiles.find(file => String(file).replace(`${delURL}/uploads/`, "") === elem))).forEach(e => {
 				console.log("delete => ", e);
 				fs.unlink(`./uploads/${e.replace(delURL, "")}`, () => {
 					return;
 				});
-				fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.url.replace(delURL, "")}`);
+				fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.url.replace(delURL, "")}\n`);
 			})
 		});
 	}

@@ -42,9 +42,8 @@ export const ContentBox = styled('div')<Tflg>`
 	position: fixed;
 	overflow: ${props => props.flg ? "auto" : "hidden"};
 	width: ${props => props.flg ? "760px" : "0"};
-	max-height: ${props => props.flg ? "100%" : "0"};
-	min-height: 720px;
-	//padding: ${props => props.flg ? "30px" : "0"};
+	max-height: ${props => props.flg ? "calc(100% - 60px)" : "0"};
+	padding: ${props => props.flg ? "30px" : "0"};
 	background: rgba(0, 0, 0, .85);
 	border-radius: 18px;
 	box-shadow: ${props => props.flg ? "0 0 4px 1px #55555e" : "none"};
@@ -54,8 +53,10 @@ export const ContentBox = styled('div')<Tflg>`
 	z-index: 13;
 	animation: ${props => props.flg ? padeAppearUp : padeDisappearDown} .5s ease-in-out 1;
 
-	& > div > div {
-		padding: 30px;
+	-ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none; /* Firefox */
+	&::-webkit-scrollbar {
+		display: none; /* Chrome, Safari, Opera*/
 	}
 `;
 
@@ -93,7 +94,7 @@ export const MoreList = styled.div`
 	width: 60px;
 	height: 60px;
 	overflow: hidden;
-	top: 18px;
+	top: 30px;
 	right: 0;
 	animation: ${moreMenu} .3s ease-in-out 1;
 	box-shadow: 0 0 4px 1px #777;
@@ -131,7 +132,7 @@ export const DetailContentBox = styled.div`
 export const CommentBox = styled.div`
 	border-top: 1px solid #444;
 	padding: 30px 0;
-	min-height: 360px;
+	height: fit-content;
 `;
 
 export const Comment = styled.div`

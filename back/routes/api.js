@@ -664,7 +664,7 @@ router.delete('/board/:boardName/delete/image/:id', isLoggedIn, async (req, res,
 			return;
 		});
 		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-		fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.url.replace(delURL, "")}`);
+		fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.url.replace(delURL, "")}\n`);
 		const io = req.app.get("io");
 		io.of(`/board-${board.name}`).emit('refresh');
 		return res.send(`delete done`);
@@ -706,7 +706,7 @@ router.delete('/board/:boardName/delete/note/:id', isLoggedIn, async (req, res, 
 				return;
 			});
 		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-		fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.url.replace(delURL, "")}`);
+		fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.background_img.replace(delURL, "")}\n`);
 		const io = req.app.get("io");
 		io.of(`/board-${board.name}`).emit('refresh');
 		return res.send(`delete done`);
@@ -854,7 +854,7 @@ router.patch('/board/:boardName/image/:id', isLoggedIn, async (req, res, next) =
 		await db.BoardMember.increment({
 			avail_blocks: oldSize - (req.body.width * req.body.height)
 		}, {
-			where: {id: content.UserId}
+			where: {id: content.BoardMemberId}
 		});
 		const io = req.app.get("io");
 		io.of(`/board-${board.name}`).emit('refresh');

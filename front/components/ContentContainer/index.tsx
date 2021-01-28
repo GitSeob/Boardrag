@@ -23,17 +23,22 @@ import NoteC from '@components/DisplayContents/NoteC';
 import ImageC from '@components/DisplayContents/ImageC';
 
 interface ISC {
-	openDetail: IDetail
+	openDetail: IDetail,
+	isEdit: boolean,
+	setEdit(flg: boolean): void,
+	onSubmitEdit: (text: string, head: string, url: string) => void,
 }
 
-const SwitchContent:FC<ISC> = ({ openDetail }) => {
+const SwitchContent:FC<ISC> = ({ openDetail, isEdit, setEdit, onSubmitEdit }) => {
 	if (openDetail.content === undefined)
 		return (<></>);
 	if (openDetail.category == 1)
 	{
 		return (
 			<TextC
-				isEdit={false}
+				isEdit={isEdit}
+				setEdit={setEdit}
+				onSubmitEdit={onSubmitEdit}
 				content={openDetail.content?.content}
 			/>
 		);
@@ -42,7 +47,9 @@ const SwitchContent:FC<ISC> = ({ openDetail }) => {
 	{
 		return (
 			<NoteC
-				isEdit={false}
+				isEdit={isEdit}
+				setEdit={setEdit}
+				onSubmitEdit={onSubmitEdit}
 				content={openDetail.content?.paragraph}
 				head={openDetail.content?.head}
 				url={openDetail.content?.background_img}
@@ -53,7 +60,9 @@ const SwitchContent:FC<ISC> = ({ openDetail }) => {
 	{
 		return (
 			<ImageC
-				isEdit={false}
+				isEdit={isEdit}
+				setEdit={setEdit}
+				onSubmitEdit={onSubmitEdit}
 				url={openDetail.content?.url}
 			/>
 		)
@@ -67,21 +76,21 @@ interface ICContainer {
 	board: string,
 	toast: any,
 	onSubmitEdit: (text: string, head: string, url: string) => void,
-	cancelEdit: () => void,
-	onEdit: (cid: number) => void,
 	dataReval: () => void,
 	setOpenDetail(props: object): void,
 	comments: IComment[] | undefined,
+	moveMode: () => void,
 }
 
 const ContentContainer:FC<ICContainer> = ({
-	openDetail, userData, board, toast, onSubmitEdit, cancelEdit, dataReval, setOpenDetail, onEdit, comments
+	openDetail, userData, board, toast, onSubmitEdit, dataReval, setOpenDetail, comments, moveMode
 }) => {
 	const [editCommnetIdx, setEditCommentIdx] = useState(-1);
 	const [commentMenuIdx, setCMI] = useState(-1);
 	const [contentMenu, setContentMenu] = useState(false);
 	const [commentContent, OCCC, setCC] = useInput('');
 	const [head, OCHead, setHead] = useInput('');
+	const [isEdit, setEdit] = useState(false);
 	const detailScrollbarRef = useRef<Scrollbars>(null);
 
 	const now = new Date();
@@ -161,17 +170,18 @@ const ContentContainer:FC<ICContainer> = ({
 		setContentMenu(false);
 		setCC('');
 		setHead('');
+		setEdit(false);
 	}, [openDetail]);
 
 	return (
 		<ContentBox
 			flg={openDetail.flg}
 		>
-			<Scrollbars
+			{/*<Scrollbars
 					autoHide
 					ref={detailScrollbarRef}
-					style={{height: "720px", overflow: 'hidden',}}
-			>
+					style={{ overflow: 'hidden',}}
+			>*/}
 				<UserInfoBox>
 					<div className="user">
 						{ openDetail.content?.BoardMember.profile_img ?
@@ -190,10 +200,14 @@ const ContentContainer:FC<ICContainer> = ({
 					</MoreButton>
 					{ contentMenu &&
 						<MoreList className="three">
-							<div>
+							<div
+								onClick={() => {setEdit(true); setContentMenu(false); }}
+							>
 								내용 수정
 							</div>
-							<div>
+							<div
+								onClick={moveMode}
+							>
 								위치 수정
 							</div>
 							<div
@@ -211,12 +225,15 @@ const ContentContainer:FC<ICContainer> = ({
 					{ openDetail &&
 						<SwitchContent
 							openDetail={openDetail}
+							isEdit={isEdit}
+							setEdit={setEdit}
+							onSubmitEdit={onSubmitEdit}
 						/>
 					}
 				</DetailContentBox>
-				<CommentBox
-					style={{ minHeight: `${comments?.length === 0 ? "100px" : "300px" }`}}
-				>
+				{ !isEdit &&
+				<>
+				<CommentBox>
 					{comments?.length === 0 &&
 						<div style={{color: "#777", fontSize: "12px"}}>
 							첫 댓글을 작성해보세요 !
@@ -269,7 +286,8 @@ const ContentContainer:FC<ICContainer> = ({
 										<>
 											<MoreButton
 												onClick={() => {
-													setCMI(c.id === commentMenuIdx ? -1 : c.id)
+													setCMI(c.id === commentMenuIdx ? -1 : c.id);
+													setContentMenu(false);
 												}}
 											>
 												<img src="/public/more.svg" />
@@ -309,7 +327,9 @@ const ContentContainer:FC<ICContainer> = ({
 							<img src="/public/sendIcon.svg" />
 						</div>
 					</WriteComment>
-			</Scrollbars>
+					</>
+				}
+			{/*</Scrollbars>*/}
 		</ContentBox>
 	);
 }

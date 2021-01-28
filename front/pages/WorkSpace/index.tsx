@@ -808,8 +808,7 @@ const WorkSpace:FC<IBoardProps> = ({ board, boardData, dataReval, userData }) =>
 				board={board}
 				toast={toast}
 				onSubmitEdit={onSubmitEdit}
-				cancelEdit={cancelEdit}
-				onEdit={onEdit}
+				moveMode={moveMode}
 				dataReval={dataReval}
 				setOpenDetail={setOpenDetail}
 				comments={comments}

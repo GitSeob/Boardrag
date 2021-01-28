@@ -598,6 +598,7 @@ export const ImageComponent = styled('div')`
 	& > img {
 		width: 100%;
 		height: 100%;
+		object-fit: cover;
 	}
 	&:hover {
 		box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
