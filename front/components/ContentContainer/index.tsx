@@ -15,7 +15,8 @@ import {
 	MoreButton,
 	Comment,
 	WriteComment,
-	MoreList
+	MoreList,
+	NoImageProfile
 } from './style';
 import { IDetail, IBM, IComment, DetailProps } from '@typings/datas';
 import TextC from '@components/DisplayContents/TextC';
@@ -248,9 +249,9 @@ const ContentContainer:FC<ICContainer> = ({
 									{ c.BoardMember.profile_img ?
 										<img src={c.BoardMember.profile_img} />
 										:
-										<div className="no_profile_img">
+										<NoImageProfile>
 											<img src="/public/person.svg" />
-										</div>
+										</NoImageProfile>
 									}
 									<div className="content">
 										<p className="nickname">{c.BoardMember ? c.BoardMember.username : "unknown user"}</p>
@@ -312,7 +313,13 @@ const ContentContainer:FC<ICContainer> = ({
 					<WriteComment
 						onClick={submitComment}
 					>
-						<img src={openDetail.content?.BoardMember.profile_img ? openDetail.content?.BoardMember.profile_img : "/public/person.svg"} />
+						{ userData.profile_img ?
+							<img src={userData.profile_img} />
+							:
+							<NoImageProfile>
+								<img src="/public/person.svg" />
+							</NoImageProfile>
+						}
 						<input
 							type="text"
 							value={commentContent}

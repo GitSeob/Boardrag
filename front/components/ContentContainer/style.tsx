@@ -152,22 +152,8 @@ export const Comment = styled.div`
 		object-fit: contain;
 	}
 
-	.no_profile_img {
-		width: 3rem;
-		height: 3rem;
-		border-radius: 100%;
-		margin-right: 1rem;
-		background: linear-gradient(#002534 , #090a0f) no-repeat;
-		display: flex;
-
-		img {
-			width: 1.5rem;
-			margin: auto;
-		}
-	}
-
 	.content {
-		width: 100%;
+		width: calc(100% - 62px);
 
 		p.nickname { margin-bottom: 6px; }
 
@@ -241,7 +227,7 @@ export const Comment = styled.div`
 					height: 15px;
 					background: #f8f8f8;
 					position: absolute;
-					top: 0;
+					top: 1px;
 					z-index: -1;
 				}
 			}
@@ -302,5 +288,19 @@ export const WriteComment = styled.form`
 			background: transparent;
 			color: #fff;
 		}
+	}
+`;
+
+export const NoImageProfile = styled.div`
+	width: 3rem;
+	height: 3rem;
+	border-radius: 100%;
+	margin-right: 12px;
+	background: linear-gradient(#002534 , #090a0f) no-repeat;
+	display: flex;
+
+	img {
+		width: 1.5rem;
+		margin: auto;
 	}
 `;

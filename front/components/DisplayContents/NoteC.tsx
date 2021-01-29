@@ -124,7 +124,7 @@ const NoteC:FC<ITF> = ({isEdit, head, content, url, onSubmitEdit, setEdit}) => {
 	}
 	return (
 		<>
-			<ImageBox src={url} />
+			{ url && <ImageBox src={url} /> }
 			<HeadBox>
 				<h2>{head}</h2>
 			</HeadBox>
