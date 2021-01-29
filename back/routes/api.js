@@ -13,6 +13,7 @@ const router = require(".");
 const db = require("../models");
 
 const { isNotLoggedIn, isLoggedIn } = require("./middleware");
+const { sequelize } = require("../models/tag");
 
 String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
 String.prototype.zf = function(len){return "0".string(len - this.length) + this;};
@@ -63,7 +64,7 @@ const uploadBoardImage = multer({
 			done(null, 'board_bgs')
 		},
 		filename(req, file, done){
-			let savename = req.query.name + "_bg_image" + path.extname(file.originalname);
+			let savename = req.query.name + "_bg_image:::not_save:::" + path.extname(file.originalname);
 			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
 		}
@@ -77,7 +78,7 @@ const uploadProfileImage = multer({
 			done(null, 'board_profileImages')
 		},
 		filename(req, file, done){
-			let savename = req.query.name + "_" + req.user.username + path.extname(file.originalname);
+			let savename = req.query.name + "_" + req.user.username + ":::not_save:::" + path.extname(file.originalname);
 			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
 		}
@@ -140,10 +141,13 @@ router.get(`/checkBoardName/:boardName`, isLoggedIn, async (req, res, next) => {
 
 router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
 	try {
+		const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
 		const query = {
 			password: req.body.is_lock ? await bcrypt.hash(req.body.pw, 12) : null,
 			expiry_times: req.body.ETime === 0 ? null : req.body.ETime
 		}
+		const background_img_url = await req.body.background.replace(":::not_save:::", "");
+		await fs.renameSync(req.body.background.replace(delURL, "./"), background_img_url.replace(delURL, "./"));
 		const newBoard = await db.Board.create({
 			...query,
 			name: req.body.title,
@@ -151,11 +155,13 @@ router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
 			default_blocks: req.body.defaultBlocks > 640 ? 640 : req.body.defaultBlocks,
 			is_lock: req.body.is_lock,
 			AdminId: req.user.id,
-			background: req.body.background,
+			background: background_img_url,
 		})
+		const profile_img_url = await req.body.profileImage.replace(":::not_save:::", "");
+		await fs.renameSync(req.body.profileImage.replace(delURL, "./"), profile_img_url.replace(delURL, "./"));
 		await db.BoardMember.create({
 			username: req.body.nickName,
-			profile_img: req.body.profileImage,
+			profile_img: profile_img_url,
 			avail_blocks: req.body.defaultBlocks > 640 ? 640 : req.body.defaultBlocks,
 			UserId: req.user.id,
 			BoardId: newBoard.id
@@ -186,7 +192,7 @@ router.get(`/board`, isLoggedIn, async (req, res, next) => {
 			include: [{
 				model: db.BoardMember,
 				as: "Member",
-				attributes: []
+				attributes: ["username", "profile_img", "UserId"]
 			}],
 			group: ['Board.id'],
 			order: [["createdAt", "DESC"]],
