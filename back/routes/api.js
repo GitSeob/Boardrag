@@ -13,7 +13,33 @@ const router = require(".");
 const db = require("../models");
 
 const { isNotLoggedIn, isLoggedIn } = require("./middleware");
-const { destroy } = require("../models/tag");
+
+String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
+String.prototype.zf = function(len){return "0".string(len - this.length) + this;};
+Number.prototype.zf = function(len){return this.toString().zf(len);};
+
+Date.prototype.format = function(f) {
+	if (!this.valueOf()) return " ";
+
+	var weekName = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+	var d = this;
+
+	return f.replace(/(yyyy|yy|MM|dd|E|hh|mm|ss|a\/p)/gi, function($1) {
+		switch ($1) {
+			case "yyyy": return d.getFullYear();
+			case "yy": return (d.getFullYear() % 1000).zf(2);
+			case "MM": return (d.getMonth() + 1).zf(2);
+			case "dd": return d.getDate().zf(2);
+			case "E": return weekName[d.getDay()];
+			case "HH": return d.getHours().zf(2);
+			case "hh": return ((h = d.getHours() % 12) ? h : 12).zf(2);
+			case "mm": return d.getMinutes().zf(2);
+			case "ss": return d.getSeconds().zf(2);
+			case "a/p": return d.getHours() < 12 ? "오전" : "오후";
+			default: return $1;
+		}
+	});
+};
 
 const upload = multer({
 	storage: multer.diskStorage({
@@ -22,8 +48,8 @@ const upload = multer({
 		},
 		filename(req, file, done){
 			let ext = path.extname(file.originalname);
-			let basename = path.basename(file.originalname, ext);
-			let savename = basename + new Date() + ext;
+			let basename = req.query.board + "_" + req.query.contentName + "_";
+			let savename = basename + new Date().format("yyyy-MM-dd_hh:mm:ss") + ext;
 			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
 		}
@@ -122,7 +148,7 @@ router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
 			...query,
 			name: req.body.title,
 			description: req.body.des,
-			default_blocks: req.body.defaultBlocks,
+			default_blocks: req.body.defaultBlocks > 640 ? 640 : req.body.defaultBlocks,
 			is_lock: req.body.is_lock,
 			AdminId: req.user.id,
 			background: req.body.background,
@@ -130,7 +156,7 @@ router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
 		await db.BoardMember.create({
 			username: req.body.nickName,
 			profile_img: req.body.profileImage,
-			avail_blocks: 640,
+			avail_blocks: req.body.defaultBlocks > 640 ? 640 : req.body.defaultBlocks,
 			UserId: req.user.id,
 			BoardId: newBoard.id
 		})
@@ -898,7 +924,7 @@ router.post(`/board/:boardName/chat`, isLoggedIn, async (req, res, next) => {
 		if (!board)
 			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
 		const newChat = await db.Chat.create({
-			boardMemberId: req.body.BoardMemberId,
+			userId: req.body.userId,
 			username: req.body.username,
 			content: req.body.content,
 			BoardId: board.id
@@ -940,45 +966,80 @@ router.post(`/join/:boardName`, isLoggedIn, async (req, res, next) => {
 
 router.delete(`/deleteBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 	try {
+		const t = await db.sequelize.transaction();
 		const board = await db.Board.findOne({
 			where: {name: req.params.boardName},
 			include: [{
 				model: db.BoardMember,
 				as: "Member"
 			}],
+		}, {
+			transaction: t
 		});
 		if (!board)
 			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
 		if (board.AdminId !== req.user.id)
 			return res.status(401).send({ reason: "해당 board의 관리자가 아닙니다. "});
+		const deleteUploads = [];
+		await db.Image.findAll({
+			where: {
+				BoardId: board.id
+			},
+			attributes: ["url"],
+		}, {
+			transaction: t
+		}).then(res => {
+			res.forEach(elem => {
+				deleteUploads.push(elem.url);
+			});
+		});
+		await db.Note.findAll({
+			where: {
+				BoardId: board.id
+			},
+			attributes: ["background_img"],
+		}, {
+			transaction: t
+		}).then(res => {
+			res.forEach(elem => {
+				if (elem.background_img)
+					deleteUploads.push(elem.background_img);
+			});
+		});
 		await db.Board.destroy({
 			where: { id: board.id },
 			force: true
+		}, {
+			transaction: t
 		});
 		let deleteList = [];
 		await board.Member.map(c => {
 			if (c.profile_img)
 				deleteList.push(c.profile_img);
 		});
-		await db.BoardMember.destroy({
-			where: {
-				BoardId: board.id
-			},
-			force: true
-		});
 		const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
 		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-		deleteList.forEach(file => {
-			console.log(file);
-			fs.unlink(`./${file.replace(delURL, "")}`, () => {
+		let filePath;
+		deleteUploads.forEach(file => {
+			filePath = file.replace(delURL, "");
+			fs.unlink(`./uploads/${filePath}`, () => {
 				return;
 			});
-			fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /${String(file).replace(delURL, "")}\n`);
+			fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${filePath}\n`);
 		});
-		fs.unlink(`./${board.background.replace(delURL, "")}`, () => {
+		deleteList.forEach(file => {
+			filePath = file.replace(delURL, "");
+			fs.unlink(`./${filePath}`, () => {
+				return;
+			});
+			fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /${filePath}\n`);
+		});
+		filePath = board.background.replace(delURL, "");
+		fs.unlink(`./${filePath}`, () => {
 			return;
 		});
-		fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /${board.background.replace(delURL, "")}\n`);
+		fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /${filePath}\n`);
+		res.send("done");
 	}
 	catch (e){
 		next(e);
