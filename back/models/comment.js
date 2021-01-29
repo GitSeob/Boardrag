@@ -29,10 +29,10 @@ module.exports = class Comment extends Model {
 		);
 	}
 	static associate(db) {
-		db.Comment.belongsTo(db.BoardMember);
-		db.Comment.belongsTo(db.Board);
-		db.Comment.belongsTo(db.Note);
-		db.Comment.belongsTo(db.TextContent);
-		db.Comment.belongsTo(db.Image);
+		db.Comment.belongsTo(db.BoardMember, {onDelete: 'CASCADE'});
+		db.Comment.belongsTo(db.Board, {onDelete: 'CASCADE'});
+		db.Comment.belongsTo(db.Note, {onDelete: 'CASCADE'});
+		db.Comment.belongsTo(db.TextContent, {onDelete: 'CASCADE'});
+		db.Comment.belongsTo(db.Image, {onDelete: 'CASCADE'});
 	}
 }

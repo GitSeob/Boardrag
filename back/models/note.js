@@ -49,8 +49,8 @@ module.exports = class Note extends Model {
 		);
 	}
 	static associate(db) {
-		db.Note.belongsTo(db.BoardMember);
-		db.Note.belongsTo(db.Board);
+		db.Note.belongsTo(db.BoardMember, {onDelete: 'CASCADE'});
+		db.Note.belongsTo(db.Board, {onDelete: 'CASCADE'});
 		db.Note.hasMany(db.Comment);
 	}
 }

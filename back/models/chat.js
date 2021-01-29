@@ -29,6 +29,6 @@ module.exports = class DM extends Model {
 	}
 
 	static associate(db) {
-		db.Chat.belongsTo(db.Board);
+		db.Chat.belongsTo(db.Board, {onDelete: 'CASCADE'});
 	}
 };
