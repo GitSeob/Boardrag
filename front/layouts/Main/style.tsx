@@ -168,6 +168,16 @@ export const BoardCard = styled('div')<BC>`
 		transform: scale(1.05);
 	}
 
+	& > h3 {
+		height: 1.2rem;
+		display: -webkit-box;
+		overflow: hidden;
+		word-break: keep-all;
+		-webkit-line-clamp: 1;
+		text-overflow: ellipsis;
+		-webkit-box-orient: vertical;
+	}
+
 	.description {
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -182,7 +192,7 @@ export const BoardCard = styled('div')<BC>`
 	}
 
 	.iconBox {
-		color: #888;
+		color: #fff;
 		position: relative;
 
 		img {

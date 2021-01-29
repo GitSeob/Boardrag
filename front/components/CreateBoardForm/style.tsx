@@ -162,7 +162,7 @@ export const BackgroundImageBox = styled.div`
 		align-items: center;
 		justify-content: center;
 		border-radius: 1xp solid #cacaca;
-		background-size: contain;
+		background-size: cover;
 		background-repeat: no-repeat;
 		background-position: center;
 
@@ -192,7 +192,6 @@ export const BackgroundImageBox = styled.div`
 			border-radius: 18px;
 			padding: 8px;
 			background: rgba(0, 0, 0, .6);
-			border: 1px solid #111;
 			cursor: pointer;
 
 			img {

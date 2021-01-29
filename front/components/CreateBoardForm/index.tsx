@@ -31,10 +31,12 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
 	const [backgroundImage, setBI] = useState({
 		url: '',
 		loading: false,
+		now: Date.now()
 	});
 	const [profileImage, setPI] = useState({
 		url: '',
 		loading: false,
+		now: Date.now()
 	});
 	const [createState, setCS] = useState({
 		loading: false,
@@ -57,12 +59,14 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
 		imageFormData.append('image', e.target.files[0]);
 		await setPI({
 			...profileImage,
-			loading: true
+			loading: true,
+			now: Date.now()
 		});
 		await axios.post(`/api/uploadProfileImage?name=${title}`, imageFormData).then(res => {
 			setPI({
 				url: res.data.url,
-				loading: false
+				loading: false,
+				now: Date.now()
 			});
 		}).catch(e => {
 			setPI({
@@ -83,7 +87,8 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
 		await axios.post(`/api/uploadBoardBackground?name=${title}`, imageFormData).then(res => {
 			setBI({
 				url: res.data.url,
-				loading: false
+				loading: false,
+				now: Date.now()
 			});
 		}).catch(e => {
 			setBI({
@@ -229,7 +234,7 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
 						) : (
 							<div
 								style={backgroundImage.url !== '' ? {
-									backgroundImage: `url(${backgroundImage.url})`,
+									backgroundImage: `url(${backgroundImage.url}?${backgroundImage.now})`,
 								} : {
 									background: `radial-gradient(ellipse at bottom, #002534 0%, #090a0f 100%) no-repeat`
 								}}
@@ -255,7 +260,7 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
 						) : (
 							<div
 								style={profileImage.url !== '' ? {
-									backgroundImage: `url(${profileImage.url})`,
+									backgroundImage: `url(${profileImage.url}?${profileImage.now})`,
 								} : {
 									background: `linear-gradient(#002534 , #090a0f) no-repeat`
 								}}

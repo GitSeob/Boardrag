@@ -37,7 +37,7 @@ const Board:FC = () => {
 
 	useEffect(() => {
 		return () => {
-			console.info('disconnect socket', 42);
+			console.info('disconnect socket', board);
 			disconnectSocket();
 		};
 	}, [disconnectSocket]);

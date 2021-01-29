@@ -13,16 +13,16 @@ import {
 } from '../Main/style';
 import {
 	ListBox,
-	BoardBar,
-	BarContainer,
-	ManageBoard,
-	MBButton
+	LoadingBG
 } from './style';
+import LoadingBall from '@components/LoadingBall';
+import MyBoardContainer from '@components/MyBoardContainer';
 
 const Manage = () => {
 	const { data:userData, revalidate:USERRevalidate, error:UserError } = useSWR<IUser | false>('/api/auth', fetcher);
-	const { data:joinedBoardList, revalidate:BLRevalidate} = useSWR<IBL[]>('/api/board', fetcher);
+	const { data:joinedBoardList, revalidate:BLRevalidate} = useSWR<IBL[]>('/api/manageBoards', fetcher);
 	const [openBId, setOpenBId] = useState(-1);
+	const [loading, setLoading] = useState(false);
 
 	const logout = useCallback(() => {
 		axios.post(`/api/logout`).then(() => {
@@ -31,16 +31,6 @@ const Manage = () => {
 		}).catch((e) => {
 			console.error(e);
 		});
-	}, []);
-
-	const removeBoard = useCallback((name) => {
-		if (confirm(`정말 ${name} 보드를 삭제하시겠습니까?`))
-		{
-			axios.delete(`/api/deleteBoard/${name}`).then(() => {
-				setOpenBId(-1);
-				toast.dark(`${name} 보드가 삭제되었습니다.`);
-			})
-		}
 	}, []);
 
 	if (!userData)
@@ -63,6 +53,9 @@ const Manage = () => {
 					<div className="logout" onClick={logout}>
 						<img src="/public/exit.svg" /><p>로그아웃</p>
 					</div>
+					<div onClick={()=>{toast.dark("test")}}>
+						<p>hi</p>
+					</div>
 				</RelBox>
 			</Menu>
 			<Container>
@@ -75,42 +68,16 @@ const Manage = () => {
 							{
 								joinedBoardList?.filter(board => board.AdminId === userData.id).map(c => {
 									return (
-										<BarContainer key={(c.id)}>
-											<BoardBar onClick={() => { setOpenBId(c.id === openBId ? -1 : c.id); }}>
-												{c.name}
-											</BoardBar>
-											{ openBId === c.id &&
-												<ManageBoard>
-													<div>
-														<div>보드 이름</div>
-														<div></div>
-													</div>
-													<div>
-														<div>보드 description</div>
-														<div></div>
-													</div>
-													<div>
-														<div>보드 배경</div>
-														<div></div>
-													</div>
-													<div>
-														내 정보
-														<div>내 프로필사진</div>
-														<div>내 닉네임</div>
-														<div>수정하기</div>
-													</div>
-													<div>
-														참여 Member list
-														<div>
-															member map...
-														</div>
-													</div>
-													<MBButton className="pw">비밀번호 변경하기</MBButton>
-													<MBButton className="edit">수정사항 반영하기</MBButton>
-													<MBButton className="delete" onClick={() => {removeBoard(c.name)}}>보드 삭제하기</MBButton>
-												</ManageBoard>
-											}
-										</BarContainer>
+										<MyBoardContainer
+											key={(c.id)}
+											openBId={openBId}
+											setOpenBId={setOpenBId}
+											c={c}
+											setLoading={setLoading}
+											toast={toast}
+											userData={userData}
+											BLRevalidate={BLRevalidate}
+										/>
 									)
 								})
 							}
@@ -123,7 +90,7 @@ const Manage = () => {
 						<p style={{fontWeight: 400, color: "#777", margin: "12px 0 24px 0"}}>참여한 다른 유저의 Board가 없습니다.</p>
 					:
 						<ListBox>
-						{
+						{/*{
 							joinedBoardList?.filter(board => board.AdminId !== userData.id).map(c => {
 								return (
 									<BoardBar key={(c.id)} onClick={() => { setOpenBId(c.id); }}>
@@ -131,7 +98,7 @@ const Manage = () => {
 									</BoardBar>
 								)
 							})
-						}
+						}*/}
 						</ListBox>
 					}
 				</div>
@@ -147,6 +114,12 @@ const Manage = () => {
 				draggable
 				pauseOnHover
 			/>
+			{loading &&
+				<>
+					<LoadingBG/>
+					<LoadingBall />
+				</>
+			}
 		</>
 	);
 }
