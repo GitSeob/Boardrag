@@ -156,5 +156,6 @@ export interface IBL {
 	memberCount: number,
 	background: string,
 	recent_time: Date,
-	AdminId: number
+	AdminId: number,
+	Member: IBM[]
 }
