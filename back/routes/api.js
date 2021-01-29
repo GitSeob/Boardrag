@@ -15,6 +15,8 @@ const db = require("../models");
 const { isNotLoggedIn, isLoggedIn } = require("./middleware");
 const { sequelize } = require("../models/tag");
 
+const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
+
 String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
 String.prototype.zf = function(len){return "0".string(len - this.length) + this;};
 Number.prototype.zf = function(len){return this.toString().zf(len);};
@@ -141,7 +143,7 @@ router.get(`/checkBoardName/:boardName`, isLoggedIn, async (req, res, next) => {
 
 router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
 	try {
-		const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
+
 		const query = {
 			password: req.body.is_lock ? await bcrypt.hash(req.body.pw, 12) : null,
 			expiry_times: req.body.ETime === 0 ? null : req.body.ETime
@@ -195,6 +197,36 @@ router.get(`/board`, isLoggedIn, async (req, res, next) => {
 				attributes: ["username", "profile_img", "UserId"]
 			}],
 			group: ['Board.id'],
+			order: [["createdAt", "DESC"]],
+		});
+		return res.send(joinedBoards);
+	} catch (e) {
+		console.error(e);
+		next(e);
+	}
+});
+
+router.get(`/manageBoards`, isLoggedIn, async (req, res, next) => {
+	try {
+		const boardIds = [];
+		await db.BoardMember.findAll({
+			where: {UserId: req.user.id},
+			attributes: ["BoardId"]
+		}).then(res => {
+			res.forEach(elem => {
+				boardIds.push(elem.BoardId)
+			})
+		})
+		const joinedBoards = await db.Board.findAll({
+			where: { id: boardIds },
+			attributes: [
+				"id", "name", "is_lock", "description", "background", "AdminId",
+			],
+			include: [{
+				model: db.BoardMember,
+				as: "Member",
+				attributes: ["username", "profile_img", "UserId"]
+			}],
 			order: [["createdAt", "DESC"]],
 		});
 		return res.send(joinedBoards);
@@ -675,7 +707,7 @@ router.delete('/board/:boardName/delete/image/:id', isLoggedIn, async (req, res,
 		const content = await db.Image.findOne({
 			where: {id: req.params.id}
 		});
-		const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
+
 		if (!content)
 			return res.status(404).send('콘텐츠가 존재하지 않습니다.');
 		const member = await db.BoardMember.findOne({
@@ -717,7 +749,7 @@ router.delete('/board/:boardName/delete/note/:id', isLoggedIn, async (req, res, 
 		const content = await db.Note.findOne({
 			where: {id: req.params.id}
 		});
-		const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
+
 		const size = content.width * content.height;
 		if (!content)
 			return res.status(404).send('콘텐츠가 존재하지 않습니다.');
@@ -1023,7 +1055,7 @@ router.delete(`/deleteBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 			if (c.profile_img)
 				deleteList.push(c.profile_img);
 		});
-		const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
+
 		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
 		let filePath;
 		deleteUploads.forEach(file => {
@@ -1048,6 +1080,121 @@ router.delete(`/deleteBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 		res.send("done");
 	}
 	catch (e){
+		next(e);
+	}
+});
+
+router.post(`/BoardMember/edit`, isLoggedIn, async (req, res, next) => {
+	try {
+		const t = await db.sequelize.transaction();
+		const board = await db.Board.findOne({
+			where: {name: req.body.boardName},
+			include: [{
+				model: db.BoardMember,
+				as: "Member"
+			}],
+		}, {
+			transaction: t
+		});
+		if (!board)
+			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
+		const me = await db.BoardMember.findOne({
+			where: {
+				BoardId: board.id,
+				UserId: req.user.id
+			}
+		}, {
+			transaction: t
+		});
+		if (!me)
+			return res.status(401).send({ reason: "접근 권한이 없습니다." });
+		const profile_img_url = await req.body.profile_img.replace(":::not_save:::", "");
+		await fs.renameSync(req.body.profile_img.replace(delURL, "./"), profile_img_url.replace(delURL, "./"));
+		await db.BoardMember.update({
+			profile_img: profile_img_url,
+			username: req.body.username
+		},{
+			where: {
+				id: me.id,
+				BoardId: board.id,
+				UserId: req.user.id
+			}
+		}, {
+			transaction: t
+		});
+		return res.send(`${profile_img_url}`);
+	} catch(e) {
+		next(e);
+	}
+});
+
+router.post(`/editBoard/:boardName`, isLoggedIn, async (req, res, next) => {
+	try {
+		const t = await db.sequelize.transaction();
+		const board = await db.Board.findOne({
+			where: {name: req.params.boardName}
+		});
+		if (!board)
+			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
+		if (req.user.id !== board.AdminId)
+			return res.status(401).send({ reason: "접근 권한이 없습니다." });
+		const samename = await db.Board.findOne({
+			where: {name: req.body.name}
+		});
+		if (samename)
+			return res.send("동일한 이름의 Board가 존재합니다.");
+		let query = {}
+		if (board.name !== req.body.name)
+			query.name = req.body.name
+		if (board.description !== req.body.description)
+			query.description = req.body.description;
+		if (board.background !== req.body.background)
+			query.background = req.body.background;
+		await db.Board.update(query, {
+			where: {
+				id: board.id,
+				AdminId: req.user.id
+			}
+		}, {
+			transaction: t
+		});
+		return res.send("done");
+	} catch(e) {
+		next(e);
+	}
+});
+
+router.delete(`/kick/:boardName`, isLoggedIn, async (req, res, next) => {
+	try {
+		const t = await db.sequelize.transaction();
+		const board = await db.Board.findOne({
+			where: {name: req.params.boardName}
+		});
+		if (!board)
+			return res.status(404).send('존재하지 않는 board입니다.');
+		if (req.user.id !== board.AdminId)
+			return res.status(401).send("접근 권한이 없습니다.");
+		const kickUser = await db.BoardMember.findOne({
+			where: {
+				BoardId: board.id,
+				username: req.query.username
+			}
+		}, {
+			transaction: t
+		});
+		if (!kickUser || kickUser.UserId === board.AdminId || kickUser.UserId === req.user.id)
+			return res.status(401).send("잘못된 접근입니다.");
+		await db.BoardMember.destroy({
+			where: {
+				BoardId: board.id,
+				username: req.query.username,
+				id: kickUser.id
+			}
+		}, {
+			transaction: t
+		});
+		return res.send(req.query.username);
+	} catch(e) {
 		next(e);
 	}
 })
