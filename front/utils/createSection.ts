@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 
 interface Props {
 	id: number,
-	BoardMemberId: number,
+	userId: number,
 	username: string,
 	content: string,
 	createdAt: Date,
