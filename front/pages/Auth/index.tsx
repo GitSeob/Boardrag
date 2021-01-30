@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import qs from 'qs';
 import fetcher from '@utils/fetcher';
 import { LoginContainer, LoginButton } from '@pages/Auth/styles';
-import { FT_UID, OAUTH, FRONT_URL } from '@config/config';
+import { FT_UID, OAUTH, FRONT_URL, googleOauth } from '@config/config';
 import axios from 'axios';
 import { Redirect } from 'react-router-dom';
 import LoadingCircle from '@components/LoadingCircle';
@@ -19,6 +19,7 @@ const Auth:FC = () => {
 	{
 		if (!userData && query.code)
 		{
+			console.log(query.code);
 			axios.post(`/api/auth`, {
 					codeValue: query.code,
 					trashValue: '123',
@@ -44,10 +45,9 @@ const Auth:FC = () => {
 
 	return (
 		<LoginContainer>
-			<h1>LOGIN</h1>
-			<LoginButton href={OAuthURL}>
-				<img src="/public/42_logo.svg" />
-				Login with 42API
+			<h1>BOXLOT</h1>
+			<LoginButton href={googleOauth} className="google">
+				<img src="/public/btn_google_signin_light_normal_web@2x.png" />
 			</LoginButton>
 			{ query?.error && <p>42API에서 전송한 코드 값 문제가 발생했습니다.</p>}
 		</LoginContainer>

@@ -4,6 +4,8 @@ const axios = require('axios');
 const env = process.env.NODE_ENV || "development";
 const config = require("../config/config")[env];
 
+var GoogleStrategy = require('passport-google-oauth20').Strategy
+
 const db = require('../models');
 
 module.exports = () => {
@@ -12,14 +14,23 @@ module.exports = () => {
 		passwordField: "trashValue",
 	}, async (codeValue, trashValue, done) => {
 		try {
-			const access_token = await axios.post(`${config.api_oauth_url}?code=${codeValue}&grant_type=authorization_code&client_id=${config.api_client_id}&client_secret=${config.api_client_secret}&redirect_uri=${config.api_redirect_uri}`).then(res => {
-				return res.data.access_token;
+			let access_token;
+			let refresh_token;
+			await axios.post(`https://www.googleapis.com/oauth2/v4/token?code=${codeValue}&client_id=${config.google_cid}&client_secret=${config.google_secret}&redirect_uri=${"http://localhost:3090/auth"}&grant_type=authorization_code`, {
+
+			}, {
+				headers: {"Content-Type": "application/x-www-form-urlencoded"}
+			}).then(res => {
+				access_token = res.data.access_token;
+				refresh_token = res.data.refresh_token;
 			}).catch(e => {
 				return done(null, false, { reason: 'not available code value please retry login.'});
 			});
-			if (!access_token)
+			if (!access_token || !refresh_token)
 				return done(null, false, { reason: 'not available code value please retry login.'});
-			const user_data = await axios.get(`${config.api_url}/me?access_token=${access_token}`).then(res => {
+			const oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
+
+			const user_data = await axios.get(`${oauthGoogleUrlAPI}${access_token}`).then(res => {
 				return res.data;
 			}).catch(e => {
 				return done(null, false, { reason: '42api server was unable to send valid data.'});
@@ -29,15 +40,16 @@ module.exports = () => {
 			}
 			const user_in_db = await db.User.findOne({
 				where: {
-					username: user_data.login
+					email: user_data.email
 				}
 			});
 			if (!user_in_db) {
 				const newUser = await db.User.create({
-					username: user_data.login,
-					profile_img: user_data.image_url,
+					email: user_data.email,
+					profile_img: user_data.picture,
 					is_admin: false,
 					access_token: access_token,
+					refresh_token: refresh_token
 				})
 				return done(null, newUser);
 			}

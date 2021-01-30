@@ -122,6 +122,11 @@ router.post('/auth', isNotLoggedIn, async (req, res, next) => {
 	})(req, res, next);
 });
 
+router.get(`/auth/callback`, passport.authenticate('local', { failureRedirect: '/login' }),
+	function(req, res) {
+		res.redirect('/api/auth');
+});
+
 router.post('/logout', isLoggedIn, (req, res) => {
 	req.logout();
 	req.session.destroy();
