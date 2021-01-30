@@ -288,7 +288,7 @@ router.get(`/board/:boardName`, isLoggedIn, async (req, res, next) => {
 
 		const boardData = await db.Board.findOne({
 			where: {name: req.params.boardName},
-			attributes: ['id', 'name', 'background'],
+			attributes: ['id', 'name', 'background', 'AdminId'],
 			include: [{
 				model: db.TextContent,
 				include: [{
@@ -1109,7 +1109,8 @@ router.post(`/BoardMember/edit`, isLoggedIn, async (req, res, next) => {
 		if (!me)
 			return res.status(401).send({ reason: "접근 권한이 없습니다." });
 		const profile_img_url = await req.body.profile_img.replace(":::not_save:::", "");
-		await fs.renameSync(req.body.profile_img.replace(delURL, "./"), profile_img_url.replace(delURL, "./"));
+		if (req.body.profile_img)
+			await fs.renameSync(req.body.profile_img.replace(delURL, "./"), profile_img_url.replace(delURL, "./"));
 		await db.BoardMember.update({
 			profile_img: profile_img_url,
 			username: req.body.username
@@ -1198,5 +1199,29 @@ router.delete(`/kick/:boardName`, isLoggedIn, async (req, res, next) => {
 		next(e);
 	}
 })
+
+router.delete(`/quitBoard/:boardName`, isLoggedIn, async (req, res, next) => {
+	try {
+		const t = await db.sequelize.transaction();
+		const board = await db.Board.findOne({
+			where: {name: req.params.boardName}
+		});
+		if (!board)
+			return res.status(404).send('존재하지 않는 board입니다.');
+		if (req.user.id === board.AdminId)
+			return res.status(401).send("일단 관리자는 탈퇴 불가능"); // 이후 수정
+		await db.BoardMember.destroy({
+			where: {
+				BoardId: board.id,
+				UserId: req.user.id,
+			}
+		}, {
+			transaction: t
+		});
+		res.send("quit board");
+	} catch (e) {
+		next(e);
+	}
+});
 
 module.exports = router;
