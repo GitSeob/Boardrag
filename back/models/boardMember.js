@@ -38,8 +38,8 @@ module.exports = class BoardMember extends Model {
 		);
 	}
 	static associate(db) {
-		db.BoardMember.belongsTo(db.Board);
-		db.BoardMember.belongsTo(db.User);
+		db.BoardMember.belongsTo(db.Board, {onDelete: 'CASCADE'});
+		db.BoardMember.belongsTo(db.User, {onDelete: 'CASCADE'});
 		db.BoardMember.hasMany(db.TextContent);
 		db.BoardMember.hasMany(db.Note);
 		db.BoardMember.hasMany(db.Image);

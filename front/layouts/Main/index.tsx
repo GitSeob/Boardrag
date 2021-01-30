@@ -45,6 +45,15 @@ const MainPage = () => {
 		clicked: false,
 		board: null
 	});
+
+	const logout = useCallback(() => {
+		axios.post(`/api/logout`).then(() => {
+			USERRevalidate();
+			window.location.reload(false);
+		}).catch((e) => {
+			console.error(e);
+		});
+	}, []);
 	const setJIClicked = useCallback((value:any) => {
 		setJI({
 			board: null,
@@ -97,11 +106,11 @@ const MainPage = () => {
 					>
 						<img src="/public/board_add.svg" /><p>BOARD 만들기</p>
 					</div>
-					<div>
+					<div onClick={() => { location.href = "/manage" }}>
 						<img src="/public/setting.svg" />
 						<p>BOARD 관리</p>
 					</div>
-					<div className="logout">
+					<div className="logout" onClick={logout}>
 						<img src="/public/exit.svg" /><p>로그아웃</p>
 					</div>
 				</RelBox>

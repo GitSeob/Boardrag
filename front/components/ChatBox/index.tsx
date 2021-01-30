@@ -21,7 +21,7 @@ interface IChatBox {
 
 interface IChat {
 	id: number,
-	BoardMemberId: number,
+	userId: number,
 	username: string,
 	content: string,
 	createdAt: Date,
@@ -49,7 +49,7 @@ const ChatBox:FC<IChatBox> = ({ userData, board }) => {
 			mutateChat((prevChatData) => {
 				prevChatData[0].unshift({
 					id: (chatData[0][0]?.id || 0) + 1,
-					BoardMemberId: userData.id,
+					userId: userData.id,
 					username: userData.username,
 					content: savedChat,
 					createdAt: new Date(),
@@ -78,7 +78,7 @@ const ChatBox:FC<IChatBox> = ({ userData, board }) => {
 	}, [chat]);
 
 	const onMessage = (data: IChat) => {
-		if (userData && data.BoardMemberId !== userData?.id) {
+		if (userData && data.userId !== userData?.id) {
 			mutateChat((chatData) => {
 				chatData[0].unshift(data);
 				return chatData;
@@ -125,7 +125,7 @@ const ChatBox:FC<IChatBox> = ({ userData, board }) => {
 							<section key={date}>
 								<StickyHeader>{date}</StickyHeader>
 								{ chats.map(c => (
-									<Chat key={(c.id)} className={`${c.BoardMemberId === userData?.id ? 'myChat' : '' }`}>
+									<Chat key={(c.id)} className={`${c.userId === userData?.id ? 'myChat' : '' }`}>
 										<p>{c.username}</p>
 										<div>
 											<div>{c.content}</div>

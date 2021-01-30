@@ -41,8 +41,8 @@ module.exports = class TextContent extends Model {
 		);
 	}
 	static associate(db) {
-		db.TextContent.belongsTo(db.BoardMember);
-		db.TextContent.belongsTo(db.Board);
+		db.TextContent.belongsTo(db.BoardMember, {onDelete: 'CASCADE'});
+		db.TextContent.belongsTo(db.Board, {onDelete: 'CASCADE'});
 		db.TextContent.hasMany(db.Comment);
 	}
 }

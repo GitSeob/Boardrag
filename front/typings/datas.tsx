@@ -40,6 +40,7 @@ export interface Position {
 export interface IBoard {
 	id: number,
 	name: string,
+	AdminId: number,
 	TextContents: IText[],
 	Images: IImage[],
 	Notes: INote[],
@@ -149,10 +150,13 @@ export interface DetailProps {
 }
 
 export interface IBL {
+	id: number,
 	name: string,
 	description: string,
 	is_lock: boolean,
 	memberCount: number,
 	background: string,
 	recent_time: Date,
+	AdminId: number,
+	Member: IBM[]
 }

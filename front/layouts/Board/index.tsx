@@ -10,7 +10,7 @@ import { BoardHeader, UserList, LogOutButton, MenuContainer, UserMenu, DetailBac
 import ChatBox from '@components/ChatBox';
 import WorkSpace from '@pages/WorkSpace';
 import { IUser, IBoard, IBM } from '@typings/datas';
-import { type } from 'os';
+import { toast } from 'react-toastify';
 
 interface IUserList {
 	id: number,
@@ -27,18 +27,9 @@ const Board:FC = () => {
 	const [menuFlg, setMFlg] = useState<boolean>(false);
 	const [userList, setUserList] = useState<IUserList[] | null | undefined>();
 
-	const logout = useCallback(() => {
-		axios.post(`/api/logout`).then(() => {
-			USERRevalidate();
-			window.location.reload(false);
-		}).catch((e) => {
-			console.error(e);
-		});
-	}, []);
-
 	useEffect(() => {
 		return () => {
-			console.info('disconnect socket', 42);
+			console.info('disconnect socket', board);
 			disconnectSocket();
 		};
 	}, [disconnectSocket]);
@@ -67,6 +58,20 @@ const Board:FC = () => {
 			socket?.off('refresh');
 		}
 	}, [socket]);
+
+	const quit = useCallback(() => {
+		if (typeof boardData !== "string" && userData && boardData?.AdminId === userData.id)
+			{
+				alert("현재 관리자는 보드에서 나갈 수 없습니다.");
+				return ;
+			}
+		axios.delete(`/api/quitBoard/${board}`).then(() => {
+			toast.dark(`${board} 보드에서 나갔습니다.`);
+			location.href = "/main";
+		}).catch((e) => {
+			toast.error(e.response.data);
+		});
+	}, [boardData, userData]);
 
 	if (!userData)
 		return <Redirect to={`/auth?prev=/board/${board}`} />
@@ -112,9 +117,9 @@ const Board:FC = () => {
 					/>
 				}
 				<LogOutButton
-					onClick={logout}
+					onClick={quit}
 				>
-					로그아웃
+					보드에서 나가기
 				</LogOutButton>
 			</MenuContainer>
 		</UserMenu>

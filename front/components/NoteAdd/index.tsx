@@ -43,7 +43,7 @@ const TextAdd: FC<boxProps> = ({ BMID, toast, x, y, width, height, offset, initS
 			...uploading,
 			loading: true
 		});
-		await axios.post('/api/uploadImage', imageFormData).then(res => {
+		await axios.post(`/api/uploadImage?board=${board}&contentName=Note`, imageFormData).then(res => {
 			setUploading({
 				...uploading,
 				success: true,

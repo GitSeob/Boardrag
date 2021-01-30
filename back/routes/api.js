@@ -13,6 +13,36 @@ const router = require(".");
 const db = require("../models");
 
 const { isNotLoggedIn, isLoggedIn } = require("./middleware");
+const { sequelize } = require("../models/tag");
+
+const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
+
+String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
+String.prototype.zf = function(len){return "0".string(len - this.length) + this;};
+Number.prototype.zf = function(len){return this.toString().zf(len);};
+
+Date.prototype.format = function(f) {
+	if (!this.valueOf()) return " ";
+
+	var weekName = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+	var d = this;
+
+	return f.replace(/(yyyy|yy|MM|dd|E|hh|mm|ss|a\/p)/gi, function($1) {
+		switch ($1) {
+			case "yyyy": return d.getFullYear();
+			case "yy": return (d.getFullYear() % 1000).zf(2);
+			case "MM": return (d.getMonth() + 1).zf(2);
+			case "dd": return d.getDate().zf(2);
+			case "E": return weekName[d.getDay()];
+			case "HH": return d.getHours().zf(2);
+			case "hh": return ((h = d.getHours() % 12) ? h : 12).zf(2);
+			case "mm": return d.getMinutes().zf(2);
+			case "ss": return d.getSeconds().zf(2);
+			case "a/p": return d.getHours() < 12 ? "오전" : "오후";
+			default: return $1;
+		}
+	});
+};
 
 const upload = multer({
 	storage: multer.diskStorage({
@@ -21,8 +51,8 @@ const upload = multer({
 		},
 		filename(req, file, done){
 			let ext = path.extname(file.originalname);
-			let basename = path.basename(file.originalname, ext);
-			let savename = basename + new Date() + ext;
+			let basename = req.query.board + "_" + req.query.contentName + "_";
+			let savename = basename + new Date().format("yyyy-MM-dd_hh:mm:ss") + ext;
 			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
 		}
@@ -36,7 +66,7 @@ const uploadBoardImage = multer({
 			done(null, 'board_bgs')
 		},
 		filename(req, file, done){
-			let savename = req.query.name + "_bg_image" + path.extname(file.originalname);
+			let savename = req.query.name + "_bg_image:::not_save:::" + path.extname(file.originalname);
 			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
 		}
@@ -50,7 +80,7 @@ const uploadProfileImage = multer({
 			done(null, 'board_profileImages')
 		},
 		filename(req, file, done){
-			let savename = req.query.name + "_" + req.user.username + path.extname(file.originalname);
+			let savename = req.query.name + "_" + req.user.username + ":::not_save:::" + path.extname(file.originalname);
 			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
 		}
@@ -113,23 +143,28 @@ router.get(`/checkBoardName/:boardName`, isLoggedIn, async (req, res, next) => {
 
 router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
 	try {
+
 		const query = {
 			password: req.body.is_lock ? await bcrypt.hash(req.body.pw, 12) : null,
 			expiry_times: req.body.ETime === 0 ? null : req.body.ETime
 		}
+		const background_img_url = await req.body.background.replace(":::not_save:::", "");
+		await fs.renameSync(req.body.background.replace(delURL, "./"), background_img_url.replace(delURL, "./"));
 		const newBoard = await db.Board.create({
 			...query,
 			name: req.body.title,
 			description: req.body.des,
-			default_blocks: req.body.defaultBlocks,
+			default_blocks: req.body.defaultBlocks > 640 ? 640 : req.body.defaultBlocks,
 			is_lock: req.body.is_lock,
 			AdminId: req.user.id,
-			background: req.body.background,
+			background: background_img_url,
 		})
+		const profile_img_url = await req.body.profileImage.replace(":::not_save:::", "");
+		await fs.renameSync(req.body.profileImage.replace(delURL, "./"), profile_img_url.replace(delURL, "./"));
 		await db.BoardMember.create({
 			username: req.body.nickName,
-			profile_img: req.body.profileImage,
-			avail_blocks: 640,
+			profile_img: profile_img_url,
+			avail_blocks: req.body.defaultBlocks > 640 ? 640 : req.body.defaultBlocks,
 			UserId: req.user.id,
 			BoardId: newBoard.id
 		})
@@ -153,15 +188,45 @@ router.get(`/board`, isLoggedIn, async (req, res, next) => {
 		const joinedBoards = await db.Board.findAll({
 			where: { id: boardIds },
 			attributes: [
-				"id", "name", "is_lock", "description", "background",
+				"id", "name", "is_lock", "description", "background", "AdminId",
 				[fn('COUNT', col('Member.username')), 'memberCount']
 			],
 			include: [{
 				model: db.BoardMember,
 				as: "Member",
-				attributes: []
+				attributes: ["username", "profile_img", "UserId"]
 			}],
 			group: ['Board.id'],
+			order: [["createdAt", "DESC"]],
+		});
+		return res.send(joinedBoards);
+	} catch (e) {
+		console.error(e);
+		next(e);
+	}
+});
+
+router.get(`/manageBoards`, isLoggedIn, async (req, res, next) => {
+	try {
+		const boardIds = [];
+		await db.BoardMember.findAll({
+			where: {UserId: req.user.id},
+			attributes: ["BoardId"]
+		}).then(res => {
+			res.forEach(elem => {
+				boardIds.push(elem.BoardId)
+			})
+		})
+		const joinedBoards = await db.Board.findAll({
+			where: { id: boardIds },
+			attributes: [
+				"id", "name", "is_lock", "description", "background", "AdminId",
+			],
+			include: [{
+				model: db.BoardMember,
+				as: "Member",
+				attributes: ["username", "profile_img", "UserId"]
+			}],
 			order: [["createdAt", "DESC"]],
 		});
 		return res.send(joinedBoards);
@@ -223,7 +288,7 @@ router.get(`/board/:boardName`, isLoggedIn, async (req, res, next) => {
 
 		const boardData = await db.Board.findOne({
 			where: {name: req.params.boardName},
-			attributes: ['id', 'name', 'background'],
+			attributes: ['id', 'name', 'background', 'AdminId'],
 			include: [{
 				model: db.TextContent,
 				include: [{
@@ -642,7 +707,7 @@ router.delete('/board/:boardName/delete/image/:id', isLoggedIn, async (req, res,
 		const content = await db.Image.findOne({
 			where: {id: req.params.id}
 		});
-		const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
+
 		if (!content)
 			return res.status(404).send('콘텐츠가 존재하지 않습니다.');
 		const member = await db.BoardMember.findOne({
@@ -684,7 +749,7 @@ router.delete('/board/:boardName/delete/note/:id', isLoggedIn, async (req, res, 
 		const content = await db.Note.findOne({
 			where: {id: req.params.id}
 		});
-		const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
+
 		const size = content.width * content.height;
 		if (!content)
 			return res.status(404).send('콘텐츠가 존재하지 않습니다.');
@@ -897,7 +962,7 @@ router.post(`/board/:boardName/chat`, isLoggedIn, async (req, res, next) => {
 		if (!board)
 			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
 		const newChat = await db.Chat.create({
-			boardMemberId: req.body.BoardMemberId,
+			userId: req.body.userId,
 			username: req.body.username,
 			content: req.body.content,
 			BoardId: board.id
@@ -935,6 +1000,228 @@ router.post(`/join/:boardName`, isLoggedIn, async (req, res, next) => {
 	} catch(e) {
 		next(e);
 	}
+});
+
+router.delete(`/deleteBoard/:boardName`, isLoggedIn, async (req, res, next) => {
+	try {
+		const t = await db.sequelize.transaction();
+		const board = await db.Board.findOne({
+			where: {name: req.params.boardName},
+			include: [{
+				model: db.BoardMember,
+				as: "Member"
+			}],
+		}, {
+			transaction: t
+		});
+		if (!board)
+			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
+		if (board.AdminId !== req.user.id)
+			return res.status(401).send({ reason: "해당 board의 관리자가 아닙니다. "});
+		const deleteUploads = [];
+		await db.Image.findAll({
+			where: {
+				BoardId: board.id
+			},
+			attributes: ["url"],
+		}, {
+			transaction: t
+		}).then(res => {
+			res.forEach(elem => {
+				deleteUploads.push(elem.url);
+			});
+		});
+		await db.Note.findAll({
+			where: {
+				BoardId: board.id
+			},
+			attributes: ["background_img"],
+		}, {
+			transaction: t
+		}).then(res => {
+			res.forEach(elem => {
+				if (elem.background_img)
+					deleteUploads.push(elem.background_img);
+			});
+		});
+		await db.Board.destroy({
+			where: { id: board.id },
+			force: true
+		}, {
+			transaction: t
+		});
+		let deleteList = [];
+		await board.Member.map(c => {
+			if (c.profile_img)
+				deleteList.push(c.profile_img);
+		});
+
+		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+		let filePath;
+		deleteUploads.forEach(file => {
+			filePath = file.replace(delURL, "");
+			fs.unlink(`./uploads/${filePath}`, () => {
+				return;
+			});
+			fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${filePath}\n`);
+		});
+		deleteList.forEach(file => {
+			filePath = file.replace(delURL, "");
+			fs.unlink(`./${filePath}`, () => {
+				return;
+			});
+			fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /${filePath}\n`);
+		});
+		filePath = board.background.replace(delURL, "");
+		fs.unlink(`./${filePath}`, () => {
+			return;
+		});
+		fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /${filePath}\n`);
+		res.send("done");
+	}
+	catch (e){
+		next(e);
+	}
+});
+
+router.post(`/BoardMember/edit`, isLoggedIn, async (req, res, next) => {
+	try {
+		const t = await db.sequelize.transaction();
+		const board = await db.Board.findOne({
+			where: {name: req.body.boardName},
+			include: [{
+				model: db.BoardMember,
+				as: "Member"
+			}],
+		}, {
+			transaction: t
+		});
+		if (!board)
+			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
+		const me = await db.BoardMember.findOne({
+			where: {
+				BoardId: board.id,
+				UserId: req.user.id
+			}
+		}, {
+			transaction: t
+		});
+		if (!me)
+			return res.status(401).send({ reason: "접근 권한이 없습니다." });
+		const profile_img_url = await req.body.profile_img.replace(":::not_save:::", "");
+		if (req.body.profile_img)
+			await fs.renameSync(req.body.profile_img.replace(delURL, "./"), profile_img_url.replace(delURL, "./"));
+		await db.BoardMember.update({
+			profile_img: profile_img_url,
+			username: req.body.username
+		},{
+			where: {
+				id: me.id,
+				BoardId: board.id,
+				UserId: req.user.id
+			}
+		}, {
+			transaction: t
+		});
+		return res.send(`${profile_img_url}`);
+	} catch(e) {
+		next(e);
+	}
+});
+
+router.post(`/editBoard/:boardName`, isLoggedIn, async (req, res, next) => {
+	try {
+		const t = await db.sequelize.transaction();
+		const board = await db.Board.findOne({
+			where: {name: req.params.boardName}
+		});
+		if (!board)
+			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
+		if (req.user.id !== board.AdminId)
+			return res.status(401).send({ reason: "접근 권한이 없습니다." });
+		const samename = await db.Board.findOne({
+			where: {name: req.body.name}
+		});
+		if (samename)
+			return res.send("동일한 이름의 Board가 존재합니다.");
+		let query = {}
+		if (board.name !== req.body.name)
+			query.name = req.body.name
+		if (board.description !== req.body.description)
+			query.description = req.body.description;
+		if (board.background !== req.body.background)
+			query.background = req.body.background;
+		await db.Board.update(query, {
+			where: {
+				id: board.id,
+				AdminId: req.user.id
+			}
+		}, {
+			transaction: t
+		});
+		return res.send("done");
+	} catch(e) {
+		next(e);
+	}
+});
+
+router.delete(`/kick/:boardName`, isLoggedIn, async (req, res, next) => {
+	try {
+		const t = await db.sequelize.transaction();
+		const board = await db.Board.findOne({
+			where: {name: req.params.boardName}
+		});
+		if (!board)
+			return res.status(404).send('존재하지 않는 board입니다.');
+		if (req.user.id !== board.AdminId)
+			return res.status(401).send("접근 권한이 없습니다.");
+		const kickUser = await db.BoardMember.findOne({
+			where: {
+				BoardId: board.id,
+				username: req.query.username
+			}
+		}, {
+			transaction: t
+		});
+		if (!kickUser || kickUser.UserId === board.AdminId || kickUser.UserId === req.user.id)
+			return res.status(401).send("잘못된 접근입니다.");
+		await db.BoardMember.destroy({
+			where: {
+				BoardId: board.id,
+				username: req.query.username,
+				id: kickUser.id
+			}
+		}, {
+			transaction: t
+		});
+		return res.send(req.query.username);
+	} catch(e) {
+		next(e);
+	}
 })
+
+router.delete(`/quitBoard/:boardName`, isLoggedIn, async (req, res, next) => {
+	try {
+		const t = await db.sequelize.transaction();
+		const board = await db.Board.findOne({
+			where: {name: req.params.boardName}
+		});
+		if (!board)
+			return res.status(404).send('존재하지 않는 board입니다.');
+		if (req.user.id === board.AdminId)
+			return res.status(401).send("일단 관리자는 탈퇴 불가능"); // 이후 수정
+		await db.BoardMember.destroy({
+			where: {
+				BoardId: board.id,
+				UserId: req.user.id,
+			}
+		}, {
+			transaction: t
+		});
+		res.send("quit board");
+	} catch (e) {
+		next(e);
+	}
+});
 
 module.exports = router;

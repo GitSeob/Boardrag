@@ -195,7 +195,10 @@ const JoinBoardForm:FC<IJBF> = ({ board, userData}) => {
 								if (board.is_lock)
 									setPage(2);
 								else
+								{
 									setPage(3);
+									requestJoin();
+								}
 								setWarn('');
 							}}
 						>

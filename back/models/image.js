@@ -41,8 +41,8 @@ module.exports = class Image extends Model {
 		);
 	}
 	static associate(db) {
-		db.Image.belongsTo(db.BoardMember);
-		db.Image.belongsTo(db.Board);
+		db.Image.belongsTo(db.BoardMember, {onDelete: 'CASCADE'});
+		db.Image.belongsTo(db.Board, {onDelete: 'CASCADE'});
 		db.Image.hasMany(db.Comment);
 	}
 }
