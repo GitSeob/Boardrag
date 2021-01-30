@@ -112,7 +112,7 @@ const MyBoardContainer:FC<IMBC> = ({ BLRevalidate, userData, openBId, setOpenBId
 			const width = bgRef.current.clientWidth;
 			setBGHeight(width * 20 / 32);
 		}
-	}, [openBId, backgroundImage.url, bgRef.current]);
+	}, [openBId, backgroundImage.url, bgRef.current, window.innerWidth]);
 
 	return (
 		<BarContainer key={(c.id)}>
@@ -178,8 +178,7 @@ const MyBoardContainer:FC<IMBC> = ({ BLRevalidate, userData, openBId, setOpenBId
 					{ myInfoOpen &&
 						<EditMyInfo
 							myData={c.Member.find(mb => mb.UserId === userData.id)}
-							boardName={c.name}
-							isOpen={myInfoOpen}
+							boardData={c}
 							setLoading={setLoading}
 							setOpen={setMyInfoOpen}
 							toast={toast}

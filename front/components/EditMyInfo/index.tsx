@@ -8,19 +8,18 @@ import {
 import {
 	ProfileImageBox
 } from '@components/CreateBoardForm/style';
-import { IBM, IUser } from '@typings/datas';
+import { IBM, IBL, IUser } from '@typings/datas';
 import useInput from '@hooks/useInput';
 
 interface IEMI {
 	myData: IBM | undefined,
-	isOpen: boolean,
-	boardName: string,
+	boardData: IBL,
 	toast: any,
 	setOpen(flg: boolean): void,
 	setLoading(flg: boolean): void,
 }
 
-const EditMyInfo:FC<IEMI> = ({ myData, isOpen, boardName, toast, setOpen, setLoading }) => {
+const EditMyInfo:FC<IEMI> = ({ myData, boardData, toast, setOpen, setLoading }) => {
 	const [nickname, OCNN] =  useInput(myData?.username);
 	const [uploading, setUploading] = useState({
 		url: myData?.profile_img ? myData.profile_img : "",
@@ -42,7 +41,7 @@ const EditMyInfo:FC<IEMI> = ({ myData, isOpen, boardName, toast, setOpen, setLoa
 			...uploading,
 			loading: true
 		});
-		await axios.post(`/api/uploadProfileImage?name=${boardName}`, imageFormData).then(res => {
+		await axios.post(`/api/uploadProfileImage?name=${boardData.name}`, imageFormData).then(res => {
 			setUploading({
 				url: res.data.url,
 				loading: false,
@@ -55,7 +54,7 @@ const EditMyInfo:FC<IEMI> = ({ myData, isOpen, boardName, toast, setOpen, setLoa
 		if (confirm('수정하시겠습니까?')) {
 			await setLoading(true);
 			await axios.post(`/api/BoardMember/edit`, {
-				boardName, username: nickname, profile_img: uploading.url
+				boardName: boardData.name, username: nickname, profile_img: uploading.url
 			}).then(res => {
 				setUploading({
 					...uploading,
@@ -70,6 +69,26 @@ const EditMyInfo:FC<IEMI> = ({ myData, isOpen, boardName, toast, setOpen, setLoa
 			});
 		}
 	}, [uploading, nickname]);
+
+	const quitBoard = useCallback(async () => {
+		if (boardData.AdminId === myData?.UserId)
+		{
+			alert("현재 관리자는 탈퇴할 수 없습니다");
+			return ;
+		}
+		else {
+			if (confirm(`정말 ${boardData.name} 보드에서 나가겠습니까?`)) {
+				setLoading(true);
+				axios.delete(`/api/quitBoard/${boardData.name}`).then(res => {
+					toast.dark(`${boardData.name} 보드에서 나갔습니다.`);
+					setLoading(false);
+				}).catch(e => {
+					toast.error(e.response.data);
+					setLoading(false);
+				});
+			}
+		}
+	}, []);
 
 	useEffect(() => {
 		if (nickname !== myData?.username || uploading.url !== myData?.profile_img)
@@ -117,6 +136,7 @@ const EditMyInfo:FC<IEMI> = ({ myData, isOpen, boardName, toast, setOpen, setLoa
 			>수정하기</SubmitBtn>
 			<SubmitBtn
 				className="exit"
+				onClick={quitBoard}
 			>나가기</SubmitBtn>
 		</Container>
 	);

@@ -40,6 +40,7 @@ export interface Position {
 export interface IBoard {
 	id: number,
 	name: string,
+	AdminId: number,
 	TextContents: IText[],
 	Images: IImage[],
 	Notes: INote[],

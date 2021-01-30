@@ -17,6 +17,7 @@ import {
 } from './style';
 import LoadingBall from '@components/LoadingBall';
 import MyBoardContainer from '@components/MyBoardContainer';
+import JoinedBoardForm from '@components/JoinedBoardForm';
 
 const Manage = () => {
 	const { data:userData, revalidate:USERRevalidate, error:UserError } = useSWR<IUser | false>('/api/auth', fetcher);
@@ -53,9 +54,6 @@ const Manage = () => {
 					<div className="logout" onClick={logout}>
 						<img src="/public/exit.svg" /><p>로그아웃</p>
 					</div>
-					<div onClick={()=>{toast.dark("test")}}>
-						<p>hi</p>
-					</div>
 				</RelBox>
 			</Menu>
 			<Container>
@@ -90,15 +88,21 @@ const Manage = () => {
 						<p style={{fontWeight: 400, color: "#777", margin: "12px 0 24px 0"}}>참여한 다른 유저의 Board가 없습니다.</p>
 					:
 						<ListBox>
-						{/*{
+						{
 							joinedBoardList?.filter(board => board.AdminId !== userData.id).map(c => {
 								return (
-									<BoardBar key={(c.id)} onClick={() => { setOpenBId(c.id); }}>
-										{c.name}
-									</BoardBar>
+									<JoinedBoardForm
+										key={(c.id)}
+										openBId={openBId}
+										setOpenBId={setOpenBId}
+										c={c}
+										setLoading={setLoading}
+										toast={toast}
+										userData={userData}
+									/>
 								)
 							})
-						}*/}
+						}
 						</ListBox>
 					}
 				</div>
@@ -115,10 +119,9 @@ const Manage = () => {
 				pauseOnHover
 			/>
 			{loading &&
-				<>
-					<LoadingBG/>
-					<LoadingBall />
-				</>
+				<LoadingBG>
+					<LoadingBall/>
+				</LoadingBG>
 			}
 		</>
 	);
