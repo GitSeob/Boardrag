@@ -1,4 +1,4 @@
-import React, {FC, useState, useCallback, Children} from 'react';
+import React, {FC, useState, useCallback, Children, useRef, useEffect} from 'react';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
@@ -17,6 +17,8 @@ import {
 	SearchForm,
 	DarkBackground,
 	PersonCount,
+	NextBoardBtnBox,
+	BeforeBoardBtnbox
 } from './style';
 import useInput from '@hooks/useInput';
 import InitName from '@components/InitName';
@@ -47,6 +49,12 @@ const MainPage = () => {
 		clicked: false,
 		board: null
 	});
+	const [nextBtn, setNextBtn] = useState(false);
+	const [beforeBtn, setBeforeBtn] = useState(false);
+	const [move, setMove] = useState({
+		width: 0,
+		page: 0,
+	});
 
 	const logout = useCallback(() => {
 		axios.post(`/api/logout`).then(() => {
@@ -69,6 +77,24 @@ const MainPage = () => {
 			board: board
 		});
 	}, []);
+
+	useEffect(() => {
+		setMove({
+			...move,
+			width: window.innerWidth - 248
+		});
+	}, [window.innerWidth]);
+
+	useEffect(() => {
+		if (joinedBoardList)
+		{
+			const cardNum = move.width / 132;
+			if (joinedBoardList?.length > cardNum && (move.page + 1) * cardNum < joinedBoardList?.length )
+				setNextBtn(true);
+			else
+				setNextBtn(false);
+		}
+	}, [joinedBoardList, nextBtn, move])
 
 	if (!userData)
 		return <Redirect to="/auth" />
@@ -136,6 +162,25 @@ const MainPage = () => {
 					{joinedBoardList?.length === 0 &&
 						<div className="guide">새로운 보드를 만드시거나 다른 보드에 참여해보세요</div>
 					}
+					{
+						nextBtn &&
+						<NextBoardBtnBox onClick={() => { setMove({...move, page: move.page+1})}}>
+							<img src="/public/arrow.svg" />
+						</NextBoardBtnBox>
+					}
+					{
+						move.page > 0 &&
+						<BeforeBoardBtnbox onClick={() => { setMove({...move, page: move.page-1})}}>
+							<img style={{transform: "rotate(180deg)"}} src="/public/arrow.svg" />
+						</BeforeBoardBtnbox>
+					}
+					<div
+						style={{
+							width: "fit-content",
+							transition: ".3s",
+							transform: `translateX(-${move.width * move.page}px)`
+						}}
+					>
 					{joinedBoardList?.map((c, i) => {
 						return (
 							<BoardCard
@@ -158,6 +203,7 @@ const MainPage = () => {
 							</BoardCard>
 						);
 					})}
+					</div>
 				</BoardContainer>
 				<BCHeader>
 					다른 보드들

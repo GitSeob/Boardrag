@@ -74,7 +74,7 @@ export const UserInfoBox = styled.div`
 			width: 48px;
 			margin-right: 12px;
 			border-radius: 48px;
-			object-fit: contain;
+			object-fit: cover;
 			border: 1px solid #444;
 			background: #000;
 		}
@@ -149,7 +149,7 @@ export const Comment = styled.div`
 		border-radius: 100%;
 		margin-right: 1rem;
 		background: #000;
-		object-fit: contain;
+		object-fit: cover;
 	}
 
 	.content {
@@ -253,7 +253,7 @@ export const WriteComment = styled.form`
 		height: 48px;
 		border-radius: 48px;
 		border: 1px solid #444;
-		object-fit: contain;
+		object-fit: cover;
 		background: #000;
 	}
 

@@ -9,7 +9,8 @@ export const Menu = styled.div`
 	position: fixed;
 	height: 100%;
 	width: 200px;
-	background: rgba(0, 0, 0, .5);
+	background: #000;
+	z-index: 3;
 
 	@media screen and (max-width: 600px) {
 		height: 2rem;
@@ -78,12 +79,12 @@ export const RelBox = styled.div`
 
 export const Container = styled.div`
 	margin-left: 200px;
-	width: calc(100% - 200px);
-	padding: 2rem;
+	width: calc(100vw - 200px);
+	padding: 24px;
 
 	@media screen and (max-width: 600px) {
 		margin-left: 0;
-		margin-top: 2rem;
+		margin-top: 24px;
 		width: 100%;
 	}
 `;
@@ -122,9 +123,6 @@ export const SearchForm = styled.form`
 export const BoardContainer = styled.div`
 	position: relative;
 	width: 100%;
-	display: flex;
-	flex-flow: row wrap;
-	margin: 1rem 0;
 	min-height: 10rem;
 
 	& > .guide {
@@ -135,18 +133,23 @@ export const BoardContainer = styled.div`
 		width: 100%;
 		color: #555;
 	}
+
+	& > div {
+		display: flex;
+		margin: 12px 0;
+	}
 `;
 
 export const BoardCard = styled('div')<BC>`
-	padding: 1rem;
+	padding: 12px;
 	background: rgba(0, 0, 0, .5);
 	border-radius: 10px;
 	box-shadow: 0 0 4px 1px #aaa;
 	cursor: pointer;
-	margin: .5rem 1rem .5rem 0;
+	margin: .6px 12px 6px 0;
 	transition: .3s;
 	width: 120px;
-	height: 12rem;
+	height: 192px;
 	overflow: hidden;
 	position: relative;
 
@@ -229,4 +232,24 @@ export const PersonCount = styled.div`
 		margin-right: .2rem;
 		height: 0.8rem;
 	}
+`;
+
+export const NextBoardBtnBox = styled.div`
+	position: absolute;
+	right: -24px;
+	top: 18px;
+	width: 36px;
+	height: calc(100% - 36px);
+	z-index: 2;
+	margin: 0 !important;
+	background: rgba(0, 0, 0, .7);
+	box-shadow: 0px 0px 24px 12px #000;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+`;
+
+export const BeforeBoardBtnbox = styled(NextBoardBtnBox)`
+	left: -24px;
 `;
