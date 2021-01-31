@@ -994,6 +994,14 @@ router.post(`/join/:boardName`, isLoggedIn, async (req, res, next) => {
 			if (!compPW)
 				return res.status(401).send({ reason: '비밀번호가 일치하지 않습니다.' });
 		}
+		const dupNick = await db.BoardMember.findOne({
+			where: {
+				username: req.body.nickname,
+				BoardId: board.id,
+			}
+		});
+		if (dupNick)
+			return res.status(401).send({ reason: "동일한 닉네임이 존재합니다." });
 		await db.BoardMember.create({
 			username: req.body.nickname,
 			profile_img: req.body.profile_img,
@@ -1228,5 +1236,23 @@ router.delete(`/quitBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 		next(e);
 	}
 });
+
+router.post(`/nickname`, isLoggedIn, async (req, res, next) => {
+	try {
+		const notAvailble = await db.User.findOne({
+			where: { username: req.body.nickname }
+		});
+		if (notAvailble)
+			return res.status(401).send("이미 존재하는 닉네임입니다.");
+		await db.User.update({
+			username: req.body.nickname
+		}, {
+			where: { id: req.user.id }
+		});
+		return res.send(req.body.nickname);
+	} catch(e) {
+		next(e);
+	}
+})
 
 module.exports = router;

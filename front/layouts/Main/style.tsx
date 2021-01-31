@@ -220,8 +220,6 @@ export const DarkBackground = styled.div`
 	justify-content: center;
 `;
 
-
-
 export const PersonCount = styled.div`
 	display: flex;
 	align-items: center;
