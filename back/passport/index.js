@@ -11,6 +11,7 @@ module.exports = () => {
 		try {
 			const user = await db.User.findOne({
 				where: {id},
+				attributes: ["id", "username", "profile_img", "access_token", "email", "is_admin"]
 			});
 			return done(null, user);
 		} catch (e) {
