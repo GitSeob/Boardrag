@@ -148,13 +148,14 @@ router.get(`/checkBoardName/:boardName`, isLoggedIn, async (req, res, next) => {
 
 router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
 	try {
-
+		const t = await db.sequelize.transaction();
 		const query = {
 			password: req.body.is_lock ? await bcrypt.hash(req.body.pw, 12) : null,
 			expiry_times: req.body.ETime === 0 ? null : req.body.ETime
 		}
 		const background_img_url = await req.body.background.replace(":::not_save:::", "");
-		await fs.renameSync(req.body.background.replace(delURL, "./"), background_img_url.replace(delURL, "./"));
+		if (background_img_url)
+			await fs.renameSync(req.body.background.replace(delURL, "./"), background_img_url.replace(delURL, "./"));
 		const newBoard = await db.Board.create({
 			...query,
 			name: req.body.title,
@@ -163,16 +164,22 @@ router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
 			is_lock: req.body.is_lock,
 			AdminId: req.user.id,
 			background: background_img_url,
+		}, {
+			transaction: t
 		})
 		const profile_img_url = await req.body.profileImage.replace(":::not_save:::", "");
-		await fs.renameSync(req.body.profileImage.replace(delURL, "./"), profile_img_url.replace(delURL, "./"));
+		if (profile_img_url)
+			await fs.renameSync(req.body.profileImage.replace(delURL, "./"), profile_img_url.replace(delURL, "./"));
 		await db.BoardMember.create({
 			username: req.body.nickName,
 			profile_img: profile_img_url,
 			avail_blocks: req.body.defaultBlocks > 640 ? 640 : req.body.defaultBlocks,
 			UserId: req.user.id,
 			BoardId: newBoard.id
+		}, {
+			transaction: t
 		})
+		await t.commit();
 		return res.send('create OK');
 	} catch (e) {
 		next(e);
@@ -1063,12 +1070,12 @@ router.delete(`/deleteBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 		}, {
 			transaction: t
 		});
+		await t.commit();
 		let deleteList = [];
 		await board.Member.map(c => {
 			if (c.profile_img)
 				deleteList.push(c.profile_img);
 		});
-
 		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
 		let filePath;
 		deleteUploads.forEach(file => {
@@ -1136,6 +1143,7 @@ router.post(`/BoardMember/edit`, isLoggedIn, async (req, res, next) => {
 		}, {
 			transaction: t
 		});
+		await t.commit();
 		return res.send(`${profile_img_url}`);
 	} catch(e) {
 		next(e);
@@ -1172,6 +1180,7 @@ router.post(`/editBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 		}, {
 			transaction: t
 		});
+		await t.commit();
 		return res.send("done");
 	} catch(e) {
 		next(e);
@@ -1207,6 +1216,7 @@ router.delete(`/kick/:boardName`, isLoggedIn, async (req, res, next) => {
 		}, {
 			transaction: t
 		});
+		await t.commit();
 		return res.send(req.query.username);
 	} catch(e) {
 		next(e);
@@ -1231,6 +1241,7 @@ router.delete(`/quitBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 		}, {
 			transaction: t
 		});
+		await t.commit();
 		res.send("quit board");
 	} catch (e) {
 		next(e);
