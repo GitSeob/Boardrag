@@ -22,7 +22,6 @@ export const LoginContainer = styled.div`
 	transform: translate(-50%, -50%);
 	animation: ${appearUp} .5s ease-in-out 1;
 	color: #fff;
-	min-width: 300px;
 
 	& > h1 {
 		text-align: center;
@@ -38,26 +37,12 @@ export const LoginContainer = styled.div`
 `;
 
 export const LoginButton = styled.a`
-	background: #090a0f;
-	color: #fff;
-	padding: .5rem 3.5rem;
-	display: inline-flex;
 	position: relative;
-	cursor: pointer;
-	width: 100%;
-	align-items: center;
-	justify-content: center;
-	font-weight: 500;
+	display: flex;
+	margin: 0 auto;
+	width: fit-content;
 
-	&:hover {
-		box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.3);
-	}
-
-	& > img {
-		position: absolute;
-		left: 1rem;
-		top: 50%;
-		transform: translateY(-50%);
-		height: 1.5rem;
+	img {
+		height: 40px;
 	}
 `

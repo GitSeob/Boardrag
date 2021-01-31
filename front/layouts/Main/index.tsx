@@ -16,9 +16,10 @@ import {
 	BCHeader,
 	SearchForm,
 	DarkBackground,
-	PersonCount
+	PersonCount,
 } from './style';
 import useInput from '@hooks/useInput';
+import InitName from '@components/InitName';
 
 interface ITCC {
 	setValue: (data:boolean) => void
@@ -30,7 +31,7 @@ const TopComponentContainer:FC<ITCC> = ({ children, setValue }) => {
 		<DarkBackground
 			onClick={() => { setValue(false) }}
 		/>
-		{children}
+			{children}
 		</>
 	)
 }
@@ -40,6 +41,7 @@ const MainPage = () => {
 	const { data:joinedBoardList, revalidate:BLRevalidate} = useSWR<IBL[]>('/api/board', fetcher);
 	const { data:notJoinedBoardList, revalidate:NJBLRevalidate} = useSWR<IBL[]>('/api/notJoinedBoards', fetcher);
 	const [isAddBoard, setIsAddBoard] = useState(false);
+	const [initName, setIN] = useState(false);
 	const [text, OCText] = useInput('');
 	const [joinInfo, setJI] = useState({
 		clicked: false,
@@ -93,6 +95,17 @@ const MainPage = () => {
 					<JoinBoardForm
 						userData={userData}
 						board={joinInfo.board}
+					/>
+				</TopComponentContainer>
+			}
+			{
+				(!userData.username && !initName) &&
+				<TopComponentContainer
+					setValue={() => {}}
+				>
+					<InitName
+						userData={userData}
+						flgNickname={setIN}
 					/>
 				</TopComponentContainer>
 			}

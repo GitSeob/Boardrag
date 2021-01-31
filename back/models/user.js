@@ -7,8 +7,7 @@ module.exports = class User extends Model {
 			{
 				username: {
 					type: DataTypes.STRING(100),
-					allowNull: false,
-					unique: true,
+					allowNull: true
 				},
 				profile_img: {
 					type: DataTypes.TEXT(),
@@ -26,6 +25,10 @@ module.exports = class User extends Model {
 					type: DataTypes.TEXT(),
 					allowNull: true,
 				},
+				email: {
+					type: DataTypes.STRING(100),
+					unique: true,
+				}
 			},
 			{
 				modelName: "User",
