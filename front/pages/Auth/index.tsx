@@ -3,13 +3,13 @@ import useSWR from 'swr';
 import qs from 'qs';
 import fetcher from '@utils/fetcher';
 import { LoginContainer, LoginButton } from '@pages/Auth/styles';
-import { GOOGLE_CID } from '@config/config';
+import { GOOGLE_CID, REDIR_URI } from '@config/config';
 import axios from 'axios';
 import { Redirect } from 'react-router-dom';
 import LoadingCircle from '@components/LoadingCircle';
 
 const Auth:FC = () => {
-	const OAuthURL:string = `https://accounts.google.com/o/oauth2/auth?client_id=${GOOGLE_CID}&redirect_uri=http://localhost:3090/auth&response_type=code&scope=https://www.googleapis.com/auth/userinfo.email&approval_prompt=force&access_type=offline`
+	const OAuthURL:string = `https://accounts.google.com/o/oauth2/auth?client_id=${GOOGLE_CID}&redirect_uri=${REDIR_URI}&response_type=code&scope=https://www.googleapis.com/auth/userinfo.email&approval_prompt=force&access_type=offline`;
 	const { data:userData, revalidate } = useSWR('/api/auth', fetcher);
 	const query = qs.parse(location.search, {
 		ignoreQueryPrefix: true // /about?details=true 같은 쿼리 주소의 '?'를 생략해주는 옵션입니다.
