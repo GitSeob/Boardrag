@@ -114,7 +114,7 @@ export const BoardHeader = styled.div`
 	background: #0e0e0e;
 	box-shadow: 0 0 4px 1px #55555e;
 
-	& > div {
+	& > div, a {
 		top: 0;
 		height: 100%;
 		display: flex;
@@ -129,6 +129,7 @@ export const BoardHeader = styled.div`
 				font-weight: 400;
 			}
 			img { height: 24px; }
+			&:visited { color: inherit; }
 		}
 	}
 

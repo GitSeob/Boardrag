@@ -12,6 +12,7 @@ module.exports = {
 		"api_oauth_url": "https://api.intra.42.fr/oauth/token",
 		"api_url": "https://api.intra.42.fr/v2/",
 		"api_redirect_uri": process.env.DEV_URL,
+		"google_redirect_uri": "http://localhost:3090/auth",
 		"google_cid": process.env.DEV_GOOGLE_CID,
 		"google_secret": process.env.DEV_GOOGLE_SECRET,
 	},
@@ -37,7 +38,8 @@ module.exports = {
 		"api_oauth_url": "https://api.intra.42.fr/oauth/token",
 		"api_url": "https://api.intra.42.fr/v2/",
 		"api_redirect_uri": process.env.PRODUCT_URL,
-		"google_cid": process.env.PRODUCT_GOOGLE_CID,
-		"google_secret": process.env.PRODUCT_GOOGLE_SECRET,
+		"google_redirect_uri": "https://42board.com/auth",
+		"google_cid": process.env.DEV_GOOGLE_CID,
+		"google_secret": process.env.DEV_GOOGLE_SECRET,
 	}
 }

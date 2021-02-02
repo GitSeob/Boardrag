@@ -16,11 +16,7 @@ module.exports = () => {
 		try {
 			let access_token;
 			let refresh_token;
-			await axios.post(`https://www.googleapis.com/oauth2/v4/token?code=${codeValue}&client_id=${config.google_cid}&client_secret=${config.google_secret}&redirect_uri=${"http://localhost:3090/auth"}&grant_type=authorization_code`, {
-
-			}, {
-				headers: {"Content-Type": "application/x-www-form-urlencoded"}
-			}).then(res => {
+			await axios.post(`https://www.googleapis.com/oauth2/v4/token?code=${codeValue}&client_id=${config.google_cid}&client_secret=${config.google_secret}&redirect_uri=${config.google_redirect_uri}&grant_type=authorization_code`).then(res => {
 				access_token = res.data.access_token;
 				refresh_token = res.data.refresh_token;
 			}).catch(e => {

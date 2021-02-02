@@ -126,14 +126,12 @@ const Board:FC = () => {
 		{ typeof(boardData) !== 'string' &&
 		<div style={{display: 'flex', flexDirection: 'column'}}>
 			<BoardHeader >
-				<div
+				<a
 					className="logo"
-					onClick={() => {
-						location.href = "/"
-					}}
+					href="/main"
 				>
 					<h2>BOXLOT</h2>
-				</div>
+				</a>
 				<div className="up"
 					onClick={() => setMFlg(!menuFlg)}
 				>
