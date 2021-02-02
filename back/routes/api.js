@@ -5,7 +5,6 @@ const { Op, fn, col } = require('sequelize');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const sharp = require('sharp');
 
 const env = process.env.NODE_ENV || "development";
 const config = require("../config/config")[env];
