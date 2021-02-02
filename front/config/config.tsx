@@ -2,7 +2,7 @@ const isProduct = process.env.NODE_ENV === 'production';
 
 export const FT_UID = isProduct ? process.env.PRODUCT_UID : process.env.DEV_UID ;
 export const FT_SECRET = !isProduct ? process.env.DEV_CLIENT_SECRET : process.env.PRODUCT_CLIENT_SECRET;
-export const GOOGLE_CID = !isProduct ? process.env.DEV_GOOGLE_CID : "";
+export const GOOGLE_CID = process.env.DEV_GOOGLE_CID;
 export const FRONT_URL = !isProduct ? process.env.DEV_URL : process.env.PRODUCT_URL;
 export const AUTH = '/auth';
 export const FTAPI_URL = 'https://api.intra.42.fr';
