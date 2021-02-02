@@ -25,7 +25,7 @@ export const RelBox = styled.div`
 	width: 100%;
 	height: 100%;
 
-	& > div {
+	& > div, .logo {
 		padding: 1.5rem;
 		width: 100%;
 		display: flex;
@@ -51,10 +51,12 @@ export const RelBox = styled.div`
 
 	.logo {
 		padding: 2rem 1.5rem;
+
 		img { height: 2rem; }
 		&:hover {
 			background: none;
 		}
+		&:visited { color: inherit; }
 	}
 
 	@media screen and (max-width: 600px) {
@@ -126,7 +128,6 @@ export const BoardContainer = styled.div`
 	min-height: 10rem;
 
 	& > .guide {
-		height: 100%;
 		display: flex;
 		text-align: center;
 		font-size: 12px;
@@ -137,6 +138,10 @@ export const BoardContainer = styled.div`
 	& > div {
 		display: flex;
 		margin: 12px 0;
+
+		&.notJoin {
+			flex-flow: row wrap;
+		}
 	}
 `;
 

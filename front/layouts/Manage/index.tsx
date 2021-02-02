@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, FC } from 'react';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
@@ -18,12 +18,19 @@ import {
 import LoadingBall from '@components/LoadingBall';
 import MyBoardContainer from '@components/MyBoardContainer';
 import JoinedBoardForm from '@components/JoinedBoardForm';
+import ChangePW from '@components/ChangePW';
+
 
 const Manage = () => {
 	const { data:userData, revalidate:USERRevalidate, error:UserError } = useSWR<IUser | false>('/api/auth', fetcher);
 	const { data:joinedBoardList, revalidate:BLRevalidate} = useSWR<IBL[]>('/api/manageBoards', fetcher);
 	const [openBId, setOpenBId] = useState(-1);
 	const [loading, setLoading] = useState(false);
+	const [changePWFlg, setCPWF] = useState({
+		flg: false,
+		name: "",
+		is_lock: true,
+	});
 
 	const logout = useCallback(() => {
 		axios.post(`/api/logout`).then(() => {
@@ -37,6 +44,9 @@ const Manage = () => {
 	if (!userData)
 		return <Redirect to="/auth?prev=/manage" />
 
+	if (!userData.username)
+		return <Redirect to="/main" />
+
 	if (!joinedBoardList)
 		<LoadingCircle />
 
@@ -44,9 +54,9 @@ const Manage = () => {
 		<>
 			<Menu>
 				<RelBox>
-					<div className="logo">
+					<a className="logo" href="/main">
 						<h2>BOXLOT</h2>
-					</div>
+					</a>
 					<div onClick={() => { location.href = "/main" }}>
 						<img src="/public/boards.svg" />
 						<p>MAIN PAGE</p>
@@ -75,6 +85,7 @@ const Manage = () => {
 											toast={toast}
 											userData={userData}
 											BLRevalidate={BLRevalidate}
+											setChangePW={setCPWF}
 										/>
 									)
 								})
@@ -122,6 +133,15 @@ const Manage = () => {
 				<LoadingBG>
 					<LoadingBall/>
 				</LoadingBG>
+			}
+			{
+				changePWFlg.flg &&
+				<ChangePW
+					value={changePWFlg}
+					setValue={setCPWF}
+					toast={toast}
+					BLRevalidate={BLRevalidate}
+				/>
 			}
 		</>
 	);

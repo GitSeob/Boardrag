@@ -5,6 +5,7 @@ const { Op, fn, col } = require('sequelize');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp');
 
 const env = process.env.NODE_ENV || "development";
 const config = require("../config/config")[env];
@@ -13,7 +14,6 @@ const router = require(".");
 const db = require("../models");
 
 const { isNotLoggedIn, isLoggedIn } = require("./middleware");
-const { sequelize } = require("../models/tag");
 
 const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
 
@@ -51,6 +51,9 @@ const upload = multer({
 		},
 		filename(req, file, done){
 			let ext = path.extname(file.originalname);
+			if(!['png', 'jpg', 'jpeg', 'gif'].includes(ext)) {
+				return cb(new Error('Only images are allowed'))
+			}
 			let basename = req.query.board + "_" + req.query.contentName + "_";
 			let savename = basename + new Date().format("yyyy-MM-dd_hh:mm:ss") + ext;
 			savename = savename.replace(/\s/g, "_");
@@ -66,7 +69,11 @@ const uploadBoardImage = multer({
 			done(null, 'board_bgs')
 		},
 		filename(req, file, done){
-			let savename = req.query.name + "_bg_image:::not_save:::" + path.extname(file.originalname);
+			const ext = path.extname(file.originalname);
+			if(!['png', 'jpg', 'jpeg', 'gif'].includes(ext)) {
+				return cb(new Error('Only images are allowed'))
+			}
+			let savename = req.query.name + "_bg_image:::not_save:::" + ext;
 			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
 		}
@@ -80,7 +87,11 @@ const uploadProfileImage = multer({
 			done(null, 'board_profileImages')
 		},
 		filename(req, file, done){
-			let savename = req.query.name + "_" + req.user.username + ":::not_save:::" + path.extname(file.originalname);
+			const ext = path.extname(file.originalname);
+			if(!['png', 'jpg', 'jpeg', 'gif'].includes(ext)) {
+				return cb(new Error('Only images are allowed'))
+			}
+			let savename = req.query.name + "_" + req.user.username + ":::not_save:::" + ext;
 			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
 		}
@@ -1265,5 +1276,70 @@ router.post(`/nickname`, isLoggedIn, async (req, res, next) => {
 		next(e);
 	}
 })
+
+router.post(`/passwordCheck/:boardName`, isLoggedIn, async (req, res, next) => {
+	try {
+		const board = await db.Board.findOne({
+			where: {name: req.params.boardName}
+		});
+		if (!board)
+			return res.status(404).send('존재하지 않는 board입니다.');
+		if (req.user.id !== board.AdminId)
+			return res.status(401).send("해당 보드의 관리자가 아닙니다.");
+		const compPW = await bcrypt.compare(req.body.password, board.password);
+		if (!compPW)
+			return res.status(401).send({ reason: '비밀번호가 일치하지 않습니다.' });
+		return res.send('ok');
+	} catch(e) {
+		next(e);
+	}
+});
+
+router.post(`/changePassword/:boardName`, isLoggedIn, async (req, res, next) => {
+	try {
+		const t = await db.sequelize.transaction();
+		const board = await db.Board.findOne({
+			where: {name: req.params.boardName}
+		});
+		if (!board)
+			return res.status(404).send('존재하지 않는 board입니다.');
+		if (req.user.id !== board.AdminId)
+			return res.status(401).send("해당 보드의 관리자가 아닙니다.");
+		if (req.body.password.length === 0 && !req.body.changeFlg)
+		{
+			await db.Board.update({
+				password: null,
+				is_lock: false
+			}, {
+				where: {
+					id: board.id,
+					AdminId: req.user.id
+				}
+			}, {
+				transaction: t
+			});
+			return res.send('공개 상태로 변경하였습니다.');
+		}
+		else {
+			const query = await {
+				password: await bcrypt.hash(req.body.password, 12),
+				is_lock: true
+			}
+			await db.Board.update({
+				...query
+			}, {
+				where: {
+					id: board.id,
+					AdminId: req.user.id
+				}
+			}, {
+				transaction: t
+			});
+			return res.send('비밀번호가 변경되었습니다.');
+		}
+	} catch(e) {
+		next(e);
+	}
+});
 
 module.exports = router;

@@ -21,10 +21,11 @@ interface IMBC {
 	setLoading(flg: boolean): void,
 	toast: any,
 	userData: IUser,
-	BLRevalidate: () => void;
+	BLRevalidate: () => void,
+	setChangePW(argv: object): void,
 }
 
-const MyBoardContainer:FC<IMBC> = ({ BLRevalidate, userData, openBId, setOpenBId, c, setLoading, toast}) => {
+const MyBoardContainer:FC<IMBC> = ({ setChangePW, BLRevalidate, userData, openBId, setOpenBId, c, setLoading, toast}) => {
 	const [myInfoOpen, setMyInfoOpen] = useState(false);
 	const [boardName, OCBN] = useInput(c.name);
 	const [boardDescription, OCBD] = useInput(c.description);
@@ -196,7 +197,13 @@ const MyBoardContainer:FC<IMBC> = ({ BLRevalidate, userData, openBId, setOpenBId
 						/>
 					}
 					<MBButtonBox>
-						<MBButton className="pw">비밀번호 변경하기</MBButton>
+						<MBButton className="pw" onClick={() => {
+							setChangePW({
+								name: c.name,
+								flg: true,
+								is_lock: c.is_lock
+							});
+						}}>비밀번호 변경하기</MBButton>
 						<MBButton className="edit" onClick={editAvail ? submitEdit : undefined}>수정사항 반영하기</MBButton>
 						<MBButton className="delete" onClick={() => {removeBoard(c.name)}}>보드 삭제하기</MBButton>
 					</MBButtonBox>

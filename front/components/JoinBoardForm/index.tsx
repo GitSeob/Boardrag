@@ -218,21 +218,25 @@ const JoinBoardForm:FC<IJBF> = ({ board, userData}) => {
 					>
 						<p>해당 보드는 비공개 보드입니다.</p>
 						<p>참여하시려면 비밀번호를 입력해주세요.</p>
-						<Input
-							type="password"
-							value={pw}
-							onChange={OCPW}
-							onKeyPress={(e) => {
-								if(e.key === "Enter")
-								{
-									if (pw.length > 7) {
-										requestJoin();
+						{ board.is_lock && <form>
+							<Input
+								type="password"
+								autoComplete="on"
+								value={pw}
+								onChange={OCPW}
+								onKeyPress={(e) => {
+									if(e.key === "Enter")
+									{
+										if (pw.length > 7) {
+											requestJoin();
+										}
+										else
+											setWarn("비밀번호는 8자 이상입니다.");
 									}
-									else
-										setWarn("비밀번호는 8자 이상입니다.");
-								}
-							}}
-						/>
+								}}
+							/>
+						</form>
+						}
 						{ warn && <p style={{color: "#ff4444", textAlign: "center"}}>{warn}</p>}
 						<PageButton
 							onClick={() => {
@@ -252,7 +256,11 @@ const JoinBoardForm:FC<IJBF> = ({ board, userData}) => {
 	}
 	else {
 		if (result.loading)
-			return (<LoadingBall />)
+			return (
+				<Box>
+					<LoadingBall />
+				</Box>
+			);
 		else if (result.success) {
 			return (
 				<Box>

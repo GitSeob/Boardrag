@@ -22,12 +22,13 @@ import {
 } from './style';
 import useInput from '@hooks/useInput';
 import InitName from '@components/InitName';
+import { transform } from 'typescript';
 
 interface ITCC {
 	setValue: (data:boolean) => void
 }
 
-const TopComponentContainer:FC<ITCC> = ({ children, setValue }) => {
+export const TopComponentContainer:FC<ITCC> = ({ children, setValue }) => {
 	return (
 		<>
 		<DarkBackground
@@ -137,9 +138,9 @@ const MainPage = () => {
 			}
 			<Menu>
 				<RelBox>
-					<div className="logo">
+					<a className="logo" href="/main">
 						<h2>BOXLOT</h2>
-					</div>
+					</a>
 					<div
 						onClick={() => { setIsAddBoard(true) }}
 					>
@@ -181,33 +182,37 @@ const MainPage = () => {
 							transform: `translateX(-${move.width * move.page}px)`
 						}}
 					>
-					{joinedBoardList?.map((c, i) => {
-						return (
-							<BoardCard
-								key={(i)}
-								url={c.background}
-								onClick={() => {
-									location.href = `/board/${c.name}`
-								}}
-							>
-								<h3>{c.name}</h3>
-								<div className="description">
-									{c.description}
-								</div>
-								<div className="iconBox">
-									<PersonCount>
-										<img src="/public/person.svg" /> {c.memberCount}
-									</PersonCount>
-									{ c.is_lock === true && <img className="lock" src="/public/lock.svg" /> }
-								</div>
-							</BoardCard>
-						);
-					})}
+						{joinedBoardList?.map((c, i) => {
+							return (
+								<BoardCard
+									key={(i)}
+									url={c.background}
+									onClick={() => {
+										location.href = `/board/${c.name}`
+									}}
+								>
+									<h3>{c.name}</h3>
+									<div className="description">
+										{c.description}
+									</div>
+									<div className="iconBox">
+										<PersonCount>
+											<img src="/public/person.svg" /> {c.memberCount}
+										</PersonCount>
+										{ c.is_lock === true && <img className="lock" src="/public/lock.svg" /> }
+									</div>
+								</BoardCard>
+							);
+						})}
 					</div>
 				</BoardContainer>
 				<BCHeader>
 					다른 보드들
-					<SearchForm>
+					<SearchForm
+						style={{
+							right: move.width - 132 * parseInt(move.width / 132 + ''),
+						}}
+					>
 						<img src="/public/search.svg" />
 						<input
 							type="text"
@@ -221,7 +226,8 @@ const MainPage = () => {
 					{notJoinedBoardList?.length === 0 &&
 						<div className="guide">새로운 보드를 만드시거나 다른 보드에 참여해보세요</div>
 					}
-					{notJoinedBoardList?.map((c, i) => {
+					<div className="notJoin">
+					{notJoinedBoardList?.filter(njb => njb.name.includes(text) || njb.description.includes(text)).map((c, i) => {
 						return (
 							<BoardCard
 								url={c.background}
@@ -245,6 +251,7 @@ const MainPage = () => {
 							</BoardCard>
 						);
 					})}
+					</div>
 				</BoardContainer>
 			</Container>
 		</>
