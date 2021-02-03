@@ -50,9 +50,6 @@ const upload = multer({
 		},
 		filename(req, file, done){
 			let ext = path.extname(file.originalname);
-			if(!['png', 'jpg', 'jpeg', 'gif'].includes(ext)) {
-				return cb(new Error('Only images are allowed'))
-			}
 			let basename = req.query.board + "_" + req.query.contentName + "_";
 			let savename = basename + new Date().format("yyyy-MM-dd_hh:mm:ss") + ext;
 			savename = savename.replace(/\s/g, "_");
@@ -69,9 +66,6 @@ const uploadBoardImage = multer({
 		},
 		filename(req, file, done){
 			const ext = path.extname(file.originalname);
-			if(!['png', 'jpg', 'jpeg', 'gif'].includes(ext)) {
-				return cb(new Error('Only images are allowed'))
-			}
 			let savename = req.query.name + "_bg_image:::not_save:::" + ext;
 			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
@@ -87,9 +81,6 @@ const uploadProfileImage = multer({
 		},
 		filename(req, file, done){
 			const ext = path.extname(file.originalname);
-			if(!['png', 'jpg', 'jpeg', 'gif'].includes(ext)) {
-				return cb(new Error('Only images are allowed'))
-			}
 			let savename = req.query.name + "_" + req.user.username + ":::not_save:::" + ext;
 			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
