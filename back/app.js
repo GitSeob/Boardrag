@@ -12,6 +12,7 @@ const axios = require('axios');
 const schedule = require('node-schedule');
 const fs = require('fs');
 const env = process.env.NODE_ENV || "development";
+const { Op } = require('sequelize');
 
 dotenv.config();
 
@@ -92,7 +93,7 @@ app.use(passport.session());
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
-const deleter = schedule.scheduleJob('0 0 * * * *', async () => {
+const deleter = schedule.scheduleJob('0 * * * * *', async () => {
 	console.log("run scheduler...");
 	const t = await sequelize.transaction();
 	const now = new Date();
@@ -206,14 +207,14 @@ const deleter = schedule.scheduleJob('0 0 * * * *', async () => {
 	const availFiles = [];
 
 	await Image.findAll({
-		attributes: ["url"]
+		attributes: ["url"],
 	}).then(res => {
 		res.forEach(c => {
 			availFiles.push(c.url);
 		});
 	})
 	await Note.findAll({
-		attributes: ["background_img"]
+		attributes: ["background_img"],
 	}).then(res => {
 		res.forEach(c => {
 			if (c.background_img)
@@ -225,12 +226,16 @@ const deleter = schedule.scheduleJob('0 0 * * * *', async () => {
 	{
 		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
 		fs.readdir("./uploads", (error, filelist) => {
-			filelist.filter(elem => !(availFiles.find(file => file.replace(`${delURL}/uploads/`, "") === elem))).forEach(e => {
-				console.log("delete => ", e);
-				fs.unlink(`./uploads/${e.replace(delURL, "")}`, () => {
+			filelist
+			.filter(
+				elem =>
+					!(availFiles.find(file => file.replace(`${delURL}`, "") === elem))
+			).forEach(e => {
+				console.log("remove  >>  " + e);
+				fs.unlink(`./uploads/${e}`, () => {
 					return;
 				});
-				fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${e.replace(delURL, "")}\n`);
+				fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${e}\n`);
 			})
 		});
 	}
