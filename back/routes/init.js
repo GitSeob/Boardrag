@@ -43,69 +43,18 @@ db.Board.checkBoardWithName = async (boardName) => {
 db.BoardMember.getMyInfo = async (boardName, user) => {
 	const board = await db.Board.checkBoardWithName(boardName);
 	if (!board)
-		throw new Error("Can not find board");
+		return {error: 404, reason: "해당 보드를 찾을 수 없습니다."};
 	const member = await db.BoardMember.findOne({
 		where: {
 			BoardId: board.id,
 			UserId: user.id
 		}
 	});
+	if (!member)
+		return {error: 401, reason: "해당 보드에 참여하지 않습니다."};
 	return (member);
 };
 
-modules.createAndUpdate = async (datas, board, member, Model) => {
-	const availBlocks = await member.avail_blocks - (datas.width * datas.height);
-	if (availBlocks < 0)
-		return -1;
-	const t = await db.sequelize.transaction();
-	const now = new Date();
-	const insertDatas = {
-		x: datas.x,
-		y: datas.y,
-		width: datas.width,
-		height: datas.height,
-		expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
-		BoardMemberId: member.id,
-		BoardId: board.id,
-	}
-
-	if (Model === db.TextContent)
-		insertDatas.content = datas.content;
-	else if (Model === db.Image)
-		insertDatas.url = datas.url;
-	else if (Model === db.Note)
-	{
-		insertDatas.head = datas.head;
-		insertDatas.paragraph = datas.paragraph;
-		insertDatas.background_img = datas.background_img;
-	}
-	else
-		throw new Error("Not an accepted model");
-
-	try {
-		await Model.create(insertDatas, {
-			transaction: t
-		});
-		await db.BoardMember.update({
-			avail_blocks: availBlocks
-		}, {
-			where: {id: member.id},
-			transaction: t
-		});
-		await db.Board.update({
-			recent_time: fn('NOW')
-		},{
-			where: {id: board.id},
-			transaction: t
-		});
-		await t.commit();
-		return availBlocks;
-	} catch (e) {
-		console.error(e);
-		await t.rollback();
-		return -2;
-	}
-}
 
 modules.BoardPermissionCheck = async (boardName, user) => {
 	const board = await db.Board.checkBoardWithName(boardName);
@@ -160,6 +109,121 @@ modules.uploadProfileImage = multer({
 	limits: {fileSize: 4*1024*1024},
 });
 
+modules.createAndUpdate = async (Model, req) => {
+	const board = await db.Board.checkBoardWithName(req.params.boardName);
+	if (!board)
+		return {error: 404, reason: '존재하지 않는 board입니다.' };
+	const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
+	if (member.error)
+		return {error: member.error, reason: member.reason };
+
+	const availBlocks = await member.avail_blocks - (req.body.width * req.body.height);
+	if (availBlocks < 0)
+		return {error: 403, reason: `생성 가능한 블록 수는 ${member.avail_blocks}입니다.`}
+
+	const t = await db.sequelize.transaction();
+	const now = new Date();
+
+	const insertDatas = {
+		x: req.body.x,
+		y: req.body.y,
+		width: req.body.width,
+		height: req.body.height,
+		expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
+		BoardMemberId: member.id,
+		BoardId: board.id,
+	}
+
+	if (Model === db.TextContent)
+		insertDatas.content = req.body.content;
+	else if (Model === db.Image)
+		insertDatas.url = req.body.url;
+	else if (Model === db.Note)
+	{
+		insertDatas.head = req.body.head;
+		insertDatas.paragraph = req.body.paragraph;
+		insertDatas.background_img = req.body.background_img;
+	}
+	else
+		throw new Error("Not an accepted model");
+
+	try {
+		await Model.create(insertDatas, {
+			transaction: t
+		});
+		await db.BoardMember.update({
+			avail_blocks: availBlocks
+		}, {
+			where: {id: member.id},
+			transaction: t
+		});
+		await db.Board.update({
+			recent_time: fn('NOW')
+		},{
+			where: {id: board.id},
+			transaction: t
+		});
+		await t.commit();
+		return availBlocks;
+	} catch (e) {
+		console.error(e);
+		await t.rollback();
+		throw e;
+	}
+}
+
+modules.updateBlock = async (datas, board, member, Model) => {
+	const availBlocks = await member.avail_blocks - (datas.width * datas.height);
+	if (availBlocks < 0)
+		return -1;
+	const t = await db.sequelize.transaction();
+	const now = new Date();
+	const insertDatas = {
+		x: datas.x,
+		y: datas.y,
+		width: datas.width,
+		height: datas.height,
+	}
+
+	if (Model === db.TextContent)
+		insertDatas.content = datas.content;
+	else if (Model === db.Image)
+		insertDatas.url = datas.url;
+	else if (Model === db.Note)
+	{
+		insertDatas.head = datas.head;
+		insertDatas.paragraph = datas.paragraph;
+		insertDatas.background_img = datas.background_img;
+	}
+	else
+		throw new Error("Not an accepted model");
+
+	try {
+		await Model.create(insertDatas, {
+			transaction: t
+		});
+		await db.BoardMember.update({
+			avail_blocks: availBlocks
+		}, {
+			where: {id: member.id},
+			transaction: t
+		});
+		await db.Board.update({
+			recent_time: fn('NOW')
+		},{
+			where: {id: board.id},
+			transaction: t
+		});
+		await t.commit();
+		return availBlocks;
+	} catch (e) {
+		console.error(e);
+		await t.rollback();
+		return -2;
+	}
+}
+
+
 modules.deleteFile = async (dir, filename) => {
 	const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
 	const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
@@ -173,8 +237,8 @@ modules.deleteFile = async (dir, filename) => {
 
 modules.deleteBlock = async (Model, req) => {
 	const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
-	if (!member)
-		return { error: 404, reason: '참여하지 않은 유저입니다.' };
+	if (member.error)
+		return { error: member.errer, reason: member.reason };
 	const content = await Model.findOne({
 		where: {id: req.params.id}
 	});
@@ -182,7 +246,7 @@ modules.deleteBlock = async (Model, req) => {
 		return {error: 404, reason: '콘텐츠가 존재하지 않습니다.'};
 
 	if (member.id !== content.BoardMemberId && !req.user.is_admin)
-		return {error: 401, reason: '다른 사람의 게시물을 삭제할 수 없습니다.'};
+		return {error: 401, reason: '권한이 없습니다.'};
 	const size = content.width * content.height;
 	const t = await db.sequelize.transaction();
 	try {
