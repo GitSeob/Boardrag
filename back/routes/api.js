@@ -1,245 +1,22 @@
-const express = require("express");
 const passport = require("passport");
 const bcrypt = require("bcrypt");
 const { Op, fn, col } = require('sequelize');
-const multer = require('multer');
-const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
-
 const env = process.env.NODE_ENV || "development";
 const config = require("../config/config")[env];
-
 const router = require(".");
 const db = require("../models");
-
 const { isNotLoggedIn, isLoggedIn } = require("./middleware");
-
-const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
-
-String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
-String.prototype.zf = function(len){return "0".string(len - this.length) + this;};
-Number.prototype.zf = function(len){return this.toString().zf(len);};
-
-Date.prototype.format = function(f) {
-	if (!this.valueOf()) return " ";
-
-	var weekName = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
-	var d = this;
-
-	return f.replace(/(yyyy|yy|MM|dd|E|hh|mm|ss|a\/p)/gi, function($1) {
-		switch ($1) {
-			case "yyyy": return d.getFullYear();
-			case "yy": return (d.getFullYear() % 1000).zf(2);
-			case "MM": return (d.getMonth() + 1).zf(2);
-			case "dd": return d.getDate().zf(2);
-			case "E": return weekName[d.getDay()];
-			case "HH": return d.getHours().zf(2);
-			case "hh": return ((h = d.getHours() % 12) ? h : 12).zf(2);
-			case "mm": return d.getMinutes().zf(2);
-			case "ss": return d.getSeconds().zf(2);
-			case "a/p": return d.getHours() < 12 ? "오전" : "오후";
-			default: return $1;
-		}
-	});
-};
-
-const upload = multer({
-	storage: multer.diskStorage({
-		destination(req, file, done) {
-			done(null, 'uploads')
-		},
-		filename(req, file, done){
-			let ext = path.extname(file.originalname);
-			let basename = req.query.board + "_" + req.query.contentName + "_";
-			let savename = basename + new Date().format("yyyy-MM-dd_hh:mm:ss") + ext;
-			savename = savename.replace(/\s/g, "_");
-			done(null, savename);
-		}
-	}),
-	limits: {fileSize: 20*1024*1024},
-});
-
-const uploadBoardImage = multer({
-	storage: multer.diskStorage({
-		destination(req, file, done) {
-			done(null, 'board_bgs')
-		},
-		filename(req, file, done){
-			const ext = path.extname(file.originalname);
-			let savename = req.query.name + "_bg_image:::not_save:::" + ext;
-			savename = savename.replace(/\s/g, "_");
-			done(null, savename);
-		}
-	}),
-	limits: {fileSize: 20*1024*1024},
-});
-
-const uploadProfileImage = multer({
-	storage: multer.diskStorage({
-		destination(req, file, done) {
-			done(null, 'board_profileImages')
-		},
-		filename(req, file, done){
-			const ext = path.extname(file.originalname);
-			let savename = req.query.name + "_" + req.user.username + ":::not_save:::" + ext;
-			savename = savename.replace(/\s/g, "_");
-			done(null, savename);
-		}
-	}),
-	limits: {fileSize: 4*1024*1024},
-});
-
-db.Board.checkBoardWithName = async (boardName) => {
-	const board = await db.Board.findOne({
-		where: {name: boardName}
-	});
-	return (board);
-};
-
-db.BoardMember.getMyInfo = async (boardName, user) => {
-	const board = await db.Board.checkBoardWithName(boardName);
-	if (!board)
-		throw new Error("Can not find board");
-	const member = await db.BoardMember.findOne({
-		where: {
-			BoardId: board.id,
-			UserId: user.id
-		}
-	});
-	return (member);
-};
-
-db.TextContent.createAndUpdate = async (datas, board, member) => {
-	const availBlocks = await member.avail_blocks - (datas.width * datas.height);
-	if (availBlocks < 0)
-		return -1;
-	const t = await db.sequelize.transaction();
-	const now = new Date();
-
-	try {
-		await db.TextContent.create({
-			x: datas.x,
-			y: datas.y,
-			width: datas.width,
-			height: datas.height,
-			content: datas.content,
-			expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
-			BoardMemberId: member.id,
-			BoardId: board.id
-		}, {
-			transaction: t
-		});
-		await db.BoardMember.update({
-			avail_blocks: availBlocks
-		}, {
-			where: {id: member.id},
-			transaction: t
-		});
-		await db.Board.update({
-			recent_time: fn('NOW')
-		},{
-			where: {id: board.id},
-			transaction: t
-		});
-		await t.commit();
-		return availBlocks;
-	} catch (e) {
-		console.error(e);
-		await t.rollback();
-		return -2;
-	}
-}
-
-db.Image.createAndUpdate = async (datas, board, member) => {
-	const availBlocks = await member.avail_blocks - (datas.width * datas.height);
-	if (availBlocks < 0)
-		return (-1);
-	const t = await db.sequelize.transaction();
-	const now = new Date();
-	try {
-		await db.Image.create({
-			url: datas.url,
-			x: datas.x,
-			y: datas.y,
-			width: datas.width,
-			height: datas.height,
-			expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
-			BoardMemberId: member.id,
-			BoardId: board.id
-		}, {
-			transaction: t
-		});
-
-		await db.BoardMember.update({
-			avail_blocks: availBlocks
-		}, {
-			where: {id: member.id},
-			transaction: t
-		});
-		await db.Board.update({
-			recent_time: fn('NOW')
-		},{
-			where: {id: board.id},
-			transaction: t
-		});
-		await t.commit();
-		return availBlocks;
-	} catch(e) {
-		console.error(e);
-		await t.rollback();
-		return -2;
-	}
-}
-
-db.Note.createAndUpdate = async (datas, board, member) => {
-	const availBlocks = await member.avail_blocks - (datas.width * datas.height);
-	if (availBlocks < 0)
-		return -1;
-	const t = await db.sequelize.transaction();
-	const now = new Date();
-	try {
-		await db.Note.create({
-			x: datas.x,
-			y: datas.y,
-			width: datas.width,
-			height: datas.height,
-			head: datas.head,
-			paragraph: datas.paragraph,
-			background_img: datas.background_img,
-			expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
-			BoardMemberId: member.id,
-			BoardId: board.id
-		}, {
-			transaction: t
-		})
-		await db.BoardMember.update({
-			avail_blocks: availBlocks
-		}, {
-			where: {id: member.id},
-			transaction: t
-		});
-		await db.Board.update({
-			recent_time: fn('NOW')
-		},{
-			where: {id: board.id},
-			transaction: t
-		})
-		await t.commit();
-		return availBlocks;
-	} catch(e) {
-		console.error(e);
-		await t.rollback();
-		return (-2);
-	}
-}
-
-const BoardPermissionCheck = async (boardName, user) => {
-	const board = await db.Board.checkBoardWithName(boardName);
-	if (!board)
-		throw new Error("Can not find board");
-	return (board.AdminId === user.id);
-};
+const {
+	BoardPermissionCheck,
+	createAndUpdate,
+	upload,
+	uploadBoardImage,
+	uploadProfileImage,
+	deleteFile,
+	deleteBlock
+} = require("./init");
 
 router.get('/auth', async (req, res, next) => {
 	try {
@@ -527,10 +304,12 @@ router.get(`/board/:boardName/me`, isLoggedIn, async (req, res, next) => {
 router.post('/board/:boardName/write/text', isLoggedIn, async (req, res, next) => {
 	try {
 		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		if (!board)
+			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
 		const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
 		if (!member)
 			return res.status(404).send({ reason: "해당 보드에 참여하지 않았습니다." });
-		const availBlocks = await db.TextContent.createAndUpdate(req.body, board, member);
+		const availBlocks = await createAndUpdate(req.body, board, member, db.TextContent);
 		if (availBlocks === -1)
 			return res.status(403).send({ reason: `생성 가능한 블록 수는 ${member.avail_blocks}입니다.`});
 		else if (availBlocks === -2)
@@ -547,10 +326,12 @@ router.post('/board/:boardName/write/text', isLoggedIn, async (req, res, next) =
 router.post('/board/:boardName/write/note', isLoggedIn, async (req, res, next) => {
 	try {
 		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		if (!board)
+			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
 		const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
 		if (!member)
 			return res.status(404).send({ reason: "해당 보드에 참여하지 않았습니다." });
-		const availBlocks = await db.Note.createAndUpdate(req.body, board, member);
+		const availBlocks = await createAndUpdate(req.body, board, member, db.Note);
 		if (availBlocks === -1)
 			return res.status(403).send({ reason: `생성 가능한 블록 수는 ${member.avail_blocks}입니다.`});
 		else if (availBlocks === -2)
@@ -585,10 +366,12 @@ router.post('/uploadProfileImage', isLoggedIn, uploadProfileImage.single('image'
 router.post('/board/:boardName/write/image', isLoggedIn, async (req, res, next) => {
 	try {
 		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		if (!board)
+			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
 		const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
 		if (!member)
 			return res.status(404).send({ reason: "해당 보드에 참여하지 않았습니다." });
-		const availBlocks = await db.Image.createAndUpdate(req.body, board, member);
+		const availBlocks = await createAndUpdate(req.body, board, member, db.Image);
 		if (availBlocks === -1)
 			return res.status(403).send({ reason: `생성 가능한 블록 수는 ${member.avail_blocks}입니다.`});
 		else if (availBlocks === -2)
@@ -668,7 +451,6 @@ router.get('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, ne
 });
 
 router.patch('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next) => {
-	const board = await db.Board.checkBoardWithName(req.params.boardName);
 	try {
 		const board = await db.Board.findOne({
 			where: {name: req.params.boardName}
@@ -743,34 +525,11 @@ router.delete('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next
 
 router.delete('/board/:boardName/delete/text/:id', isLoggedIn, async (req, res, next) => {
 	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-		const content = await db.TextContent.findOne({
-			where: {id: req.params.id}
-		});
-		if (!content)
-			return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-		const member = await db.BoardMember.findOne({
-			where: {
-				UserId: req.user.id,
-				BoardId: board.id
-			}
-		})
-		if (!member)
-			return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
-		if (member.id !== content.BoardMemberId && !req.user.is_admin)
-			return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
-
-		const size = content.width * content.height;
-		await db.TextContent.destroy({ where: {id: req.params.id }});
-		await db.Comment.destroy({ where: { TextContentId: req.params.id }});
-		await db.BoardMember.increment({ avail_blocks: size }, {where: { id: content.BoardMemberId }});
-
+		const contet = await deleteBlock(db.TextContent, req);
+		if (content.error)
+			return res.status(content.error).send({ reason: content.reason });
 		const io = req.app.get("io");
-		io.of(`/board-${board.name}`).emit('refresh');
+		io.of(`/board-${req.params.boardName}`).emit('refresh');
 		return res.send(`delete done`);
 	} catch(e) {
 		console.error(e);
@@ -780,39 +539,12 @@ router.delete('/board/:boardName/delete/text/:id', isLoggedIn, async (req, res, 
 
 router.delete('/board/:boardName/delete/image/:id', isLoggedIn, async (req, res, next) => {
 	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-		const content = await db.Image.findOne({
-			where: {id: req.params.id}
-		});
-
-		if (!content)
-			return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-		const member = await db.BoardMember.findOne({
-			where: {
-				UserId: req.user.id,
-				BoardId: board.id
-			}
-		})
-		if (!member)
-			return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
-		if (member.id !== content.BoardMemberId && !req.user.is_admin)
-			return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
-
-		const size = content.width * content.height;
-		await db.Image.destroy({ where: {id: req.params.id }});
-		await db.Comment.destroy({ where: { ImageId: req.params.id }});
-		await db.BoardMember.increment({ avail_blocks: size }, {where: { id: content.BoardMemberId }});
-		fs.unlink(`./uploads/${content.url.replace(delURL, "")}`, () => {
-			return;
-		});
-		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-		fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.url.replace(delURL, "")}\n`);
+		const content = await deleteBlock(db.Image, req);
+		if (content.error)
+			return res.status(content.error).send({ reason: content.reason });
+		deleteFile('uploads', content.url);
 		const io = req.app.get("io");
-		io.of(`/board-${board.name}`).emit('refresh');
+		io.of(`/board-${req.params.boardName}`).emit('refresh');
 		return res.send(`delete done`);
 	} catch(e) {
 		console.error(e);
@@ -822,39 +554,12 @@ router.delete('/board/:boardName/delete/image/:id', isLoggedIn, async (req, res,
 
 router.delete('/board/:boardName/delete/note/:id', isLoggedIn, async (req, res, next) => {
 	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-		const content = await db.Note.findOne({
-			where: {id: req.params.id}
-		});
-
-		const size = content.width * content.height;
-		if (!content)
-			return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-		const member = await db.BoardMember.findOne({
-			where: {
-				UserId: req.user.id,
-				BoardId: board.id
-			}
-		})
-		if (!member)
-			return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
-		if (member.id !== content.BoardMemberId && !req.user.is_admin)
-			return res.status(401).send('다른 사람의 게시물을 삭제할 수 없습니다.');
-		await db.Note.destroy({ where: {id: req.params.id }});
-		await db.Comment.destroy({ where: { NoteId: req.params.id }});
-		await db.BoardMember.increment({ avail_blocks: size }, {where: { id: content.BoardMemberId }});
-		if (content.background_img)
-			fs.unlink(`./uploads/${content.background_img.replace(delURL, "")}`, () => {
-				return;
-			});
-		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-		fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${content.background_img.replace(delURL, "")}\n`);
+		const content = await deleteBlock(db.Note, req);
+		if (content.error)
+			return res.status(content.error).send({ reason: content.reason });
+		deleteFile('uploads', content.background_img);
 		const io = req.app.get("io");
-		io.of(`/board-${board.name}`).emit('refresh');
+		io.of(`/board-${req.params.boardName}`).emit('refresh');
 		return res.send(`delete done`);
 	} catch(e) {
 		console.error(e);
