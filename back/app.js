@@ -93,7 +93,7 @@ app.use(passport.session());
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
-const deleter = schedule.scheduleJob('0 * * * * *', async () => {
+const deleter = schedule.scheduleJob('0 0 * * * *', async () => {
 	console.log("run scheduler...");
 	const t = await sequelize.transaction();
 	const now = new Date();

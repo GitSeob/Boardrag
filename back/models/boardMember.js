@@ -1,4 +1,5 @@
 const DataTypes = require("sequelize");
+const db = require(".");
 const { Model } = DataTypes;
 
 module.exports = class BoardMember extends Model {

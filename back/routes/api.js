@@ -5,6 +5,7 @@ const { Op, fn, col } = require('sequelize');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const axios = require('axios');
 
 const env = process.env.NODE_ENV || "development";
 const config = require("../config/config")[env];
@@ -89,9 +90,186 @@ const uploadProfileImage = multer({
 	limits: {fileSize: 4*1024*1024},
 });
 
+db.Board.checkBoardWithName = async (boardName) => {
+	const board = await db.Board.findOne({
+		where: {name: boardName}
+	});
+	return (board);
+};
+
+db.BoardMember.getMyInfo = async (boardName, user) => {
+	const board = await db.Board.checkBoardWithName(boardName);
+	if (!board)
+		throw new Error("Can not find board");
+	const member = await db.BoardMember.findOne({
+		where: {
+			BoardId: board.id,
+			UserId: user.id
+		}
+	});
+	return (member);
+};
+
+db.TextContent.createAndUpdate = async (datas, board, member) => {
+	const availBlocks = await member.avail_blocks - (datas.width * datas.height);
+	if (availBlocks < 0)
+		return -1;
+	const t = await db.sequelize.transaction();
+	const now = new Date();
+
+	try {
+		await db.TextContent.create({
+			x: datas.x,
+			y: datas.y,
+			width: datas.width,
+			height: datas.height,
+			content: datas.content,
+			expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
+			BoardMemberId: member.id,
+			BoardId: board.id
+		}, {
+			transaction: t
+		});
+		await db.BoardMember.update({
+			avail_blocks: availBlocks
+		}, {
+			where: {id: member.id},
+			transaction: t
+		});
+		await db.Board.update({
+			recent_time: fn('NOW')
+		},{
+			where: {id: board.id},
+			transaction: t
+		});
+		await t.commit();
+		return availBlocks;
+	} catch (e) {
+		console.error(e);
+		await t.rollback();
+		return -2;
+	}
+}
+
+db.Image.createAndUpdate = async (datas, board, member) => {
+	const availBlocks = await member.avail_blocks - (datas.width * datas.height);
+	if (availBlocks < 0)
+		return (-1);
+	const t = await db.sequelize.transaction();
+	const now = new Date();
+	try {
+		await db.Image.create({
+			url: datas.url,
+			x: datas.x,
+			y: datas.y,
+			width: datas.width,
+			height: datas.height,
+			expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
+			BoardMemberId: member.id,
+			BoardId: board.id
+		}, {
+			transaction: t
+		});
+
+		await db.BoardMember.update({
+			avail_blocks: availBlocks
+		}, {
+			where: {id: member.id},
+			transaction: t
+		});
+		await db.Board.update({
+			recent_time: fn('NOW')
+		},{
+			where: {id: board.id},
+			transaction: t
+		});
+		await t.commit();
+		return availBlocks;
+	} catch(e) {
+		console.error(e);
+		await t.rollback();
+		return -2;
+	}
+}
+
+db.Note.createAndUpdate = async (datas, board, member) => {
+	const availBlocks = await member.avail_blocks - (datas.width * datas.height);
+	if (availBlocks < 0)
+		return -1;
+	const t = await db.sequelize.transaction();
+	const now = new Date();
+	try {
+		await db.Note.create({
+			x: datas.x,
+			y: datas.y,
+			width: datas.width,
+			height: datas.height,
+			head: datas.head,
+			paragraph: datas.paragraph,
+			background_img: datas.background_img,
+			expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
+			BoardMemberId: member.id,
+			BoardId: board.id
+		}, {
+			transaction: t
+		})
+		await db.BoardMember.update({
+			avail_blocks: availBlocks
+		}, {
+			where: {id: member.id},
+			transaction: t
+		});
+		await db.Board.update({
+			recent_time: fn('NOW')
+		},{
+			where: {id: board.id},
+			transaction: t
+		})
+		await t.commit();
+		return availBlocks;
+	} catch(e) {
+		console.error(e);
+		await t.rollback();
+		return (-2);
+	}
+}
+
+const BoardPermissionCheck = async (boardName, user) => {
+	const board = await db.Board.checkBoardWithName(boardName);
+	if (!board)
+		throw new Error("Can not find board");
+	return (board.AdminId === user.id);
+};
+
 router.get('/auth', async (req, res, next) => {
 	try {
-		return res.send(req.user || false);
+		if (!req.user)
+			return res.send(false);
+		const access_token_check_url = "https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + req.user.access_token;
+		const access_result = await axios.get(access_token_check_url).then(() => true).catch(() => false);
+		if (!access_result)
+		{
+			const t = db.sequelize.transaction();
+			console.log("get access token");
+			const refresh_token = await db.User.findOne({
+				where: { id: req.user.id }
+			}).then(res => {
+				return res.refresh_token
+			});
+			const refresh_url = `https://www.google.apis.com/oauth2/v4/token?client_id=${config.google_cid}&client_secret=${config.google_secret}&refresh_token=${refresh_token}&grant_type=refresh_token`
+			await axios.post(refresh_url).then(async (res) => {
+				console.log(res.data.access_token);
+				await db.User.update({
+					access_token: res.data.access_token
+				}, {
+					where: req.user.id
+				}, {
+					transaction: t
+				});
+			})
+			t.comment();
+		}
+		return res.send(req.user);
 	} catch (e) {
 		console.error(e);
 		next(e);
@@ -131,7 +309,7 @@ router.get(`/auth/callback`, passport.authenticate('local', { failureRedirect: '
 router.post('/logout', isLoggedIn, (req, res) => {
 	req.logout();
 	req.session.destroy();
-	res.send('logout 성공');
+	res.send('logout');
 });
 
 router.get(`/checkBoardName/:boardName`, isLoggedIn, async (req, res, next) => {
@@ -148,6 +326,8 @@ router.get(`/checkBoardName/:boardName`, isLoggedIn, async (req, res, next) => {
 })
 
 router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
+	if (req.body.title.length < 4 || req.body.nickName.length < 2 || !req.body.des)
+		return next(new Error("data error"));
 	try {
 		const t = await db.sequelize.transaction();
 		const query = {
@@ -285,20 +465,9 @@ router.get(`/notJoinedBoards`, isLoggedIn, async (req, res, next) => {
 })
 
 router.get(`/board/:boardName`, isLoggedIn, async (req, res, next) => {
+	if (!req.params.boardName)
+		next(new Error("Board name is undefined"));
 	try {
-		const board = await db.Board.findOne({
-			where: { name: req.params.boardName }
-		})
-		const me = await db.BoardMember.findOne({
-			where: {
-				BoardId: board.id,
-				UserId: req.user.id
-			}
-		});
-
-		if (!me)
-			res.send("not assigned");
-
 		const boardData = await db.Board.findOne({
 			where: {name: req.params.boardName},
 			attributes: ['id', 'name', 'background', 'AdminId'],
@@ -349,17 +518,7 @@ router.get(`/board/:boardName`, isLoggedIn, async (req, res, next) => {
 
 router.get(`/board/:boardName/me`, isLoggedIn, async (req, res, next) => {
 	try {
-		const board = await db.Board.findOne({
-			where: { name: req.params.boardName }
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-		return res.send(await db.BoardMember.findOne({
-				where: {
-					UserId: req.user.id,
-					BoardId: board.id
-				}
-			}) || false);
+		return res.send(await db.BoardMember.getMyInfo(req.params.boardName, req.user));
 	} catch(e) {
 		next(e);
 	}
@@ -367,44 +526,15 @@ router.get(`/board/:boardName/me`, isLoggedIn, async (req, res, next) => {
 
 router.post('/board/:boardName/write/text', isLoggedIn, async (req, res, next) => {
 	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName }
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-		const now = new Date();
-		const member = await db.BoardMember.findOne({where: {
-			id: req.body.BoardMemberId,
-			UserId: req.user.id,
-			BoardId: board.id
-		}});
+		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
 		if (!member)
-			return res.status(404).send({ reason: "알 수 없는 문제가 발생했습니다." });
-		const availBlocks = await member.avail_blocks - (req.body.width * req.body.height);
-		if (availBlocks < 0)
+			return res.status(404).send({ reason: "해당 보드에 참여하지 않았습니다." });
+		const availBlocks = await db.TextContent.createAndUpdate(req.body, board, member);
+		if (availBlocks === -1)
 			return res.status(403).send({ reason: `생성 가능한 블록 수는 ${member.avail_blocks}입니다.`});
-
-		const newText = await db.TextContent.create({
-			x: req.body.x,
-			y: req.body.y,
-			width: req.body.width,
-			height: req.body.height,
-			content: req.body.content,
-			expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
-			BoardMemberId: member.id,
-			BoardId: board.id
-		})
-		await db.BoardMember.update({
-			avail_blocks: availBlocks
-		}, {
-			where: {id: member.id}
-		});
-		await db.Board.update({
-			recent_time: fn('NOW')
-		},{
-			where: {id: board.id}
-		})
-
+		else if (availBlocks === -2)
+			throw new Error("transaction is crushed");
 		const io = req.app.get("io");
 		io.of(`/board-${board.name}`).emit('refresh');
 		return res.send(`${availBlocks}`);
@@ -416,46 +546,15 @@ router.post('/board/:boardName/write/text', isLoggedIn, async (req, res, next) =
 
 router.post('/board/:boardName/write/note', isLoggedIn, async (req, res, next) => {
 	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-		const now = new Date();
-		const member = await db.BoardMember.findOne({where: {
-			id: req.body.BoardMemberId,
-			UserId: req.user.id,
-			BoardId: board.id
-		}});
+		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
 		if (!member)
-			return res.status(404).send({ reason: "알 수 없는 문제가 발생했습니다." });
-		const availBlocks = await member.avail_blocks - (req.body.width * req.body.height);
-		if (availBlocks < 0)
+			return res.status(404).send({ reason: "해당 보드에 참여하지 않았습니다." });
+		const availBlocks = await db.Note.createAndUpdate(req.body, board, member);
+		if (availBlocks === -1)
 			return res.status(403).send({ reason: `생성 가능한 블록 수는 ${member.avail_blocks}입니다.`});
-
-		const newText = await db.Note.create({
-			x: req.body.x,
-			y: req.body.y,
-			width: req.body.width,
-			height: req.body.height,
-			head: req.body.head,
-			paragraph: req.body.paragraph,
-			background_img: req.body.background_img,
-			expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
-			BoardMemberId: member.id,
-			BoardId: board.id
-		})
-		await db.BoardMember.update({
-			avail_blocks: availBlocks
-		}, {
-			where: {id: member.id}
-		});
-		await db.Board.update({
-			recent_time: fn('NOW')
-		},{
-			where: {id: board.id}
-		})
-
+		else if (availBlocks === -2)
+			throw new Error("transaction is crushed");
 		const io = req.app.get("io");
 		io.of(`/board-${board.name}`).emit('refresh');
 		return res.send(`${availBlocks}`);
@@ -485,47 +584,15 @@ router.post('/uploadProfileImage', isLoggedIn, uploadProfileImage.single('image'
 
 router.post('/board/:boardName/write/image', isLoggedIn, async (req, res, next) => {
 	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-		const now = new Date();
-		const member = await db.BoardMember.findOne({where: {
-			id: req.body.BoardMemberId,
-			UserId: req.user.id,
-			BoardId: board.id
-		}});
+		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
 		if (!member)
-			return res.status(404).send({ reason: "알 수 없는 문제가 발생했습니다." });
-		const availBlocks = await member.avail_blocks - (req.body.width * req.body.height);
-
-		if (availBlocks < 0)
+			return res.status(404).send({ reason: "해당 보드에 참여하지 않았습니다." });
+		const availBlocks = await db.Image.createAndUpdate(req.body, board, member);
+		if (availBlocks === -1)
 			return res.status(403).send({ reason: `생성 가능한 블록 수는 ${member.avail_blocks}입니다.`});
-		if (!req.body.url)
-			return res.status(403).send({ reason: `이미지가 등록되지 않았습니다.`});
-		const newImage = await db.Image.create({
-			url: req.body.url,
-			x: req.body.x,
-			y: req.body.y,
-			width: req.body.width,
-			height: req.body.height,
-			expiry_date: board.expiry_times ? now.setDate(now.getDate() + board.expiry_times) : null,
-			BoardMemberId: member.id,
-			BoardId: board.id
-		});
-
-		await db.BoardMember.update({
-			avail_blocks: availBlocks
-		}, {
-			where: {id: member.id}
-		});
-		await db.Board.update({
-			recent_time: fn('NOW')
-		},{
-			where: {id: board.id}
-		})
-
+		else if (availBlocks === -2)
+			throw new Error("transaction is crushed");
 		const io = req.app.get("io");
 		io.of(`/board-${board.name}`).emit('refresh');
 		return res.send(`${availBlocks}`);
@@ -601,6 +668,7 @@ router.get('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, ne
 });
 
 router.patch('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next) => {
+	const board = await db.Board.checkBoardWithName(req.params.boardName);
 	try {
 		const board = await db.Board.findOne({
 			where: {name: req.params.boardName}

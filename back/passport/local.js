@@ -13,6 +13,8 @@ module.exports = () => {
 		usernameField: "codeValue",
 		passwordField: "trashValue",
 	}, async (codeValue, trashValue, done) => {
+		if (!codeValue)
+			return done(null, false, {reason: 'code value is undefined'});
 		try {
 			let access_token;
 			let refresh_token;
