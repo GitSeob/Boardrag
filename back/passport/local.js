@@ -4,8 +4,6 @@ const axios = require('axios');
 const env = process.env.NODE_ENV || "development";
 const config = require("../config/config")[env];
 
-var GoogleStrategy = require('passport-google-oauth20').Strategy
-
 const db = require('../models');
 
 module.exports = () => {
@@ -15,52 +13,51 @@ module.exports = () => {
 	}, async (codeValue, trashValue, done) => {
 		if (!codeValue)
 			return done(null, false, {reason: 'code value is undefined'});
+
+		const t = await db.sequelize.transaction();
+
 		try {
 			let access_token;
 			let refresh_token;
+
 			await axios.post(`https://www.googleapis.com/oauth2/v4/token?code=${codeValue}&client_id=${config.google_cid}&client_secret=${config.google_secret}&redirect_uri=${config.google_redirect_uri}&grant_type=authorization_code`).then(res => {
 				access_token = res.data.access_token;
 				refresh_token = res.data.refresh_token;
 			}).catch(e => {
-				return done(null, false, { reason: 'not available code value please retry login.'});
+				console.error(e.response.data);
 			});
 			if (!access_token || !refresh_token)
-				return done(null, false, { reason: 'not available code value please retry login.'});
+				return done(null, false, { reason: '로그인 에러' });
+
 			const oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
 
 			const user_data = await axios.get(`${oauthGoogleUrlAPI}${access_token}`).then(res => {
 				return res.data;
 			}).catch(e => {
-				return done(null, false, { reason: '42api server was unable to send valid data.'});
+				console.error(e);
+				throw e;
 			});
 			if (!user_data) {
 				return done(null, false, { reason: '다시 로그인해주시기바랍니다.' });
 			}
-			const user_in_db = await db.User.findOne({
-				where: {
-					email: user_data.email
-				}
-			});
-			if (!user_in_db) {
-				const newUser = await db.User.create({
+
+			const [user, created] = await db.User.findOrCreate({
+				where: {email: user_data.email},
+				defaults: {
 					email: user_data.email,
 					profile_img: user_data.picture,
-					is_admin: false,
 					access_token: access_token,
-					refresh_token: refresh_token
-				})
-				return done(null, newUser);
-			}
-			const updateUser = await db.User.update({
-				access_token: access_token
-			},{
-				where: {id : user_in_db.id}
+					refresh_token: refresh_token,
+					is_admin: false
+				},
+				transaction: t
 			})
-			if (!updateUser)
-				return done(null, false, {reason: 'update Error'});
-			return done(null, await db.User.findOne({ where: {id: user_in_db.id }}));
 
+			await t.commit();
+			return done(null, user);
 		} catch (e) {
+			console.error(e);
+			await t.rollback();
 			return done(e);
 		}
 	}))
