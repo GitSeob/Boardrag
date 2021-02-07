@@ -1,4 +1,4 @@
-import React, {FC} from 'react';
+import React from 'react';
 import useSWR from 'swr';
 import qs from 'qs';
 import fetcher from '@utils/fetcher';
@@ -8,13 +8,15 @@ import axios from 'axios';
 import { Redirect } from 'react-router-dom';
 import LoadingCircle from '@components/LoadingCircle';
 
-const Auth:FC = () => {
+const Auth = () => {
 	const { data:userData, revalidate } = useSWR('/api/auth', fetcher);
+	const [error, setError] = React.useState('');
+
 	const query = qs.parse(location.search, {
-		ignoreQueryPrefix: true // /about?details=true 같은 쿼리 주소의 '?'를 생략해주는 옵션입니다.
+		ignoreQueryPrefix: true
 	});
 
-	if (location.search && userData === false)
+	if (location.search && userData === false && !error)
 	{
 		if (!userData && query.code)
 		{
@@ -28,8 +30,7 @@ const Auth:FC = () => {
 				revalidate();
 				return res.data;
 			}).catch(e => {
-				console.error(e);
-				location.href = "/auth?error=codeValue";
+				setError(e.response.data.reason);
 			})
 			return <LoadingCircle />
 		}
@@ -48,7 +49,7 @@ const Auth:FC = () => {
 			<LoginButton href={googleOauth} className="google">
 				<img src="/public/btn_google_signin_light_normal_web@2x.png" />
 			</LoginButton>
-			{ query?.error && <p>42API에서 전송한 코드 값 문제가 발생했습니다.</p>}
+			{ error && <p>{error}</p>}
 		</LoginContainer>
 	);
 }

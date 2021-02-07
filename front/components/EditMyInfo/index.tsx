@@ -20,7 +20,7 @@ interface IEMI {
 }
 
 const EditMyInfo:FC<IEMI> = ({ myData, boardData, toast, setOpen, setLoading }) => {
-	const [nickname, OCNN] =  useInput(myData?.username);
+	const [nickname, OCNN, setNN] =  useInput(myData?.username);
 	const [uploading, setUploading] = useState({
 		url: myData?.profile_img ? myData.profile_img : "",
 		loading: false,
@@ -51,6 +51,12 @@ const EditMyInfo:FC<IEMI> = ({ myData, boardData, toast, setOpen, setLoading }) 
 	}, []);
 
 	const onSubmitEdit = useCallback(async () => {
+		console.log(nickname);
+		if (!nickname || nickname.length < 2)
+		{
+			setNN(myData?.username);
+			return alert('닉네임은 2자 이상으로 입력해주세요.');
+		}
 		if (confirm('수정하시겠습니까?')) {
 			await setLoading(true);
 			await axios.post(`/api/BoardMember/edit/${boardData.name}`, {
