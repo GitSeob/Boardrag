@@ -2,10 +2,9 @@ const db = require("../models");
 const { fn } = require('sequelize');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
-const env = process.env.NODE_ENV || "development";
 
 const modules = {}
+
 String.prototype.string = function(len) {var s = '', i = 0; while (i++ < len) { s += this; } return s;};
 String.prototype.zf = function(len) {return "0".string(len - this.length) + this;};
 Number.prototype.zf = function(len) {return this.toString().zf(len);};
@@ -37,13 +36,15 @@ db.Board.checkBoardWithName = async (boardName) => {
 	const board = await db.Board.findOne({
 		where: {name: boardName}
 	});
+	if (!board)
+		return {error: 404, reason: '존재하지 않는 board입니다.'};
 	return (board);
 };
 
 db.BoardMember.getMyInfo = async (boardName, user) => {
 	const board = await db.Board.checkBoardWithName(boardName);
-	if (!board)
-		return {error: 404, reason: "해당 보드를 찾을 수 없습니다."};
+	if (board.error)
+		return {error: board.error, reason: board.reason };
 	const member = await db.BoardMember.findOne({
 		where: {
 			BoardId: board.id,
@@ -56,63 +57,44 @@ db.BoardMember.getMyInfo = async (boardName, user) => {
 };
 
 
-modules.BoardPermissionCheck = async (boardName, user) => {
+modules.boardPermissionCheck = async (boardName, user) => {
 	const board = await db.Board.checkBoardWithName(boardName);
-	if (!board)
-		throw new Error("Can not find board");
-	return (board.AdminId === user.id);
+	if (board.error)
+		return {error: board.error, reason: board.reason };
+	if (board.AdminId !== user.id)
+		return {error: 401, reason: '권한이 없습니다.'};
+	return board;
 };
 
 modules.upload = multer({
 	storage: multer.diskStorage({
 		destination(req, file, done) {
-			done(null, 'uploads')
+			done(null, `uploads${req.query.type === 'upload' ? "" : `/${req.query.type}`}`);
 		},
 		filename(req, file, done){
 			let ext = path.extname(file.originalname);
-			let basename = req.query.board + "_" + req.query.contentName + "_";
-			let savename = basename + new Date().format("yyyy-MM-dd_hh:mm:ss") + ext;
+			let savename;
+
+			if (req.query.type === 'upload')
+			{
+				let basename = req.query.board + "_" + req.query.contentName + "_";
+				savename = basename + new Date().format("yyyy-MM-dd_hh:mm:ss") + ext;
+			}
+			else if (req.query.type === 'background')
+				savename = req.query.name + "_bg_image:::not_save:::" + ext;
+			else if (req.query.type === 'profile')
+				savename = req.query.name + "_" + req.user.username + ":::not_save:::" + ext;
 			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
 		}
 	}),
 	limits: {fileSize: 20*1024*1024},
-});
-
-modules.uploadBoardImage = multer({
-	storage: multer.diskStorage({
-		destination(req, file, done) {
-			done(null, 'board_bgs')
-		},
-		filename(req, file, done){
-			const ext = path.extname(file.originalname);
-			let savename = req.query.name + "_bg_image:::not_save:::" + ext;
-			savename = savename.replace(/\s/g, "_");
-			done(null, savename);
-		}
-	}),
-	limits: {fileSize: 20*1024*1024},
-});
-
-modules.uploadProfileImage = multer({
-	storage: multer.diskStorage({
-		destination(req, file, done) {
-			done(null, 'board_profileImages')
-		},
-		filename(req, file, done){
-			const ext = path.extname(file.originalname);
-			let savename = req.query.name + "_" + req.user.username + ":::not_save:::" + ext;
-			savename = savename.replace(/\s/g, "_");
-			done(null, savename);
-		}
-	}),
-	limits: {fileSize: 4*1024*1024},
 });
 
 modules.createAndUpdate = async (Model, req) => {
 	const board = await db.Board.checkBoardWithName(req.params.boardName);
-	if (!board)
-		return {error: 404, reason: '존재하지 않는 board입니다.' };
+	if (board.error)
+		return {error: board.error, reason: board.reason };
 	const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
 	if (member.error)
 		return {error: member.error, reason: member.reason };
@@ -172,67 +154,66 @@ modules.createAndUpdate = async (Model, req) => {
 	}
 }
 
-modules.updateBlock = async (datas, board, member, Model) => {
-	const availBlocks = await member.avail_blocks - (datas.width * datas.height);
-	if (availBlocks < 0)
-		return -1;
-	const t = await db.sequelize.transaction();
-	const now = new Date();
-	const insertDatas = {
-		x: datas.x,
-		y: datas.y,
-		width: datas.width,
-		height: datas.height,
-	}
+modules.updateBlock = async (Model, req) => {
+	const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
+	if (member.error)
+		return { error: member.error, reason: member.reason };
 
+	const insertDatas = {
+		x: req.body.x,
+		y: req.body.y,
+		width: req.body.width,
+		height: req.body.height,
+	};
 	if (Model === db.TextContent)
-		insertDatas.content = datas.content;
+		insertDatas.content = req.body.content;
 	else if (Model === db.Image)
-		insertDatas.url = datas.url;
+		insertDatas.url = req.body.url;
 	else if (Model === db.Note)
 	{
-		insertDatas.head = datas.head;
-		insertDatas.paragraph = datas.paragraph;
-		insertDatas.background_img = datas.background_img;
+		insertDatas.head = req.body.head;
+		insertDatas.paragraph = req.body.paragraph;
+		insertDatas.background_img = req.body.background_img;
 	}
 	else
 		throw new Error("Not an accepted model");
 
+	const content = await Model.findOne({ where: {id: req.params.id }});
+	if (!content)
+		return { error: 404, reason: '콘텐츠가 존재하지 않습니다.' };
+
+
+	if (member.id !== content.BoardMemberId && !req.user.is_admin)
+		return { error: 401, reason: '권한이 없습니다.' };
+
+	const oldSize = content.width * content.height;
+
+	if (member.avail_blocks - ( req.body.width * req.body.height - oldSize ) < 0)
+		return { error: 403, reason: `현재 추가 가능한 블록 수는 ${member.avail_blocks}입니다.` };
+
+	const t = await db.sequelize.transaction();
 	try {
-		await Model.create(insertDatas, {
+		await Model.update(insertDatas, {
+			where: {id: req.params.id},
 			transaction: t
 		});
-		await db.BoardMember.update({
-			avail_blocks: availBlocks
+
+		await db.BoardMember.increment({
+			avail_blocks: oldSize - (req.body.width * req.body.height)
 		}, {
-			where: {id: member.id},
+			where: {id: content.BoardMemberId},
 			transaction: t
 		});
-		await db.Board.update({
-			recent_time: fn('NOW')
-		},{
-			where: {id: board.id},
-			transaction: t
-		});
+
 		await t.commit();
-		return availBlocks;
+		if (req.body.width * req.body.height === oldSize)
+			return false;
+		return member.avail_blocks + oldSize - (req.body.width * req.body.height);
 	} catch (e) {
 		console.error(e);
 		await t.rollback();
-		return -2;
+		throw e;
 	}
-}
-
-
-modules.deleteFile = async (dir, filename) => {
-	const delURL = env === 'development' ? "http://localhost:3095/" : "https://api.42board.com/";
-	const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-	const file = `./${filename.indexOf(dir) ? "uploads/" : ""}${filename.replace(delURL, "")}`;
-	console.log(file);
-	fs.unlink(`./${file}`, () => {
-		return;
-	});
-	fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t ${file}\n`);
 }
 
 modules.deleteBlock = async (Model, req) => {
@@ -266,6 +247,6 @@ modules.deleteBlock = async (Model, req) => {
 		await t.rollback();
 		throw e;
 	}
-}
+};
 
 module.exports = modules;

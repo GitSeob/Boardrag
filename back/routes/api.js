@@ -1,7 +1,6 @@
 const passport = require("passport");
 const bcrypt = require("bcrypt");
 const { Op, fn, col } = require('sequelize');
-const fs = require('fs');
 const axios = require('axios');
 const env = process.env.NODE_ENV || "development";
 const config = require("../config/config")[env];
@@ -9,33 +8,26 @@ const router = require(".");
 const db = require("../models");
 const { isNotLoggedIn, isLoggedIn } = require("./middleware");
 const {
-	BoardPermissionCheck,
+	boardPermissionCheck,
 	createAndUpdate,
 	upload,
-	uploadBoardImage,
-	uploadProfileImage,
-	deleteFile,
-	deleteBlock
-} = require("./init");
+	deleteBlock,
+	updateBlock,
+} = require("./route_modules");
+
+const {deleteFile, allDeleteFile, renameFileForSave} = require('../file_modules');
 
 router.get('/auth', async (req, res, next) => {
+	if (!req.user)
+		return res.send(false);
+	const t = await db.sequelize.transaction();
 	try {
-		if (!req.user)
-			return res.send(false);
 		const access_token_check_url = "https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + req.user.access_token;
 		const access_result = await axios.get(access_token_check_url).then(() => true).catch(() => false);
 		if (!access_result)
 		{
-			const t = db.sequelize.transaction();
-			console.log("get access token");
-			const refresh_token = await db.User.findOne({
-				where: { id: req.user.id }
-			}).then(res => {
-				return res.refresh_token
-			});
-			const refresh_url = `https://www.google.apis.com/oauth2/v4/token?client_id=${config.google_cid}&client_secret=${config.google_secret}&refresh_token=${refresh_token}&grant_type=refresh_token`
+			const refresh_url = `https://www.google.apis.com/oauth2/v4/token?client_id=${config.google_cid}&client_secret=${config.google_secret}&refresh_token=${req.user.refresh_token}&grant_type=refresh_token`
 			await axios.post(refresh_url).then(async (res) => {
-				console.log(res.data.access_token);
 				await db.User.update({
 					access_token: res.data.access_token
 				}, {
@@ -44,11 +36,12 @@ router.get('/auth', async (req, res, next) => {
 					transaction: t
 				});
 			})
-			t.comment();
 		}
+		await t.commit();
 		return res.send(req.user);
 	} catch (e) {
 		console.error(e);
+		await t.rollback();
 		next(e);
 	}
 });
@@ -105,15 +98,17 @@ router.get(`/checkBoardName/:boardName`, isLoggedIn, async (req, res, next) => {
 router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
 	if (req.body.title.length < 4 || req.body.nickName.length < 2 || !req.body.des)
 		return next(new Error("data error"));
+
+	const t = await db.sequelize.transaction();
 	try {
-		const t = await db.sequelize.transaction();
 		const query = {
 			password: req.body.is_lock ? await bcrypt.hash(req.body.pw, 12) : null,
 			expiry_times: req.body.ETime === 0 ? null : req.body.ETime
-		}
-		const background_img_url = await req.body.background.replace(":::not_save:::", "");
-		if (background_img_url)
-			await fs.renameSync(req.body.background.replace(delURL, "./"), background_img_url.replace(delURL, "./"));
+		};
+
+		const background_img_url = await renameFileForSave(req.body.background);
+		const profile_img_url = await renameFileForSave(req.body.profileImage);
+
 		const newBoard = await db.Board.create({
 			...query,
 			name: req.body.title,
@@ -125,9 +120,6 @@ router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
 		}, {
 			transaction: t
 		})
-		const profile_img_url = await req.body.profileImage.replace(":::not_save:::", "");
-		if (profile_img_url)
-			await fs.renameSync(req.body.profileImage.replace(delURL, "./"), profile_img_url.replace(delURL, "./"));
 		await db.BoardMember.create({
 			username: req.body.nickName,
 			profile_img: profile_img_url,
@@ -136,10 +128,12 @@ router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
 			BoardId: newBoard.id
 		}, {
 			transaction: t
-		})
+		});
+
 		await t.commit();
 		return res.send('create OK');
 	} catch (e) {
+		await t.rollback();
 		next(e);
 	}
 });
@@ -304,64 +298,30 @@ router.get(`/board/:boardName/me`, isLoggedIn, async (req, res, next) => {
 	}
 });
 
-router.post('/board/:boardName/write/:contentName', isLoggedIn, async (req, res, next) => {
-	let model;
-	if (req.params.contentName === 'text')
-		model = db.TextContent;
-	else if(req.params.contentName === 'note')
-		model = db.Note;
-	else if (req.params.contentName === 'image')
-		model = db.Image;
-	else
-		next(new Error("Not an accepted model"));
-	try {
-		const result = await createAndUpdate(model, req);
-		if (result.error)
-			return res.status(result.error).send({ reason: result.reason });
-		const io = req.app.get("io");
-		io.of(`/board-${req.params.boardName}`).emit('refresh');
-		return res.send(`${result}`);
-	} catch (e) {
-		console.error(e);
-		next(e);
-	}
-});
-
-router.post('/uploadImage', isLoggedIn, upload.single('image'), async (req, res) => {
+router.post('/uploadImage', isLoggedIn, upload.single('image'), (req, res) => {
+	let url = `${env === "development" ? 'http://localhost:3095' : 'https://api.42board.com'}`;
+	if (req.query.type !== 'upload')
+		url = url + `/${req.query.type}`
 	res.json({
-		url: `${env === "development" ? 'http://localhost:3095' : 'https://api.42board.com'}/${req.file.filename}`
+		url: url + `/${req.file.filename}`
 	});
 });
 
-router.post('/uploadBoardBackground', isLoggedIn, uploadBoardImage.single('image'), async (req, res) => {
-	res.json({
-		url: `${env === "development" ? 'http://localhost:3095' : 'https://api.42board.com'}/board_bgs/${req.file.filename}`
-	})
-});
-
-router.post('/uploadProfileImage', isLoggedIn, uploadProfileImage.single('image'), async (req, res) => {
-	res.json({
-		url: `${env === "development" ? 'http://localhost:3095' : 'https://api.42board.com'}/board_profileImages/${req.file.filename}`
-	})
-});
-
 router.post('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
+	let query = {};
+	if (req.params.cid === '1') {
+		query.TextContentId = parseInt(req.params.id);
+	} else if (req.params.cid === '2') {
+		query.NoteId = parseInt(req.params.id);
+	} else if (req.params.cid === '3') {
+		query.ImageId = parseInt(req.params.id);
+	} else
+		return res.status(401).send({reason: 'category parameter is wrong.'});
+
 	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		let query = {};
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-		if (req.params.cid === '1') {
-			query.TextContentId = parseInt(req.params.id);
-		} else if (req.params.cid === '2') {
-			query.NoteId = parseInt(req.params.id);
-		} else if (req.params.cid === '3') {
-			query.ImageId = parseInt(req.params.id);
-		} else {
-			return res.status(401).send({reason: 'category parameter is wrong.'});
-		}
+		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		if (board.error)
+			return res.status(board.error).send({ reason: board.reason });
 		await db.Comment.create({
 			...query,
 			content_category: req.params.cid,
@@ -380,22 +340,20 @@ router.post('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, n
 });
 
 router.get('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
+	let query = {};
+	if (req.params.cid === '1') {
+		query.TextContentId = parseInt(req.params.id);
+	} else if (req.params.cid === '2') {
+		query.NoteId = parseInt(req.params.id);
+	} else if (req.params.cid === '3') {
+		query.ImageId = parseInt(req.params.id);
+	} else {
+		return res.status(401).send({reason: 'category parameter is wrong.'});
+	}
 	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		let query = {};
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-		if (req.params.cid === '1') {
-			query.TextContentId = parseInt(req.params.id);
-		} else if (req.params.cid === '2') {
-			query.NoteId = parseInt(req.params.id);
-		} else if (req.params.cid === '3') {
-			query.ImageId = parseInt(req.params.id);
-		} else {
-			return res.status(401).send({reason: 'category parameter is wrong.'});
-		}
+		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		if (board.error)
+			return res.status(board.error).send({ reason: board.reason });
 		const comments = await db.Comment.findAll({
 			where: { ...query, BoardId: board.id },
 			order: [["createdAt", "ASC"]],
@@ -412,26 +370,16 @@ router.get('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, ne
 
 router.patch('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next) => {
 	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
+		const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
+		if (member.error)
+			return res.status(member.error).send({ reason: member.reason });
 		const comment = await db.Comment.findOne({
 			where: {id: req.params.id}
 		});
 		if (!comment)
 			return res.status(404).send({ reason: '존재하지 않는 댓글입니다.' });
-		const member = await db.BoardMember.findOne({
-			where: {
-				UserId: req.user.id,
-				BoardId: board.id
-			}
-		})
-		if (!member)
-			return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
 		if (comment.BoardMemberId !== member.id)
-			return res.status(401).send({ reason: '다른 사람의 덧글은 수정할 수 없습니다.' });
+			return res.status(401).send({ reason: '권한이 없습니다.' });
 
 		await db.Comment.update({
 			content: req.body.content,
@@ -473,6 +421,29 @@ router.delete('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next
 	}
 })
 
+router.post('/board/:boardName/write/:contentName', isLoggedIn, async (req, res, next) => {
+	let model;
+	if (req.params.contentName === 'text')
+		model = db.TextContent;
+	else if(req.params.contentName === 'note')
+		model = db.Note;
+	else if (req.params.contentName === 'image')
+		model = db.Image;
+	else
+		next(new Error("Not an accepted model"));
+	try {
+		const result = await createAndUpdate(model, req);
+		if (result.error)
+			return res.status(result.error).send({ reason: result.reason });
+		const io = req.app.get("io");
+		io.of(`/board-${req.params.boardName}`).emit('refresh');
+		return res.send(`${result}`);
+	} catch (e) {
+		console.error(e);
+		next(e);
+	}
+});
+
 router.delete('/board/:boardName/delete/:contentName/:id', isLoggedIn, async (req, res, next) => {
 	let model;
 	if (req.params.contentName === 'text')
@@ -488,7 +459,7 @@ router.delete('/board/:boardName/delete/:contentName/:id', isLoggedIn, async (re
 		if (content.error)
 			return res.status(content.error).send({ reason: content.reason });
 		if (content.url || content.background_img)
-			deleteFile('uploads', content.url ? content.url : content.background_img);
+			deleteFile(content.url ? content.url : content.background_img);
 		const io = req.app.get("io");
 		io.of(`/board-${req.params.boardName}`).emit('refresh');
 		return res.send(`delete done`);
@@ -498,140 +469,24 @@ router.delete('/board/:boardName/delete/:contentName/:id', isLoggedIn, async (re
 	}
 })
 
-router.patch('/board/:boardName/text/:id', isLoggedIn, async (req, res, next) => {
+router.patch('/board/:boardName/:contentName/:id', isLoggedIn, async (req, res, next) => {
+	let model;
+	if (req.params.contentName === 'text')
+		model = db.TextContent;
+	else if(req.params.contentName === 'note')
+		model = db.Note;
+	else if (req.params.contentName === 'image')
+		model = db.Image;
+	else
+		next(new Error("Content not allowed"));
 	try {
-		const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
-		if (member.error)
-			return res.status(member.error).send({ reason: member.reason });
-		const content = await db.TextContent.findOne({ where: {id: req.params.id }});
-		if (!content)
-			return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-
-		const oldSize = content.width * content.height;
-		if (member.avail_blocks - ( req.body.width * req.body.height - oldSize ) < 0)
-			return res.status(403).send({ reason: `현재 추가 가능한 블록 수는 ${member.avail_blocks}입니다.`});
-		await db.TextContent.update({
-			content: req.body.content,
-			x: req.body.x,
-			y: req.body.y,
-			width: req.body.width,
-			height: req.body.height,
-		}, {
-			where: {id: req.params.id}
-		});
-		await db.BoardMember.increment({
-			avail_blocks: oldSize - (req.body.width * req.body.height)
-		}, {
-			where: {id: content.BoardMemberId}
-		})
-
+		const result = await updateBlock(model, req);
+		if (result.error)
+			return res.status(result.error).send({ reason: result.reason });
 		const io = req.app.get("io");
 		io.of(`/board-${req.params.boardName}`).emit('refresh');
-		if (req.body.width * req.body.height === oldSize)
-			return res.send(false);
-		return res.send(`${member.avail_blocks + oldSize - (req.body.width * req.body.height)}`);
-	} catch(e) {
-		console.error(e);
-		next(e);
-	}
-});
-
-router.patch('/board/:boardName/note/:id', isLoggedIn, async (req, res, next) => {
-	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-		const content = await db.Note.findOne({ where: {id: req.params.id }});
-		if (!content)
-			return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-		const member = await db.BoardMember.findOne({
-			where: {
-				UserId: req.user.id,
-				BoardId: board.id
-			}
-		})
-		if (!member)
-			return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
-		if (member.id !== content.BoardMemberId && !req.user.is_admin)
-			return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
-
-		const oldSize = content.width * content.height;
-		if (member.avail_blocks - ( req.body.width * req.body.height - oldSize ) < 0)
-			return res.status(403).send({ reason: `현재 추가 가능한 블록 수는 ${member.avail_blocks}입니다.`});
-		await db.Note.update({
-			background_img: req.body.background_img,
-			head: req.body.head,
-			paragraph: req.body.paragraph,
-			x: req.body.x,
-			y: req.body.y,
-			width: req.body.width,
-			height: req.body.height,
-		}, {
-			where: {id: req.params.id}
-		});
-		await db.BoardMember.increment({
-			avail_blocks: oldSize - (req.body.width * req.body.height)
-		}, {
-			where: {id: content.BoardMemberId}
-		});
-
-		const io = req.app.get("io");
-		io.of(`/board-${req.params.boardName}`).emit('refresh');
-		if (req.body.width * req.body.height === oldSize)
-			return res.send(false);
-		return res.send(`${member.avail_blocks + oldSize - (req.body.width * req.body.height)}`);
-	} catch(e) {
-		console.error(e);
-		next(e);
-	}
-});
-
-router.patch('/board/:boardName/image/:id', isLoggedIn, async (req, res, next) => {
-	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-		const content = await db.Image.findOne({ where: {id: req.params.id }});
-		if (!content)
-			return res.status(404).send('콘텐츠가 존재하지 않습니다.');
-		const member = await db.BoardMember.findOne({
-			where: {
-				UserId: req.user.id,
-				BoardId: board.id
-			}
-		})
-		if (!member)
-			return res.status(404).send({ reason: '참여하지 않은 유저입니다.' });
-		if (member.id !== content.BoardMemberId && !req.user.is_admin)
-			return res.status(401).send('다른 사람의 게시물을 수정할 수 없습니다.');
-
-		const oldSize = await content.width * content.height;
-		if (member.avail_blocks - ( req.body.width * req.body.height - oldSize ) < 0)
-			return res.status(403).send({ reason: `현재 추가 가능한 블록 수는 ${member.avail_blocks}입니다.`});
-		await db.Image.update({
-			url: req.body.url,
-			x: req.body.x,
-			y: req.body.y,
-			width: req.body.width,
-			height: req.body.height,
-		}, {
-			where: {id: req.params.id}
-		});
-		await db.BoardMember.increment({
-			avail_blocks: oldSize - (req.body.width * req.body.height)
-		}, {
-			where: {id: content.BoardMemberId}
-		});
-		const io = req.app.get("io");
-		io.of(`/board-${req.params.boardName}`).emit('refresh');
-		if (req.body.width * req.body.height === oldSize)
-			return res.send(false);
-			return res.send(`${member.avail_blocks + oldSize - (req.body.width * req.body.height)}`);
-	} catch(e) {
+		return res.send(`${result}`);
+	} catch (e) {
 		console.error(e);
 		next(e);
 	}
@@ -639,11 +494,9 @@ router.patch('/board/:boardName/image/:id', isLoggedIn, async (req, res, next) =
 
 router.get(`/board/:boardName/chats`, isLoggedIn, async (req, res, next) => {
 	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
+		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		if (board.error)
+			return res.status(board.error).send({ reason: board.reason });
 
 		return res.json(
 			await db.Chat.findAll({
@@ -661,11 +514,9 @@ router.get(`/board/:boardName/chats`, isLoggedIn, async (req, res, next) => {
 
 router.post(`/board/:boardName/chat`, isLoggedIn, async (req, res, next) => {
 	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
+		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		if (board.error)
+			return res.status(board.error).send({ reason: board.reason });
 		const newChat = await db.Chat.create({
 			userId: req.body.userId,
 			username: req.body.username,
@@ -683,11 +534,9 @@ router.post(`/board/:boardName/chat`, isLoggedIn, async (req, res, next) => {
 
 router.post(`/join/:boardName`, isLoggedIn, async (req, res, next) => {
 	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
+		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		if (board.error)
+			return res.status(board.error).send({ reason: board.reason });
 		if (board.is_lock)
 		{
 			const compPW = await bcrypt.compare(req.body.pw, board.password);
@@ -716,8 +565,8 @@ router.post(`/join/:boardName`, isLoggedIn, async (req, res, next) => {
 });
 
 router.delete(`/deleteBoard/:boardName`, isLoggedIn, async (req, res, next) => {
+	const t = await db.sequelize.transaction();
 	try {
-		const t = await db.sequelize.transaction();
 		const board = await db.Board.findOne({
 			where: {name: req.params.boardName},
 			include: [{
@@ -731,7 +580,9 @@ router.delete(`/deleteBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
 		if (board.AdminId !== req.user.id)
 			return res.status(401).send({ reason: "해당 board의 관리자가 아닙니다. "});
-		const deleteUploads = [];
+
+		const fileListforDelete = [];
+
 		await db.Image.findAll({
 			where: {
 				BoardId: board.id
@@ -741,9 +592,10 @@ router.delete(`/deleteBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 			transaction: t
 		}).then(res => {
 			res.forEach(elem => {
-				deleteUploads.push(elem.url);
+				fileListforDelete.push(elem.url);
 			});
 		});
+
 		await db.Note.findAll({
 			where: {
 				BoardId: board.id
@@ -754,83 +606,47 @@ router.delete(`/deleteBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 		}).then(res => {
 			res.forEach(elem => {
 				if (elem.background_img)
-					deleteUploads.push(elem.background_img);
+					fileListforDelete.push(elem.background_img);
 			});
 		});
+
 		await db.Board.destroy({
 			where: { id: board.id },
 			force: true
 		}, {
 			transaction: t
 		});
-		await t.commit();
-		let deleteList = [];
+
 		await board.Member.map(c => {
 			if (c.profile_img)
-				deleteList.push(c.profile_img);
+				fileListforDelete.push(c.profile_img);
 		});
-		const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-		let filePath;
-		deleteUploads.forEach(file => {
-			filePath = file.replace(delURL, "");
-			fs.unlink(`./uploads/${filePath}`, () => {
-				return;
-			});
-			fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /uploads/${filePath}\n`);
-		});
-		deleteList.forEach(file => {
-			filePath = file.replace(delURL, "");
-			fs.unlink(`./${filePath}`, () => {
-				return;
-			});
-			fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /${filePath}\n`);
-		});
-		filePath = board.background.replace(delURL, "");
-		fs.unlink(`./${filePath}`, () => {
-			return;
-		});
-		fs.appendFileSync('./logs/delete_files.txt', `${log_time} >> delete image\t\t /${filePath}\n`);
-		res.send("done");
+
+		await allDeleteFile(fileListforDelete);
+		await t.commit();
+		return res.send("done");
 	}
 	catch (e){
+		console.error(e);
+		await t.rollback();
 		next(e);
 	}
 });
 
-router.post(`/BoardMember/edit`, isLoggedIn, async (req, res, next) => {
+router.post(`/BoardMember/edit/:boardName`, isLoggedIn, async (req, res, next) => {
+	const t = await db.sequelize.transaction();
 	try {
-		const t = await db.sequelize.transaction();
-		const board = await db.Board.findOne({
-			where: {name: req.body.boardName},
-			include: [{
-				model: db.BoardMember,
-				as: "Member"
-			}],
-		}, {
-			transaction: t
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-		const me = await db.BoardMember.findOne({
-			where: {
-				BoardId: board.id,
-				UserId: req.user.id
-			}
-		}, {
-			transaction: t
-		});
-		if (!me)
-			return res.status(401).send({ reason: "접근 권한이 없습니다." });
-		const profile_img_url = await req.body.profile_img.replace(":::not_save:::", "");
-		if (req.body.profile_img)
-			await fs.renameSync(req.body.profile_img.replace(delURL, "./"), profile_img_url.replace(delURL, "./"));
+		const me = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
+		if (me.error)
+			return res.status(me.error).send({ reason: me.reason });
+
+		const profile_img_url = await renameFileForSave(req.body.profile_img);
 		await db.BoardMember.update({
 			profile_img: profile_img_url,
 			username: req.body.username
 		},{
 			where: {
 				id: me.id,
-				BoardId: board.id,
 				UserId: req.user.id
 			}
 		}, {
@@ -839,33 +655,28 @@ router.post(`/BoardMember/edit`, isLoggedIn, async (req, res, next) => {
 		await t.commit();
 		return res.send(`${profile_img_url}`);
 	} catch(e) {
+		console.error(e);
+		await t.rollback();
 		next(e);
 	}
 });
 
 router.post(`/editBoard/:boardName`, isLoggedIn, async (req, res, next) => {
+	const t = await db.sequelize.transaction();
 	try {
-		const t = await db.sequelize.transaction();
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send({ reason: '존재하지 않는 board입니다.' });
-		if (req.user.id !== board.AdminId)
-			return res.status(401).send({ reason: "접근 권한이 없습니다." });
-		const samename = await db.Board.findOne({
-			where: {name: req.body.name}
-		});
-		if (samename)
-			return res.send("동일한 이름의 Board가 존재합니다.");
-		let query = {}
+		const board = await boardPermissionCheck(req.params.boardName, req.user);
+		if (board.error)
+			return res.status(board.error).send({ reason: board.reason });
 		if (board.name !== req.body.name)
-			query.name = req.body.name
-		if (board.description !== req.body.description)
-			query.description = req.body.description;
-		if (board.background !== req.body.background)
-			query.background = req.body.background;
-		await db.Board.update(query, {
+		{
+			if (await db.Board.checkBoardWithName(req.body.name))
+				return res.send("동일한 이름의 Board가 존재합니다.");
+		}
+		const renameFilename = await renameFileForSave(req.body.background);
+		await db.Board.update({
+			...req.body,
+			background: renameFilename
+		}, {
 			where: {
 				id: board.id,
 				AdminId: req.user.id
@@ -876,20 +687,18 @@ router.post(`/editBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 		await t.commit();
 		return res.send("done");
 	} catch(e) {
+		console.error(e);
+		await t.rollback();
 		next(e);
 	}
 });
 
 router.delete(`/kick/:boardName`, isLoggedIn, async (req, res, next) => {
+	const t = await db.sequelize.transaction();
 	try {
-		const t = await db.sequelize.transaction();
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send('존재하지 않는 board입니다.');
-		if (req.user.id !== board.AdminId)
-			return res.status(401).send("접근 권한이 없습니다.");
+		const board = await boardPermissionCheck(req.params.boardName, req.user);
+		if (board.error)
+			return res.status(board.error).send({ reason: board.reason });
 		const kickUser = await db.BoardMember.findOne({
 			where: {
 				BoardId: board.id,
@@ -912,18 +721,18 @@ router.delete(`/kick/:boardName`, isLoggedIn, async (req, res, next) => {
 		await t.commit();
 		return res.send(req.query.username);
 	} catch(e) {
+		console.error(e);
+		await t.rollback();
 		next(e);
 	}
 })
 
 router.delete(`/quitBoard/:boardName`, isLoggedIn, async (req, res, next) => {
+	const t = await db.sequelize.transaction();
 	try {
-		const t = await db.sequelize.transaction();
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send('존재하지 않는 board입니다.');
+		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		if (board.error)
+			return res.status(board.error).send({ reason: board.reason });
 		if (req.user.id === board.AdminId)
 			return res.status(401).send("일단 관리자는 탈퇴 불가능"); // 이후 수정
 		await db.BoardMember.destroy({
@@ -937,6 +746,8 @@ router.delete(`/quitBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 		await t.commit();
 		res.send("quit board");
 	} catch (e) {
+		console.error(e);
+		await t.rollback();
 		next(e);
 	}
 });
@@ -955,71 +766,48 @@ router.post(`/nickname`, isLoggedIn, async (req, res, next) => {
 		});
 		return res.send(req.body.nickname);
 	} catch(e) {
+		console.error(e);
 		next(e);
 	}
 })
 
 router.post(`/passwordCheck/:boardName`, isLoggedIn, async (req, res, next) => {
 	try {
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send('존재하지 않는 board입니다.');
-		if (req.user.id !== board.AdminId)
-			return res.status(401).send("해당 보드의 관리자가 아닙니다.");
+		const board = await boardPermissionCheck(req.params.boardName, req.user);
+		if (board.error)
+			return res.status(board.error).send({ reason: board.reason });
 		const compPW = await bcrypt.compare(req.body.password, board.password);
 		if (!compPW)
 			return res.status(401).send({ reason: '비밀번호가 일치하지 않습니다.' });
 		return res.send('ok');
 	} catch(e) {
+		console.error(e);
 		next(e);
 	}
 });
 
 router.post(`/changePassword/:boardName`, isLoggedIn, async (req, res, next) => {
+	const t = await db.sequelize.transaction();
 	try {
-		const t = await db.sequelize.transaction();
-		const board = await db.Board.findOne({
-			where: {name: req.params.boardName}
-		});
-		if (!board)
-			return res.status(404).send('존재하지 않는 board입니다.');
-		if (req.user.id !== board.AdminId)
-			return res.status(401).send("해당 보드의 관리자가 아닙니다.");
-		if (req.body.password.length === 0 && !req.body.changeFlg)
-		{
-			await db.Board.update({
-				password: null,
-				is_lock: false
-			}, {
-				where: {
-					id: board.id,
-					AdminId: req.user.id
-				}
-			}, {
-				transaction: t
-			});
-			return res.send('공개 상태로 변경하였습니다.');
-		}
-		else {
-			const query = await {
-				password: await bcrypt.hash(req.body.password, 12),
-				is_lock: true
+		const board = await boardPermissionCheck(req.params.boardName, req.user);
+		if (board.error)
+			return res.status(board.error).send({ reason: board.reason });
+		const password = (req.body.password.length === 0 && !req.body.changeFlg) ? null : await bcrypt.hash(req.body.password, 12);
+		await db.Board.update({
+			password: null,
+			is_lock: !password ? false : true
+		}, {
+			where: {
+				id: board.id,
+				AdminId: req.user.id
 			}
-			await db.Board.update({
-				...query
-			}, {
-				where: {
-					id: board.id,
-					AdminId: req.user.id
-				}
-			}, {
-				transaction: t
-			});
-			return res.send('비밀번호가 변경되었습니다.');
-		}
+		}, {
+			transaction: t
+		});
+		return res.send(`${!password ? '공개 상태로' : '비밀번호를'} 변경하였습니다.`);
 	} catch(e) {
+		console.error(e);
+		await t.rollback();
 		next(e);
 	}
 });
