@@ -14,6 +14,7 @@ const sequelize = new Sequelize(
 		maxConcurrentQueries: 100,
 		dialect: 'mysql',
 		pool: { maxConnections: 5, maxIdleTime: 30},
+		logging: false,
 	}
 );
 
