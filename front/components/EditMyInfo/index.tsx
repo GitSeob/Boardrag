@@ -41,7 +41,7 @@ const EditMyInfo:FC<IEMI> = ({ myData, boardData, toast, setOpen, setLoading }) 
 			...uploading,
 			loading: true
 		});
-		await axios.post(`/api/uploadProfileImage?name=${boardData.name}`, imageFormData).then(res => {
+		await axios.post(`/api/uploadImage?type=profile&name=${boardData.name}`, imageFormData).then(res => {
 			setUploading({
 				url: res.data.url,
 				loading: false,
@@ -53,8 +53,8 @@ const EditMyInfo:FC<IEMI> = ({ myData, boardData, toast, setOpen, setLoading }) 
 	const onSubmitEdit = useCallback(async () => {
 		if (confirm('수정하시겠습니까?')) {
 			await setLoading(true);
-			await axios.post(`/api/BoardMember/edit`, {
-				boardName: boardData.name, username: nickname, profile_img: uploading.url
+			await axios.post(`/api/BoardMember/edit/${boardData.name}`, {
+				username: nickname, profile_img: uploading.url
 			}).then(res => {
 				setUploading({
 					...uploading,

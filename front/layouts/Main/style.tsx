@@ -11,6 +11,7 @@ export const Menu = styled.div`
 	width: 200px;
 	background: #000;
 	z-index: 3;
+	color: #fff;
 
 	@media screen and (max-width: 600px) {
 		height: 2rem;
@@ -157,6 +158,7 @@ export const BoardCard = styled('div')<BC>`
 	height: 192px;
 	overflow: hidden;
 	position: relative;
+	color: #fff;
 
 	&::before {
 		width: 100%;

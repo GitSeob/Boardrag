@@ -12,6 +12,7 @@ interface ITF {
 	url: string | undefined,
 	setEdit(flg: boolean): void,
 	onSubmitEdit: (text: string, head: string, url: string) => void,
+	board: string,
 }
 
 interface UploadProps {
@@ -21,7 +22,7 @@ interface UploadProps {
 	message: string,
 }
 
-const ImageC:FC<ITF> = ({isEdit, url, setEdit, onSubmitEdit}) => {
+const ImageC:FC<ITF> = ({isEdit, url, setEdit, onSubmitEdit, board}) => {
 	const [uploading, setUploading] = useState<UploadProps>({
 		loading: false,
 		success: false,
@@ -39,7 +40,7 @@ const ImageC:FC<ITF> = ({isEdit, url, setEdit, onSubmitEdit}) => {
 			...uploading,
 			loading: true
 		});
-		await axios.post('/api/uploadImage', imageFormData, {
+		await axios.post(`/api/uploadImage?type=upload&board=${board}&contentName=image`, imageFormData, {
 			headers: {'Access-Control-Allow-Origin': '*'}
 		}).then(res => {
 			setUploading({

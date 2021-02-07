@@ -19,6 +19,7 @@ interface ITF {
 	head: string | null | undefined,
 	setEdit(flg: boolean): void,
 	onSubmitEdit: (text: string, head: string, url: string) => void,
+	board: string,
 }
 
 interface UploadProps {
@@ -28,7 +29,7 @@ interface UploadProps {
 	message: string,
 }
 
-const NoteC:FC<ITF> = ({isEdit, head, content, url, onSubmitEdit, setEdit}) => {
+const NoteC:FC<ITF> = ({isEdit, head, content, url, onSubmitEdit, setEdit, board}) => {
 	const [text, setText] = useState('');
 	const [editHead, OCHead, setHead] = useInput('');
 	const [TAH, setTAH] = useState('auto');
@@ -57,7 +58,7 @@ const NoteC:FC<ITF> = ({isEdit, head, content, url, onSubmitEdit, setEdit}) => {
 			...uploading,
 			loading: true
 		});
-		await axios.post('/api/uploadImage', imageFormData, {
+		await axios.post(`/api/uploadImage?type=upload&board=${board}&contentName=note`, imageFormData, {
 			headers: {'Access-Control-Allow-Origin': '*'}
 		}).then(res => {
 			setUploading({

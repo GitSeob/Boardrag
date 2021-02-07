@@ -62,7 +62,7 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
 			loading: true,
 			now: Date.now()
 		});
-		await axios.post(`/api/uploadProfileImage?name=${title}`, imageFormData).then(res => {
+		await axios.post(`/api/uploadImage?type=profile&name=${title}`, imageFormData).then(res => {
 			setPI({
 				url: res.data.url,
 				loading: false,
@@ -84,7 +84,7 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
 			...backgroundImage,
 			loading: true
 		});
-		await axios.post(`/api/uploadBoardBackground?name=${title}`, imageFormData).then(res => {
+		await axios.post(`/api/uploadImage?type=background&name=${title}`, imageFormData).then(res => {
 			setBI({
 				url: res.data.url,
 				loading: false,
@@ -122,13 +122,15 @@ const CreateBoardForm:FC<ICBF> = ({ BLRevalidate, username }) => {
 				return setWarn('비밀번호를 확인해주세요.');
 			}
 		}
-		else if (pageState === 4 && nickName.length < 2 ) {
-				setWarn('닉네임은 2자이상으로 설정해야합니다.');
+		else if (pageState === 4 && ( !nickName || nickName.length < 2 )) {
+			setWarn('닉네임은 2자이상으로 설정해야합니다.');
 		}
 		setWarn('');
 		setAniCN('next');
 		if (pageState === 4)
 		{
+			if (nickName.length < 2 || title.length < 4)
+				return setWarn('필수 항목을 올바르게 작성했는지 확인해주세요.');
 			setCS({
 				...createState,
 				loading: true,

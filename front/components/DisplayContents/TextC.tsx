@@ -10,9 +10,10 @@ interface ITF {
 	content: string | null | undefined,
 	setEdit(flg: boolean): void,
 	onSubmitEdit: (text: string, head: string, url: string) => void,
+	board: string,
 }
 
-const TextC:FC<ITF> = ({ content, isEdit, setEdit, onSubmitEdit }) => {
+const TextC:FC<ITF> = ({ content, isEdit, setEdit, onSubmitEdit, board }) => {
 	const [text, setText] = useState('');
 	const [TAH, setTAH] = useState('auto');
 	const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;

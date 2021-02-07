@@ -30,7 +30,7 @@ const MyBoardContainer:FC<IMBC> = ({ setChangePW, BLRevalidate, userData, openBI
 	const [boardName, OCBN] = useInput(c.name);
 	const [boardDescription, OCBD] = useInput(c.description);
 	const [backgroundImage, setBI] = useState({
-		url: c.background,
+		url: c.background ? c.background : "",
 		loading: false,
 		now: Date.now()
 	});
@@ -47,12 +47,11 @@ const MyBoardContainer:FC<IMBC> = ({ setChangePW, BLRevalidate, userData, openBI
 	const onChangeBackgroundImg = useCallback( async (e) => {
 		const imageFormData = new FormData();
 		imageFormData.append('image', e.target.files[0]);
-		imageFormData.append('boardname', c.name);
 		await setBI({
 			...backgroundImage,
 			loading: true
 		});
-		await axios.post(`/api/uploadBoardBackground?name=${c.name}`, imageFormData).then(res => {
+		await axios.post(`/api/uploadImage?type=background&name=${c.name}`, imageFormData).then(res => {
 			setBI({
 				url: res.data.url,
 				loading: false,
@@ -143,35 +142,35 @@ const MyBoardContainer:FC<IMBC> = ({ setChangePW, BLRevalidate, userData, openBI
 								padding: 0, margin: 0
 							}}
 						>
-						{backgroundImage.loading ? (
-							"loading..."
-						) : (
-							<div
-								ref={bgRef}
-								style={backgroundImage.url !== '' ? {
-									backgroundImage: `url(${backgroundImage.url}?${backgroundImage.now})`,
-									margin: 0,
-									borderRadius: 0,
-									height: `${BGHeight}px`
-								} : {
-									background: `radial-gradient(ellipse at bottom, #002534 0%, #090a0f 100%) no-repeat`,
-									margin: 0,
-									borderRadius: 0,
-									height: `${BGHeight}px`
-								}}
-							>
-								<button onClick={onClickBImageUpload}>
-									<img src="/public/camera.svg" style={{ color: 'white' }} />
-								</button>
-								<input
-									type="file"
-									accept=".jpg, .png"
-									ref={backgroundInput}
-									onChange={onChangeBackgroundImg}
-								/>
-							</div>
-						)}
-					</BackgroundImageBox>
+							{backgroundImage.loading ? (
+								"loading..."
+							) : (
+								<div
+									ref={bgRef}
+									style={backgroundImage.url !== '' ? {
+										backgroundImage: `url(${backgroundImage.url}?${backgroundImage.now})`,
+										margin: 0,
+										borderRadius: 0,
+										height: `${BGHeight}px`
+									} : {
+										background: `radial-gradient(ellipse at bottom, #002534 0%, #090a0f 100%) no-repeat`,
+										margin: 0,
+										borderRadius: 0,
+										height: `${BGHeight}px`
+									}}
+								>
+									<button onClick={onClickBImageUpload}>
+										<img src="/public/camera.svg" style={{ color: 'white' }} />
+									</button>
+									<input
+										type="file"
+										accept=".jpg, .png"
+										ref={backgroundInput}
+										onChange={onChangeBackgroundImg}
+									/>
+								</div>
+							)}
+						</BackgroundImageBox>
 					</RowDiv>
 					<div className="btn" onClick={() => { setMyInfoOpen(!myInfoOpen); }}>
 						내 정보

@@ -28,9 +28,10 @@ interface ISC {
 	isEdit: boolean,
 	setEdit(flg: boolean): void,
 	onSubmitEdit: (text: string, head: string, url: string) => void,
+	board: string,
 }
 
-const SwitchContent:FC<ISC> = ({ openDetail, isEdit, setEdit, onSubmitEdit }) => {
+const SwitchContent:FC<ISC> = ({ openDetail, isEdit, setEdit, onSubmitEdit, board }) => {
 	if (openDetail.content === undefined)
 		return (<></>);
 	if (openDetail.category == 1)
@@ -41,6 +42,7 @@ const SwitchContent:FC<ISC> = ({ openDetail, isEdit, setEdit, onSubmitEdit }) =>
 				setEdit={setEdit}
 				onSubmitEdit={onSubmitEdit}
 				content={openDetail.content?.content}
+				board={board}
 			/>
 		);
 	}
@@ -54,6 +56,7 @@ const SwitchContent:FC<ISC> = ({ openDetail, isEdit, setEdit, onSubmitEdit }) =>
 				content={openDetail.content?.paragraph}
 				head={openDetail.content?.head}
 				url={openDetail.content?.background_img}
+				board={board}
 			/>
 		);
 	}
@@ -65,6 +68,7 @@ const SwitchContent:FC<ISC> = ({ openDetail, isEdit, setEdit, onSubmitEdit }) =>
 				setEdit={setEdit}
 				onSubmitEdit={onSubmitEdit}
 				url={openDetail.content?.url}
+				board={board}
 			/>
 		)
 	}
@@ -229,6 +233,7 @@ const ContentContainer:FC<ICContainer> = ({
 							isEdit={isEdit}
 							setEdit={setEdit}
 							onSubmitEdit={onSubmitEdit}
+							board={board}
 						/>
 					}
 				</DetailContentBox>
