@@ -26,14 +26,13 @@ router.get('/auth', async (req, res, next) => {
 		const access_result = await axios.get(access_token_check_url).then(() => true).catch(() => false);
 		if (!access_result)
 		{
-			const refresh_url = `https://www.google.apis.com/oauth2/v4/token?client_id=${config.google_cid}&client_secret=${config.google_secret}&refresh_token=${req.user.refresh_token}&grant_type=refresh_token`
+			const refresh_url = `https://www.googleapis.com/oauth2/v4/token?client_id=${config.google_cid}&client_secret=${config.google_secret}&refresh_token=${req.user.refresh_token}&grant_type=refresh_token`
 			await axios.post(refresh_url).then(async (res) => {
 				await db.User.update({
 					access_token: res.data.access_token
 				}, {
-					where: req.user.id
-				}, {
-					transaction: t
+					where: {id :req.user.id },
+					transaction: t,
 				});
 			})
 		}
@@ -667,11 +666,11 @@ router.post(`/editBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 		const board = await boardPermissionCheck(req.params.boardName, req.user);
 		if (board.error)
 			return res.status(board.error).send({ reason: board.reason });
-		if (board.name !== req.body.name)
-		{
-			if (await db.Board.checkBoardWithName(req.body.name))
-				return res.send("동일한 이름의 Board가 존재합니다.");
-		}
+
+		const dupName = await db.Board.checkBoardWithName(req.body.name);
+		if (board.name !== req.body.name && dupName.name)
+				return res.status(409).send("동일한 이름의 Board가 존재합니다.");
+
 		const renameFilename = await renameFileForSave(req.body.background);
 		await db.Board.update({
 			...req.body,

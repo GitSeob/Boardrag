@@ -48,11 +48,11 @@ modules.renameFileForSave = async (filename) => {
 	return retName;
 }
 
-modules.runSchduler = async () => {
+modules.runSchduler = () => {
 	console.log("\n\nSETTING FILE REMOVE SCHEDULER\nIt runs every hour on the hour.\n\n");
 	schedule.scheduleJob('0 0 * * * *', async () => {
+		const t = await db.sequelize.transaction();
 		try {
-			const t = await db.sequelize.transaction();
 			console.log("RUN SCHEDULER ... ");
 			const deleteFiles = [];
 
