@@ -49,7 +49,7 @@ const Manage = () => {
 			<Menu>
 				<RelBox>
 					<a className="logo" href="/main">
-						<h2>BOXLOT</h2>
+						<h2>BOARDRAG</h2>
 					</a>
 					<div
 						onClick={() => {

@@ -123,7 +123,7 @@ const MainPage = () => {
 			<Menu>
 				<RelBox>
 					<a className="logo" href="/main">
-						<h2>BOXLOT</h2>
+						<h2>BOARDRAG</h2>
 					</a>
 					<div
 						onClick={() => {
@@ -202,11 +202,7 @@ const MainPage = () => {
 				</BoardContainer>
 				<BCHeader>
 					다른 보드들
-					<SearchForm
-						style={{
-							right: move.width - 132 * parseInt(move.width / 132 + ''),
-						}}
-					>
+					<SearchForm>
 						<img src="/public/search.svg" />
 						<input type="text" value={text} onChange={OCText} placeholder="Search Board" />
 					</SearchForm>

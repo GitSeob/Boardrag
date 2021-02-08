@@ -114,7 +114,7 @@ const Board: FC = () => {
 				<div style={{ display: 'flex', flexDirection: 'column' }}>
 					<BoardHeader>
 						<a className="logo" href="/main">
-							<h2>BOXLOT</h2>
+							<h2>BOARDRAG</h2>
 						</a>
 						<div className="up" onClick={() => setMFlg(!menuFlg)}>
 							{menuFlg ? <img src="/public/arrow.svg" /> : <img src="/public/person.svg" />}

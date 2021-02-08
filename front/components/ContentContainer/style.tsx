@@ -58,6 +58,10 @@ export const ContentBox = styled('div')<Tflg>`
 	&::-webkit-scrollbar {
 		display: none; /* Chrome, Safari, Opera*/
 	}
+
+	@media screen and (max-width: 600px) {
+		width: 90%;
+	}
 `;
 
 export const UserInfoBox = styled.div`

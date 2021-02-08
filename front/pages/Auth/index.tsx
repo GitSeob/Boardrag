@@ -18,7 +18,6 @@ const Auth = () => {
 
 	if (location.search && userData === false && !error) {
 		if (!userData && query.code) {
-			console.log(query.code);
 			axios
 				.post(
 					`/api/auth`,
@@ -48,7 +47,7 @@ const Auth = () => {
 
 	return (
 		<LoginContainer>
-			<h1>BOXLOT</h1>
+			<h1>BOARDRAG</h1>
 			<LoginButton href={googleOauth} className="google">
 				<img src="/public/btn_google_signin_light_normal_web@2x.png" />
 			</LoginButton>

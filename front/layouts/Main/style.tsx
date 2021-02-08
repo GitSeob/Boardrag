@@ -13,7 +13,7 @@ export const Menu = styled.div`
 	color: #fff;
 
 	@media screen and (max-width: 600px) {
-		height: 2rem;
+		height: 48px;
 		display: flex;
 		box-shadow: 0 0 4px 1px #888;
 		width: 100%;
@@ -33,7 +33,10 @@ export const RelBox = styled.div`
 		align-items: center;
 		height: 2rem;
 		cursor: pointer;
-		font-size: 14px;
+		h2 {
+			font-size: 16px !important;
+			font-weight: 400 !important;
+		}
 
 		&:hover {
 			background: #222;
@@ -70,6 +73,11 @@ export const RelBox = styled.div`
 		& > div {
 			width: fit-content;
 			padding: 1rem;
+			height: 100%;
+
+			p {
+				display: none;
+			}
 		}
 
 		.logout {
@@ -78,9 +86,7 @@ export const RelBox = styled.div`
 
 		.logo {
 			padding: 1rem;
-			h2 {
-				font-size: 16px;
-			}
+			height: 100%;
 			img {
 				height: 1.5rem;
 			}
@@ -95,7 +101,7 @@ export const Container = styled.div`
 
 	@media screen and (max-width: 600px) {
 		margin-left: 0;
-		margin-top: 24px;
+		margin-top: 48px;
 		width: 100%;
 	}
 `;
