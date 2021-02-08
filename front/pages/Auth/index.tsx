@@ -47,7 +47,7 @@ const Auth = () => {
 
 	return (
 		<LoginContainer>
-			<h1>BOARDRAG</h1>
+			<img src="/public/boardrag.svg" />
 			<LoginButton href={googleOauth} className="google">
 				<img src="/public/btn_google_signin_light_normal_web@2x.png" />
 			</LoginButton>

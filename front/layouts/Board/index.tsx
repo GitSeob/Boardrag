@@ -6,7 +6,7 @@ import LoadingCircle from '@components/LoadingCircle';
 import { Redirect } from 'react-router-dom';
 import axios from 'axios';
 import useSocket from '@hooks/useSocket';
-import { BoardHeader, UserList, LogOutButton, MenuContainer, UserMenu, DetailBackground } from './style';
+import { BoardHeader, UserList, LogOutButton, MenuContainer, UserMenu, DetailBackground, BoardFooter } from './style';
 import ChatBox from '@components/ChatBox';
 import WorkSpace from '@pages/WorkSpace';
 import { IUser, IBoard, IBM } from '@typings/datas';
@@ -114,7 +114,7 @@ const Board: FC = () => {
 				<div style={{ display: 'flex', flexDirection: 'column' }}>
 					<BoardHeader>
 						<a className="logo" href="/main">
-							<h2>BOARDRAG</h2>
+							<img src="/public/boardrag.svg" />
 						</a>
 						<div className="up" onClick={() => setMFlg(!menuFlg)}>
 							{menuFlg ? <img src="/public/arrow.svg" /> : <img src="/public/person.svg" />}
@@ -126,6 +126,12 @@ const Board: FC = () => {
 						userData={myDataInBoard}
 						board={board ? board : ''}
 					/>
+					<BoardFooter>
+						<img src="/public/github.png" />
+						<a href="https://github.com/gitseob" target="_blank" rel="noreferrer">
+							gitseob
+						</a>
+					</BoardFooter>
 				</div>
 			)}
 		</>

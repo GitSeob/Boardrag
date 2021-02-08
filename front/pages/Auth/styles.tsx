@@ -23,6 +23,12 @@ export const LoginContainer = styled.div`
 	animation: ${appearUp} 0.5s ease-in-out 1;
 	color: #fff;
 
+	& > img {
+		height: 4rem;
+		margin-left: -1.8rem;
+		margin-bottom: 1rem;
+	}
+
 	& > h1 {
 		text-align: center;
 		margin-bottom: 1rem;

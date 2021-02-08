@@ -129,7 +129,8 @@ export const BoardHeader = styled.div`
 				font-weight: 400;
 			}
 			img {
-				height: 24px;
+				height: 2.5rem;
+				margin-left: -1rem;
 			}
 			&:visited {
 				color: inherit;
@@ -148,5 +149,27 @@ export const BoardHeader = styled.div`
 		&:hover {
 			background: rgba(255, 255, 255, 0.1);
 		}
+	}
+`;
+
+export const BoardFooter = styled.div`
+	width: 100%;
+	align-items: center;
+	justify-content: center;
+	color: rgba(255, 255, 255, 0.6);
+	font-weight: 400;
+	font-size: 12px;
+	text-align: center;
+	display: flex;
+	padding: 1rem;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.1);
+
+	img {
+		height: 16px;
+		margin-right: 6px;
+	}
+	a {
+		color: inherit;
 	}
 `;

@@ -13,7 +13,6 @@ import { IBoard, IComment, IDetail, IBM } from '@typings/datas';
 import {
 	DetailBackground,
 	KonvaContainer,
-	BoardFooter,
 	WarnMessage,
 	MenuBox,
 	MenuAttr,
@@ -851,7 +850,6 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 					)}
 				</div>
 			)}
-			<BoardFooter>designed by @han</BoardFooter>
 			<ToastContainer
 				position="bottom-left"
 				autoClose={5000}

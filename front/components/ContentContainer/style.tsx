@@ -90,6 +90,10 @@ export const UserInfoBox = styled.div`
 			margin-right: 12px;
 			background: linear-gradient(rgb(0, 37, 52), rgb(9, 10, 15)) no-repeat;
 			display: flex;
+
+			& > img {
+				margin: auto;
+			}
 		}
 	}
 `;

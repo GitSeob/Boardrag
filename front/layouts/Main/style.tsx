@@ -57,7 +57,8 @@ export const RelBox = styled.div`
 		padding: 2rem 1.5rem;
 
 		img {
-			height: 2rem;
+			height: 3.5rem;
+			margin-left: -2rem;
 		}
 		&:hover {
 			background: none;
@@ -87,9 +88,6 @@ export const RelBox = styled.div`
 		.logo {
 			padding: 1rem;
 			height: 100%;
-			img {
-				height: 1.5rem;
-			}
 		}
 	}
 `;
@@ -97,6 +95,7 @@ export const RelBox = styled.div`
 export const Container = styled.div`
 	margin-left: 200px;
 	width: calc(100vw - 200px);
+	min-height: 100vh;
 	padding: 24px;
 
 	@media screen and (max-width: 600px) {
@@ -273,4 +272,22 @@ export const NextBoardBtnBox = styled.div`
 
 export const BeforeBoardBtnbox = styled(NextBoardBtnBox)`
 	left: -24px;
+`;
+
+export const Footer = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.1);
+	padding: 2rem 0;
+	color: rgba(255, 255, 255, 0.6);
+	font-size: 12px;
+
+	img {
+		height: 16px;
+		margin-right: 6px;
+	}
+	a {
+		color: inherit;
+	}
 `;

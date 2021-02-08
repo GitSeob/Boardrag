@@ -26,7 +26,7 @@ router.get('/auth', async (req, res, next) => {
 		const access_result = await axios.get(access_token_check_url).then(() => true).catch(() => false);
 		if (!access_result)
 		{
-			const refresh_url = `https://www.googleapis.com/oauth2/v4/token`
+			const refresh_url = `https://www.googleapis.com/oauth2/v4/token?client_id=${config.google_cid}&client_secret=${config.google_secret}&refresh_token=${req.user.refresh_token}&grant_type=refresh_token`
 			await axios.post(refresh_url, {
 				client_id: config.google_cid,
 				client_secret: config.google_secret,
@@ -39,6 +39,8 @@ router.get('/auth', async (req, res, next) => {
 					where: {id :req.user.id },
 					transaction: t,
 				});
+			}).catch((e) => {
+				next(e);
 			})
 		}
 		await t.commit();

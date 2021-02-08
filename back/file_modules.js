@@ -10,10 +10,10 @@ modules.deleteFile = async (filename) => {
 	const log_time = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
 	const file = `./uploads/${filename.replace(delURL, "")}`;
 	fs.unlink(`./${file}`, (err) => {
-		if (err) throw err;
+		if (err) console.error(err);
 	});
 	fs.appendFile('./logs/delete_files.txt', `[${log_time}]${file}\n`, err => {
-		if (err) throw err;
+		if (err) console.error(err);
 	});
 };
 

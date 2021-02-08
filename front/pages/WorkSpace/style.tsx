@@ -75,7 +75,6 @@ export const KonvaContainer = styled.div`
 	position: relative;
 	display: flex;
 	flex-direction: column;
-	min-height: 100vh;
 	transition: 0.3s;
 `;
 
@@ -391,20 +390,6 @@ export const ResizeRemote = styled.div`
 	&:nth-of-type(2) {
 		margin-top: 0.5rem;
 	}
-`;
-
-export const BoardFooter = styled.div`
-	width: 100%;
-	align-items: center;
-	justify-content: center;
-	color: rgba(255, 255, 255, 0.6);
-	font-weight: 400;
-	font-size: 12px;
-	text-align: center;
-	display: flex;
-	padding: 1rem;
-	height: 100%;
-	background: rgba(0, 0, 0, 0.1);
 `;
 
 export const StageContainer = styled('div')<SC>`

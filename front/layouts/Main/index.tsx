@@ -19,6 +19,7 @@ import {
 	PersonCount,
 	NextBoardBtnBox,
 	BeforeBoardBtnbox,
+	Footer,
 } from './style';
 import useInput from '@hooks/useInput';
 import InitName from '@components/InitName';
@@ -123,7 +124,7 @@ const MainPage = () => {
 			<Menu>
 				<RelBox>
 					<a className="logo" href="/main">
-						<h2>BOARDRAG</h2>
+						<img src="/public/boardrag.svg" />
 					</a>
 					<div
 						onClick={() => {
@@ -237,6 +238,12 @@ const MainPage = () => {
 					</div>
 				</BoardContainer>
 			</Container>
+			<Footer>
+				<img src="/public/github.png" />
+				<a href="https://github.com/gitseob" target="_blank" rel="noreferrer">
+					gitseob
+				</a>
+			</Footer>
 		</>
 	);
 };
