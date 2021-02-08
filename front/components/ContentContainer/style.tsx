@@ -82,6 +82,15 @@ export const UserInfoBox = styled.div`
 			border: 1px solid #444;
 			background: #000;
 		}
+
+		.no_profile_img {
+			width: 3rem;
+			height: 3rem;
+			border-radius: 100%;
+			margin-right: 12px;
+			background: linear-gradient(rgb(0, 37, 52), rgb(9, 10, 15)) no-repeat;
+			display: flex;
+		}
 	}
 `;
 
