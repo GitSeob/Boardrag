@@ -24,6 +24,7 @@ import {
 	OnModeAlt,
 	ResizeRemote,
 	StageContainer,
+	BoardFooter,
 } from './style';
 import ImageAdd from '@components/ImageAdd';
 import TextAdd from '@components/TextAdd';
@@ -850,6 +851,12 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 					)}
 				</div>
 			)}
+			<BoardFooter>
+				<img src="/public/github.png" />
+				<a href="https://github.com/gitseob" target="_blank" rel="noreferrer">
+					gitseob
+				</a>
+			</BoardFooter>
 			<ToastContainer
 				position="bottom-left"
 				autoClose={5000}

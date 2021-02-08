@@ -6,7 +6,7 @@ import LoadingCircle from '@components/LoadingCircle';
 import { Redirect } from 'react-router-dom';
 import axios from 'axios';
 import useSocket from '@hooks/useSocket';
-import { BoardHeader, UserList, LogOutButton, MenuContainer, UserMenu, DetailBackground, BoardFooter } from './style';
+import { BoardHeader, UserList, LogOutButton, MenuContainer, UserMenu, DetailBackground } from './style';
 import ChatBox from '@components/ChatBox';
 import WorkSpace from '@pages/WorkSpace';
 import { IUser, IBoard, IBM } from '@typings/datas';
@@ -126,12 +126,6 @@ const Board: FC = () => {
 						userData={myDataInBoard}
 						board={board ? board : ''}
 					/>
-					<BoardFooter>
-						<img src="/public/github.png" />
-						<a href="https://github.com/gitseob" target="_blank" rel="noreferrer">
-							gitseob
-						</a>
-					</BoardFooter>
 				</div>
 			)}
 		</>
