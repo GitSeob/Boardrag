@@ -105,7 +105,7 @@ const MainPage = () => {
 	if (!joinedBoardList) <LoadingCircle />;
 
 	return (
-		<>
+		<div>
 			{isAddBoard && (
 				<TopComponentContainer setValue={setIsAddBoard}>
 					<CreateBoardForm BLRevalidate={BLRevalidate} username={userData.username} />
@@ -244,7 +244,7 @@ const MainPage = () => {
 					gitseob
 				</a>
 			</Footer>
-		</>
+		</div>
 	);
 };
 

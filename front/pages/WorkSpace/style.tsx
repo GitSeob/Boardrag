@@ -416,7 +416,7 @@ export const ContentContainer = styled.div`
 `;
 
 export const BoardFooter = styled.div`
-	width: 100%;
+	width: 100vw;
 	align-items: center;
 	justify-content: center;
 	color: rgba(255, 255, 255, 0.6);

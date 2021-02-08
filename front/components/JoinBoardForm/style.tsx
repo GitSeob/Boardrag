@@ -50,6 +50,10 @@ export const Box = styled.div`
 			margin-bottom: 0.5rem;
 		}
 	}
+
+	@media screen and (max-width: 600px) {
+		width: 90%;
+	}
 `;
 
 export const FLEXDIV = styled.div`

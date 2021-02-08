@@ -8,14 +8,14 @@ export const Menu = styled.div`
 	position: fixed;
 	height: 100%;
 	width: 200px;
-	background: #000;
+	background: #0e0e0e;
 	z-index: 3;
 	color: #fff;
 
 	@media screen and (max-width: 600px) {
 		height: 48px;
 		display: flex;
-		box-shadow: 0 0 4px 1px #888;
+		box-shadow: 0 0 4px 1px #3e3e3e;
 		width: 100%;
 	}
 `;
@@ -88,6 +88,10 @@ export const RelBox = styled.div`
 		.logo {
 			padding: 1rem;
 			height: 100%;
+			img {
+				height: 2.5rem;
+				margin-left: -1rem;
+			}
 		}
 	}
 `;
@@ -282,6 +286,7 @@ export const Footer = styled.div`
 	padding: 2rem 0;
 	color: rgba(255, 255, 255, 0.6);
 	font-size: 12px;
+	width: 100vw;
 
 	img {
 		height: 16px;

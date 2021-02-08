@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import LoadingCircle from '@components/LoadingCircle';
 import { Redirect } from 'react-router-dom';
 import { IUser, IBL } from '@typings/datas';
-import { Menu, RelBox, Container } from '../Main/style';
+import { Menu, RelBox, Container, Footer } from '../Main/style';
 import { ListBox, LoadingBG } from './style';
 import LoadingBall from '@components/LoadingBall';
 import MyBoardContainer from '@components/MyBoardContainer';
@@ -45,11 +45,11 @@ const Manage = () => {
 	if (!joinedBoardList) <LoadingCircle />;
 
 	return (
-		<>
+		<div>
 			<Menu>
 				<RelBox>
 					<a className="logo" href="/main">
-						<h2>BOARDRAG</h2>
+						<img src="/public/boardrag.svg" />
 					</a>
 					<div
 						onClick={() => {
@@ -121,6 +121,12 @@ const Manage = () => {
 					)}
 				</div>
 			</Container>
+			<Footer>
+				<img src="/public/github.png" />
+				<a href="https://github.com/gitseob" target="_blank" rel="noreferrer">
+					gitseob
+				</a>
+			</Footer>
 			<ToastContainer
 				position="bottom-left"
 				autoClose={5000}
@@ -140,7 +146,7 @@ const Manage = () => {
 			{changePWFlg.flg && (
 				<ChangePW value={changePWFlg} setValue={setCPWF} toast={toast} BLRevalidate={BLRevalidate} />
 			)}
-		</>
+		</div>
 	);
 };
 
