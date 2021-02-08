@@ -76,6 +76,7 @@ export const KonvaContainer = styled.div`
 	display: flex;
 	flex-direction: column;
 	transition: 0.3s;
+	min-height: calc(100vh - 48px);
 `;
 
 export const WarnMessage = styled.div`
