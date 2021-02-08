@@ -17,7 +17,9 @@ export const HeadBox = styled.div`
 	width: 100%;
 	margin: 12px 0;
 
-	h2 { font-size: 2em; }
+	h2 {
+		font-size: 2em;
+	}
 `;
 
 export const TextBox = styled.pre`
@@ -25,14 +27,13 @@ export const TextBox = styled.pre`
 	white-space: break-spaces;
 `;
 
-
 export const EditArea = styled.div`
 	position: relative;
 
 	& > textarea {
 		width: calc(100% - 50px);
 		resize: none;
-		padding: .5rem;
+		padding: 0.5rem;
 		border-radius: 12px;
 		min-height: 240px;
 		width: 100%;
@@ -42,7 +43,7 @@ export const EditArea = styled.div`
 	& > input {
 		width: calc(100% - 50px);
 		font-size: 24px;
-		padding: .5rem;
+		padding: 0.5rem;
 		font-weight: 600;
 		margin-bottom: 1rem;
 	}
@@ -50,7 +51,7 @@ export const EditArea = styled.div`
 
 export const EditHead = styled.input`
 	font-size: 2em;
-	padding: .5em;
+	padding: 0.5em;
 	border-radius: 12px;
 	width: 100%;
 	margin: 12px 0;

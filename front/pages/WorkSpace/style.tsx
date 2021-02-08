@@ -2,28 +2,28 @@ import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
 
 type MenuPosition = {
-	x: number,
-	y: number,
-	clicked: boolean,
-	disp: boolean
-}
+	x: number;
+	y: number;
+	clicked: boolean;
+	disp: boolean;
+};
 
 type BoxPosition = {
-	width: number,
-	height: number,
-	x: number,
-	y: number,
-}
+	width: number;
+	height: number;
+	x: number;
+	y: number;
+};
 
 type NoteProps = {
-	src: string
-}
+	src: string;
+};
 
 type SC = {
-	url: string,
-	op: number,
-	height: number
-}
+	url: string;
+	op: number;
+	height: number;
+};
 
 const apperMenu = keyframes`
 	from {
@@ -34,7 +34,7 @@ const apperMenu = keyframes`
 		max-width: 200px;
 		max-height: 200px;
 	}
-`
+`;
 
 const disapperMenu = keyframes`
 	from {
@@ -45,7 +45,7 @@ const disapperMenu = keyframes`
 		max-width: 0px;
 		max-height: 0px
 	}
-`
+`;
 
 const padeIn = keyframes`
 	from {
@@ -54,40 +54,7 @@ const padeIn = keyframes`
 	to {
 		opacity: 1;
 	}
-`
-
-const padeLeftToRight = keyframes`
-	from {
-		opacity: 0;
-		transform: translateX(-10%);
-	}
-	to {
-		opacity: 1;
-		transform: translateX(0%);
-	}
-`
-
-const padeAppearUp = keyframes`
-	from {
-		opacity: 0;
-		transform: translate(-50%, -40%);
-	}
-	to {
-		opacity: 1;
-		transform: translate(-50%, -50%);
-	}
-`
-
-const padeDisappearDown = keyframes`
-	from {
-		opacity: 1;
-		transform: translate(-50%, -50%);
-	}
-	to {
-		opacity: 0;
-		transform: translate(-50%, -40%);
-	}
-`
+`;
 
 const enlarge = keyframes`
 	0% {
@@ -102,19 +69,19 @@ const enlarge = keyframes`
 		width: 100%;
 		height: 100%;
 	}
-`
+`;
 
 export const KonvaContainer = styled.div`
 	position: relative;
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
-	transition: .3s;
+	transition: 0.3s;
 `;
 
 export const WarnMessage = styled.div`
 	position: absolute;
-	background: rgba(0, 0, 0, .6);
+	background: rgba(0, 0, 0, 0.6);
 	z-index: 50;
 	border-radius: 5px;
 	color: #ff5555;
@@ -128,14 +95,14 @@ export const WarnMessage = styled.div`
 
 export const DetailBackground = styled('div')`
 	width: 100%;
-	height: calc( 100% + 40px );
+	height: calc(100% + 40px);
 	z-index: 12;
 	position: absolute;
 	top: 0;
 	left: 0;
-	background: rgba(0, 0, 0, .4);
+	background: rgba(0, 0, 0, 0.4);
 	transform: translateY(-48px);
-	animation: ${padeIn} .5s ease-in-out 1;
+	animation: ${padeIn} 0.5s ease-in-out 1;
 `;
 
 export const MenuBox = styled('div')<MenuPosition>`
@@ -143,18 +110,18 @@ export const MenuBox = styled('div')<MenuPosition>`
 	flex-direction: column;
 	position: absolute;
 	background: rgba(0, 0, 0, .85);
-	display: ${props => props.disp ? 'block' : 'none'};
+	display: ${(props) => (props.disp ? 'block' : 'none')};
 	overflow: hidden;
 	color: #efefef;
 	border-radius: 5px;
 	box-shadow: 0 0 8px 1px rgb(0, 0, 0);
-	max-width: ${props => props.clicked ? '200px' : '0px'};
-	max-height: ${props => props.clicked ? '200px' : '0px'};
-	top: ${ props => props.y };
-	left: ${ props => props.x };
-	animation: ${ props => props.clicked ? apperMenu : disapperMenu } .3s ease-in-out 1;
+	max-width: ${(props) => (props.clicked ? '200px' : '0px')};
+	max-height: ${(props) => (props.clicked ? '200px' : '0px')};
+	top: ${(props) => props.y};
+	left: ${(props) => props.x};
+	animation: ${(props) => (props.clicked ? apperMenu : disapperMenu)} .3s ease-in-out 1;
 	z-index: 10;
-)`
+)`;
 
 export const MenuAttr = styled.div`
 	width: 120px;
@@ -163,27 +130,27 @@ export const MenuAttr = styled.div`
 	position: relative;
 
 	&:hover {
-		background: rgba(20, 20, 20, .5);
+		background: rgba(20, 20, 20, 0.5);
 	}
 
 	@media screen and (max-width: 800px) {
 		font-size: 12px;
 		width: 100px;
-		padding: .5rem;
+		padding: 0.5rem;
 	}
 	@media screen and (max-width: 500px) {
 		font-size: 10px;
 		width: 80px;
-		padding: .3rem;
+		padding: 0.3rem;
 	}
 `;
 
 export const ComponentBox = styled('div')<BoxPosition>`
 	position: absolute;
-	width: ${props => props.width};
-	height: ${props => props.height};
-	left: ${props => props.x};
-	top: ${props => props.y};
+	width: ${(props) => props.width};
+	height: ${(props) => props.height};
+	left: ${(props) => props.x};
+	top: ${(props) => props.y};
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -198,7 +165,7 @@ export const AltBox = styled.div`
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background: rgba(0, 0, 0, .8);
+	background: rgba(0, 0, 0, 0.8);
 	display: none;
 	justify-content: center;
 	align-items: center;
@@ -212,8 +179,8 @@ export const AltBox = styled.div`
 export const TextComponent = styled('pre')`
 	position: relative;
 	border-radius: 5px;
-	box-shadow: 0 0 4px 1px rgba(255, 255, 255, .3);
-	background: rgba(0, 0, 0, .75);
+	box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.3);
+	background: rgba(0, 0, 0, 0.75);
 	color: #fff;
 	width: 100%;
 	height: 100%;
@@ -221,13 +188,13 @@ export const TextComponent = styled('pre')`
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
-	animation: ${enlarge} .3s ease-in-out 1;
+	animation: ${enlarge} 0.3s ease-in-out 1;
 	overflow: hidden;
 	padding: 5px;
 	white-space: break-spaces;
 
 	&:hover {
-		box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
+		box-shadow: 0 0 20px 3px rgba(255, 255, 255, 0.3);
 		z-index: 5;
 
 		.alt {
@@ -247,7 +214,7 @@ export const TextComponent = styled('pre')`
 export const ImageComponent = styled('div')`
 	position: relative;
 	border-radius: 5px;
-	box-shadow: 0 0 4px 1px rgba(255, 255, 255, .3);
+	box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.3);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -256,7 +223,7 @@ export const ImageComponent = styled('div')`
 	overflow: hidden;
 	width: 100%;
 	height: 100%;
-	animation: ${enlarge} .3s ease-in-out 1;
+	animation: ${enlarge} 0.3s ease-in-out 1;
 	@media screen and (max-width: 800px) {
 		font-size: 10px;
 	}
@@ -269,7 +236,7 @@ export const ImageComponent = styled('div')`
 		object-fit: cover;
 	}
 	&:hover {
-		box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
+		box-shadow: 0 0 20px 3px rgba(255, 255, 255, 0.3);
 		z-index: 5;
 		.alt {
 			display: flex;
@@ -280,23 +247,23 @@ export const ImageComponent = styled('div')`
 export const NoteComponent = styled('div')<NoteProps>`
 	position: relative;
 	border-radius: 5px;
-	box-shadow: 0 0 4px 1px rgba(255, 255, 255, .3);
+	box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.3);
 	color: #fff;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
-	animation: ${enlarge} .3s ease-in-out 1;
+	animation: ${enlarge} 0.3s ease-in-out 1;
 	width: 100%;
 	height: 100%;
-	background: ${props => props.src ? 'url(\''+props.src+'\') no-repeat center' : 'rgba(0, 0, 0, .75)'};
+	background: ${(props) => (props.src ? "url('" + props.src + "') no-repeat center" : 'rgba(0, 0, 0, .75)')};
 	background-size: cover;
 	overflow: hidden;
 	padding: 5px;
 
 	&:hover {
-		box-shadow: 0 0 20px 3px rgba(255, 255, 255, .3);
+		box-shadow: 0 0 20px 3px rgba(255, 255, 255, 0.3);
 		z-index: 5;
 		.alt {
 			display: flex;
@@ -304,17 +271,17 @@ export const NoteComponent = styled('div')<NoteProps>`
 	}
 
 	.head {
-		text-shadow: ${props => props.src ? '0 1px 5px #000' : 'none'};
+		text-shadow: ${(props) => (props.src ? '0 1px 5px #000' : 'none')};
 		width: 100%;
 		height: auto;
 		font-size: 20px;
 		font-weight: 600;
-		padding-bottom: .5rem;
+		padding-bottom: 0.5rem;
 		white-space: break-spaces;
 	}
 
 	& > pre {
-		text-shadow: ${props => props.src ? '0 1px 5px #000' : 'none'};
+		text-shadow: ${(props) => (props.src ? '0 1px 5px #000' : 'none')};
 		width: 100%;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -327,7 +294,7 @@ export const NoteComponent = styled('div')<NoteProps>`
 
 		.head {
 			font-size: 14px;
-			padding-bottom: .2rem;
+			padding-bottom: 0.2rem;
 		}
 
 		& > pre {
@@ -339,11 +306,10 @@ export const NoteComponent = styled('div')<NoteProps>`
 
 		.head {
 			font-size: 12px;
-			padding-bottom: .1rem;
+			padding-bottom: 0.1rem;
 		}
 	}
 `;
-
 
 export const OnModeAlt = styled.div`
 	position: relative;
@@ -402,10 +368,10 @@ export const ResizeRemote = styled.div`
 		align-items: center;
 		font-weight: 600;
 		background: transparent;
-		cursor: pointer
+		cursor: pointer;
 	}
 
-	button.decrease img{
+	button.decrease img {
 		transform: rotate(180deg);
 	}
 
@@ -423,7 +389,7 @@ export const ResizeRemote = styled.div`
 	}
 
 	&:nth-of-type(2) {
-		margin-top: .5rem;
+		margin-top: 0.5rem;
 	}
 `;
 
@@ -431,14 +397,14 @@ export const BoardFooter = styled.div`
 	width: 100%;
 	align-items: center;
 	justify-content: center;
-	color: rgba(255, 255, 255, .6);
+	color: rgba(255, 255, 255, 0.6);
 	font-weight: 400;
 	font-size: 12px;
 	text-align: center;
 	display: flex;
 	padding: 1rem;
 	height: 100%;
-	background: rgba(0, 0, 0, .1);
+	background: rgba(0, 0, 0, 0.1);
 `;
 
 export const StageContainer = styled('div')<SC>`
@@ -446,16 +412,16 @@ export const StageContainer = styled('div')<SC>`
 
 	&::before {
 		width: 100%;
-		height: ${props => props.height};
+		height: ${(props) => props.height};
 		position: absolute;
-		content: "";
+		content: '';
 		top: 0;
 		left: 0;
-		background-image: url(${props => props.url});
+		background-image: url(${(props) => props.url});
 		background-size: cover;
 		background-repeat: no-repeat;
 		background-position: center;
-		opacity: ${props => props.op};
+		opacity: ${(props) => props.op};
 	}
 `;
 

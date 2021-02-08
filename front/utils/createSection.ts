@@ -1,11 +1,11 @@
 import dayjs from 'dayjs';
 
 interface Props {
-	id: number,
-	userId: number,
-	username: string,
-	content: string,
-	createdAt: Date,
+	id: number;
+	userId: number;
+	username: string;
+	content: string;
+	createdAt: Date;
 }
 
 export default function makeSection<T extends Props>(chatList: T[]) {

@@ -35,23 +35,23 @@ const moreMenu = keyframes`
 `;
 
 type Tflg = {
-	flg: boolean
-}
+	flg: boolean;
+};
 
 export const ContentBox = styled('div')<Tflg>`
 	position: fixed;
-	overflow: ${props => props.flg ? "auto" : "hidden"};
-	width: ${props => props.flg ? "760px" : "0"};
-	max-height: ${props => props.flg ? "calc(100% - 60px)" : "0"};
-	padding: ${props => props.flg ? "30px" : "0"};
-	background: rgba(0, 0, 0, .85);
+	overflow: ${(props) => (props.flg ? 'auto' : 'hidden')};
+	width: ${(props) => (props.flg ? '760px' : '0')};
+	max-height: ${(props) => (props.flg ? 'calc(100% - 60px)' : '0')};
+	padding: ${(props) => (props.flg ? '30px' : '0')};
+	background: rgba(0, 0, 0, 0.85);
 	border-radius: 18px;
-	box-shadow: ${props => props.flg ? "0 0 4px 1px #55555e" : "none"};
+	box-shadow: ${(props) => (props.flg ? '0 0 4px 1px #55555e' : 'none')};
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
 	z-index: 13;
-	animation: ${props => props.flg ? padeAppearUp : padeDisappearDown} .5s ease-in-out 1;
+	animation: ${(props) => (props.flg ? padeAppearUp : padeDisappearDown)} 0.5s ease-in-out 1;
 
 	-ms-overflow-style: none; /* IE and Edge */
 	scrollbar-width: none; /* Firefox */
@@ -96,11 +96,13 @@ export const MoreList = styled.div`
 	overflow: hidden;
 	top: 30px;
 	right: 0;
-	animation: ${moreMenu} .3s ease-in-out 1;
+	animation: ${moreMenu} 0.3s ease-in-out 1;
 	box-shadow: 0 0 4px 1px #777;
 	background: #000;
 
-	&.three { height: 90px; }
+	&.three {
+		height: 90px;
+	}
 
 	& > div {
 		cursor: pointer;
@@ -155,7 +157,9 @@ export const Comment = styled.div`
 	.content {
 		width: calc(100% - 62px);
 
-		p.nickname { margin-bottom: 6px; }
+		p.nickname {
+			margin-bottom: 6px;
+		}
 
 		.edit-box {
 			color: #999;
@@ -172,8 +176,7 @@ export const Comment = styled.div`
 			}
 		}
 
-		& > div
-		{
+		& > div {
 			display: flex;
 			align-items: flex-end;
 			width: 100%;
@@ -181,7 +184,7 @@ export const Comment = styled.div`
 			&.editComment {
 				height: 120px;
 			}
-			input[type="text"] {
+			input[type='text'] {
 				width: calc(100% - 60px);
 				height: 100%;
 				border-radius: 12px 0 0 12px;
@@ -214,13 +217,13 @@ export const Comment = styled.div`
 				background: #f8f8f8;
 				border-radius: 5px;
 				color: #000;
-				padding: .5rem;
+				padding: 0.5rem;
 				min-height: 100%;
 				max-width: calc(100% - 100px);
 				position: relative;
 
 				&::before {
-					content: "";
+					content: '';
 					transform: skewX(30deg);
 					width: 15px;
 					left: 0;
@@ -236,7 +239,7 @@ export const Comment = styled.div`
 				color: #777;
 				height: fit-content;
 				font-size: 10px;
-				margin-left: .3rem;
+				margin-left: 0.3rem;
 				width: 8rem;
 			}
 		}
@@ -279,7 +282,7 @@ export const WriteComment = styled.form`
 		justify-content: center;
 
 		&:hover {
-			background: rgba(255 ,255, 255, .1);
+			background: rgba(255, 255, 255, 0.1);
 		}
 
 		img {
@@ -296,7 +299,7 @@ export const NoImageProfile = styled.div`
 	height: 3rem;
 	border-radius: 100%;
 	margin-right: 12px;
-	background: linear-gradient(#002534 , #090a0f) no-repeat;
+	background: linear-gradient(#002534, #090a0f) no-repeat;
 	display: flex;
 
 	img {

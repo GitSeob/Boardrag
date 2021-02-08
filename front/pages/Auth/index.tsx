@@ -9,38 +9,41 @@ import { Redirect } from 'react-router-dom';
 import LoadingCircle from '@components/LoadingCircle';
 
 const Auth = () => {
-	const { data:userData, revalidate } = useSWR('/api/auth', fetcher);
+	const { data: userData, revalidate } = useSWR('/api/auth', fetcher);
 	const [error, setError] = React.useState('');
 
 	const query = qs.parse(location.search, {
-		ignoreQueryPrefix: true
+		ignoreQueryPrefix: true,
 	});
 
-	if (location.search && userData === false && !error)
-	{
-		if (!userData && query.code)
-		{
+	if (location.search && userData === false && !error) {
+		if (!userData && query.code) {
 			console.log(query.code);
-			axios.post(`/api/auth`, {
-					codeValue: query.code,
-					trashValue: '123',
-			}, {
-				withCredentials: true
-			}).then(res => {
-				revalidate();
-				return res.data;
-			}).catch(e => {
-				setError(e.response.data.reason);
-			})
-			return <LoadingCircle />
+			axios
+				.post(
+					`/api/auth`,
+					{
+						codeValue: query.code,
+						trashValue: '123',
+					},
+					{
+						withCredentials: true,
+					},
+				)
+				.then((res) => {
+					revalidate();
+					return res.data;
+				})
+				.catch((e) => {
+					setError(e.response.data.reason);
+				});
+			return <LoadingCircle />;
 		}
 	}
 
 	if (userData) {
-		if (query.prev)
-			return <Redirect to={`${query.prev}`} />
-		else
-			return <Redirect to="/main" />
+		if (query.prev) return <Redirect to={`${query.prev}`} />;
+		else return <Redirect to="/main" />;
 	}
 
 	return (
@@ -49,9 +52,9 @@ const Auth = () => {
 			<LoginButton href={googleOauth} className="google">
 				<img src="/public/btn_google_signin_light_normal_web@2x.png" />
 			</LoginButton>
-			{ error && <p>{error}</p>}
+			{error && <p>{error}</p>}
 		</LoginContainer>
 	);
-}
+};
 
 export default Auth;

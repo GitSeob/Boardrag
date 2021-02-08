@@ -32,7 +32,7 @@ export const LoadingCircleBox = styled.div`
 	border-radius: 50%;
 	background: rgb(63, 249, 200);
 	background: linear-gradient(0deg, rgba(63, 249, 200, 0.1) 33%, rgba(63, 249, 220, 1) 100%);
-	animation: ${spin} .8s linear 0s infinite;
+	animation: ${spin} 0.8s linear 0s infinite;
 `;
 
 export const LoadingCircleCore = styled.div`
@@ -41,5 +41,3 @@ export const LoadingCircleCore = styled.div`
 	background: #001c29;
 	border-radius: 50%;
 `;
-
-

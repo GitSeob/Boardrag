@@ -1,9 +1,8 @@
 import styled from '@emotion/styled';
-import { keyframes } from '@emotion/react';
 
 type BC = {
-	url: string
-}
+	url: string;
+};
 
 export const Menu = styled.div`
 	position: fixed;
@@ -26,7 +25,8 @@ export const RelBox = styled.div`
 	width: 100%;
 	height: 100%;
 
-	& > div, .logo {
+	& > div,
+	.logo {
 		padding: 1.5rem;
 		width: 100%;
 		display: flex;
@@ -41,7 +41,7 @@ export const RelBox = styled.div`
 
 		img {
 			height: 1rem;
-			margin-right: .3rem;
+			margin-right: 0.3rem;
 		}
 	}
 
@@ -53,11 +53,15 @@ export const RelBox = styled.div`
 	.logo {
 		padding: 2rem 1.5rem;
 
-		img { height: 2rem; }
+		img {
+			height: 2rem;
+		}
 		&:hover {
 			background: none;
 		}
-		&:visited { color: inherit; }
+		&:visited {
+			color: inherit;
+		}
 	}
 
 	@media screen and (max-width: 600px) {
@@ -74,8 +78,12 @@ export const RelBox = styled.div`
 
 		.logo {
 			padding: 1rem;
-			h2 { font-size: 16px; }
-			img { height: 1.5rem; }
+			h2 {
+				font-size: 16px;
+			}
+			img {
+				height: 1.5rem;
+			}
 		}
 	}
 `;
@@ -102,22 +110,22 @@ export const SearchForm = styled.form`
 	display: flex;
 	align-item: center;
 	justify-content: center;
-	background: rgba(255, 255, 255, .2);
+	background: rgba(255, 255, 255, 0.2);
 	border-radius: 1rem;
 	height: 1.5rem;
-	padding: .25rem .5rem;
+	padding: 0.25rem 0.5rem;
 	right: 0;
 	top: 0;
 	font-size: 10px;
 
 	img {
 		height: 1rem;
-		margin-right: .3rem;
+		margin-right: 0.3rem;
 	}
 
 	input {
 		background: transparent;
-		padding: .1rem .5rem;
+		padding: 0.1rem 0.5rem;
 		color: #fff;
 		width: 200px;
 	}
@@ -148,12 +156,12 @@ export const BoardContainer = styled.div`
 
 export const BoardCard = styled('div')<BC>`
 	padding: 12px;
-	background: rgba(0, 0, 0, .5);
+	background: rgba(0, 0, 0, 0.5);
 	border-radius: 10px;
 	box-shadow: 0 0 4px 1px #aaa;
 	cursor: pointer;
-	margin: .6px 12px 6px 0;
-	transition: .3s;
+	margin: 0.6px 12px 6px 0;
+	transition: 0.3s;
 	width: 120px;
 	height: 192px;
 	overflow: hidden;
@@ -164,10 +172,10 @@ export const BoardCard = styled('div')<BC>`
 		width: 100%;
 		height: 100%;
 		position: absolute;
-		content: "";
+		content: '';
 		top: 0;
 		left: 0;
-		background: url(${props => props.url});
+		background: url(${(props) => props.url});
 		background-size: cover;
 		background-position: center;
 		z-index: -1;
@@ -194,11 +202,11 @@ export const BoardCard = styled('div')<BC>`
 		display: -webkit-box;
 		-webkit-line-clamp: 6;
 		-webkit-box-orient: vertical;
-		word-wrap:break-word;
+		word-wrap: break-word;
 		line-height: 1.2rem;
 		height: 7.2rem;
 		color: #999;
-		margin: .5rem 0;
+		margin: 0.5rem 0;
 	}
 
 	.iconBox {
@@ -206,7 +214,7 @@ export const BoardCard = styled('div')<BC>`
 		position: relative;
 
 		img {
-			height: .8rem;
+			height: 0.8rem;
 			color: #ff0000;
 
 			&.lock {
@@ -224,7 +232,7 @@ export const DarkBackground = styled.div`
 	width: 100vw;
 	height: 100vh;
 	z-index: 20;
-	background: rgba(0, 0, 0, .3);
+	background: rgba(0, 0, 0, 0.3);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -236,7 +244,7 @@ export const PersonCount = styled.div`
 	font-size: 12px;
 
 	& > img {
-		margin-right: .2rem;
+		margin-right: 0.2rem;
 		height: 0.8rem;
 	}
 `;
@@ -249,7 +257,7 @@ export const NextBoardBtnBox = styled.div`
 	height: calc(100% - 36px);
 	z-index: 2;
 	margin: 0 !important;
-	background: rgba(0, 0, 0, .7);
+	background: rgba(0, 0, 0, 0.7);
 	box-shadow: 0px 0px 24px 12px #000;
 	display: flex;
 	justify-content: center;

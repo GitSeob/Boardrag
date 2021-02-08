@@ -6,7 +6,7 @@ export const EditImageInput = styled.div`
 	left: 50%;
 	transform: translate(-50%, -50%);
 	width: 50%;
-	padding: .5rem 1rem;
+	padding: 0.5rem 1rem;
 	background: rgba(0, 0, 0, 0.4);
 	color: #fff;
 	border-radius: 3px;

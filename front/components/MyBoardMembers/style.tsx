@@ -18,7 +18,7 @@ export const Container = styled.div`
 	align-items: center;
 	justify-content: center;
 
-	animation: ${open} .3s ease-in-out 1;
+	animation: ${open} 0.3s ease-in-out 1;
 `;
 
 export const MemberBlock = styled.div`
@@ -30,7 +30,7 @@ export const MemberBlock = styled.div`
 	overflow: hidden;
 	cursor: pointer;
 	text-align: center;
-	box-shadow: 0 0 4px 1px rgba(255, 255, 255, .7);
+	box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.7);
 
 	& > div.kick {
 		position: absolute;
@@ -41,11 +41,13 @@ export const MemberBlock = styled.div`
 		text-align: center;
 		line-height: 40px;
 		display: none;
-		background: rgba(255, 120, 120, .7);
+		background: rgba(255, 120, 120, 0.7);
 	}
 
 	&:hover {
-		box-shadow: 0 0 4px 1px rgba(255, 120, 120, .8);
-		div.kick { display: block; }
+		box-shadow: 0 0 4px 1px rgba(255, 120, 120, 0.8);
+		div.kick {
+			display: block;
+		}
 	}
 `;

@@ -10,13 +10,13 @@ const Manage = loadable(() => import('@layouts/Manage'));
 const App: FC = () => (
 	<Switch>
 		<Route exact path="/">
-			<Redirect to="/auth"/>
+			<Redirect to="/auth" />
 		</Route>
 		<Route path="/auth" component={Auth} />
 		<Route path="/main" component={Main} />
 		<Route path="/board/:board" component={Board} />
 		<Route path="/manage" component={Manage} />
 	</Switch>
-)
+);
 
 export default App;

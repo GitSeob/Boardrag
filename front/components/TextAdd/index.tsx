@@ -1,84 +1,83 @@
 import React, { FC, useCallback, useRef, useState } from 'react';
 // import toast from 'react-toastify';
-import {
-	boxProps,
-	SubmitButton,
-	TextArea,
-	AddContainer,
-	AddBox,
-	WarnBox
-} from '../addStyle';
+import { boxProps, SubmitButton, TextArea, AddContainer, AddBox, WarnBox } from '../addStyle';
 import axios from 'axios';
 
 type PostState = {
-	loading: boolean,
-	success: boolean,
-	warning: string,
-}
+	loading: boolean;
+	success: boolean;
+	warning: string;
+};
 
-const TextAdd: FC<boxProps> = ({ BMID, toast, x, y, width, height, offset, initStates, board }) => {
+const TextAdd: FC<boxProps> = ({ BMID, toast, x, y, width, height, offset, initStates, board }: boxProps) => {
 	const [value, setValue] = useState('');
 	const [postState, setPostState] = useState<PostState>({
 		loading: false,
 		success: false,
 		warning: '',
-	})
+	});
 	const textScrollRef = useRef() as React.MutableRefObject<HTMLTextAreaElement>;
 	const [TAH, setTAH] = useState('auto');
 
-	const OCValue = useCallback((e) => {
-		setTAH(`${textScrollRef.current.scrollHeight}px`);
-		setValue(e.target.value);
-	}, [textScrollRef]);
+	const OCValue = useCallback(
+		(e) => {
+			setTAH(`${textScrollRef.current.scrollHeight}px`);
+			setValue(e.target.value);
+		},
+		[textScrollRef],
+	);
 
-	const writeText = useCallback(async (e) => {
-		e.preventDefault();
-		setPostState({ ...postState, loading: true});
-		await axios.post(`/api/board/${board}/write/text`, {
-			content: value,
-			x: offset.x,
-			y: offset.y,
-			width: offset.width,
-			height: offset.height,
-			BoardMemberId: BMID
-		}).then(res => {
-			if (res.status === 202)
-			{
-				setPostState({ ...postState, warning: res.data.reason});
-				return setTimeout(() => {
-					setPostState({ ...postState, warning: ''});
-				}, 2000);
-			}
-			setPostState({...postState, loading: false, success: true});
-			toast.dark(`남은 칸은 ${res.data}칸 입니다.`);
-			initStates();
-		}).catch((e) => {
-			setPostState({...postState, loading: false, warning: e.response.data.reason});
-			setTimeout(() => {
-				setPostState({ ...postState, warning: ''});
-			}, 2000);
-		});
-	}, [value, postState]);
+	const writeText = useCallback(
+		async (e) => {
+			e.preventDefault();
+			setPostState({ ...postState, loading: true });
+			await axios
+				.post(`/api/board/${board}/write/text`, {
+					content: value,
+					x: offset.x,
+					y: offset.y,
+					width: offset.width,
+					height: offset.height,
+					BoardMemberId: BMID,
+				})
+				.then((res) => {
+					if (res.status === 202) {
+						setPostState({ ...postState, warning: res.data.reason });
+						return setTimeout(() => {
+							setPostState({ ...postState, warning: '' });
+						}, 2000);
+					}
+					setPostState({ ...postState, loading: false, success: true });
+					toast.dark(`남은 칸은 ${res.data}칸 입니다.`);
+					initStates();
+				})
+				.catch((e) => {
+					setPostState({ ...postState, loading: false, warning: e.response.data.reason });
+					setTimeout(() => {
+						setPostState({ ...postState, warning: '' });
+					}, 2000);
+				});
+		},
+		[value, postState, board],
+	);
 
 	return (
 		<AddContainer y={y} x={x} width={width} height={height}>
-			{ postState.warning === '' ?
+			{postState.warning === '' ? (
 				<AddBox>
-					{ !postState.loading ?
+					{!postState.loading ? (
 						<TextArea
 							style={{
-								height: TAH
+								height: TAH,
 							}}
 							value={value}
 							onChange={OCValue}
 							autoFocus={true}
 							ref={textScrollRef}
 						/>
-						:
-						<div>
-							loading...
-						</div>
-					}
+					) : (
+						<div>loading...</div>
+					)}
 					<SubmitButton
 						size={width / offset.width}
 						onClick={writeText}
@@ -90,13 +89,11 @@ const TextAdd: FC<boxProps> = ({ BMID, toast, x, y, width, height, offset, initS
 						</svg>
 					</SubmitButton>
 				</AddBox>
-				:
-				<WarnBox>
-					{postState.warning}
-				</WarnBox>
-			}
+			) : (
+				<WarnBox>{postState.warning}</WarnBox>
+			)}
 		</AddContainer>
 	);
-}
+};
 
 export default TextAdd;

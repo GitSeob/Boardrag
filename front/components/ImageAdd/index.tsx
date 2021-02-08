@@ -1,25 +1,16 @@
 import React, { FC, useRef, useCallback, useState } from 'react';
-import useSocket from '@hooks/useSocket';
 import axios from 'axios';
-import {
-	boxProps,
-	SubmitButton,
-	ImageInputButton,
-	ImageAddBox,
-	AddContainer,
-	AddBox,
-	WarnBox
-} from '../addStyle';
+import { boxProps, SubmitButton, ImageInputButton, ImageAddBox, AddContainer, AddBox, WarnBox } from '../addStyle';
 import { Redirect } from 'react-router-dom';
 
 interface UploadProps {
-	loading: boolean,
-	success: boolean,
-	imageURL: string,
-	message: string,
+	loading: boolean;
+	success: boolean;
+	imageURL: string;
+	message: string;
 }
 
-const TextAdd: FC<boxProps> = ({ BMID, toast, x, y, width, height, offset, initStates, board }) => {
+const TextAdd: FC<boxProps> = ({ BMID, toast, x, y, width, height, offset, initStates, board }: boxProps) => {
 	const imageInput = useRef() as React.MutableRefObject<HTMLInputElement>;
 	const [uploading, setUploading] = useState<UploadProps>({
 		loading: false,
@@ -30,84 +21,89 @@ const TextAdd: FC<boxProps> = ({ BMID, toast, x, y, width, height, offset, initS
 
 	const onClickImageUpload = useCallback(() => {
 		imageInput.current.click();
-	}, [imageInput.current]);
+	}, []);
 
-	const onChangeImg = useCallback( async (e) => {
+	const onChangeImg = useCallback(async (e) => {
 		const imageFormData = new FormData();
 		imageFormData.append('image', e.target.files[0]);
 		await setUploading({
 			...uploading,
-			loading: true
+			loading: true,
 		});
-		await axios.post(`/api/uploadImage?type=upload&board=${board}&contentName=image`, imageFormData).then(res => {
-			setUploading({
-				...uploading,
-				success: true,
-				loading: false,
-				imageURL: res.data.url
+		await axios
+			.post(`/api/uploadImage?type=upload&board=${board}&contentName=image`, imageFormData)
+			.then((res) => {
+				setUploading({
+					...uploading,
+					success: true,
+					loading: false,
+					imageURL: res.data.url,
+				});
+			})
+			.catch((e) => {
+				setUploading({
+					...uploading,
+					loading: false,
+					message: e.response.data,
+				});
 			});
-		}).catch(e => {
-			setUploading({
-				...uploading,
-				loading: false,
-				message: e.response.data
-			});
-		})
 	}, []);
 
 	const submitImage = useCallback(async () => {
 		setUploading({
 			...uploading,
 			loading: true,
-		})
-		await axios.post(`/api/board/${board}/write/image`, {
-			url: uploading.imageURL,
-			x: offset.x,
-			y: offset.y,
-			width: offset.width,
-			height: offset.height,
-			BoardMemberId: BMID
-		}).then(res => {
-			if (res.status === 202) {
+		});
+		await axios
+			.post(`/api/board/${board}/write/image`, {
+				url: uploading.imageURL,
+				x: offset.x,
+				y: offset.y,
+				width: offset.width,
+				height: offset.height,
+				BoardMemberId: BMID,
+			})
+			.then((res) => {
+				if (res.status === 202) {
+					setUploading({
+						...uploading,
+						loading: false,
+						message: res.data.reason,
+					});
+					return setTimeout(() => {
+						setUploading({ ...uploading, message: '' });
+					}, 2000);
+				}
 				setUploading({
 					...uploading,
 					loading: false,
-					message: res.data.reason
+					success: true,
 				});
-				return setTimeout(() => {
-					setUploading({ ...uploading, message: ''});
-				}, 2000);
-			}
-			setUploading({
-				...uploading,
-				loading: false,
-				success: true
-			});
-			toast.dark(`남은 칸은 ${res.data}칸 입니다.`);
-			initStates();
-		}).catch((e) => {
-			if (e.response.status === 401)
-			{
-				alert('로그인을 해주세요.');
-				<Redirect to="/auth" />
-			}
-			setUploading({
-				...uploading,
-				loading: false,
-				message: e.response.data.reason
+				toast.dark(`남은 칸은 ${res.data}칸 입니다.`);
+				initStates();
 			})
-		});
-	}, [uploading]);
+			.catch((e) => {
+				if (e.response.status === 401) {
+					alert('로그인을 해주세요.');
+					<Redirect to="/auth" />;
+				}
+				setUploading({
+					...uploading,
+					loading: false,
+					message: e.response.data.reason,
+				});
+			});
+	}, [uploading, board, offset]);
 
 	return (
 		<AddContainer y={y} x={x} width={width} height={height}>
-			{ uploading.message === '' ?
+			{uploading.message === '' ? (
 				<AddBox>
-					{ uploading.imageURL === '' ?
+					{uploading.imageURL === '' ? (
 						<ImageAddBox>오른쪽 버튼을 클릭해서 사진을 업로드해주세요.</ImageAddBox>
-						:
+					) : (
 						<img src={uploading.imageURL} />
-					}
+					)}
 					<SubmitButton
 						size={width / offset.width}
 						onClick={submitImage}
@@ -146,13 +142,11 @@ const TextAdd: FC<boxProps> = ({ BMID, toast, x, y, width, height, offset, initS
 						/>
 					</ImageInputButton>
 				</AddBox>
-			:
-				<WarnBox>
-					{uploading.message}
-				</WarnBox>
-			}
+			) : (
+				<WarnBox>{uploading.message}</WarnBox>
+			)}
 		</AddContainer>
 	);
-}
+};
 
 export default TextAdd;

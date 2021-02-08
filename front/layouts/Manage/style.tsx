@@ -1,26 +1,27 @@
 import styled from '@emotion/styled';
-import { keyframes } from '@emotion/react';
-import {FixAltContainer} from '../../css/default';
+import { FixAltContainer } from '../../css/default';
 
 export const LoadingBG = styled.div`
 	position: fixed;
 	width: 100vw;
 	height: 100vh;
-	background: rgba(0, 0, 0, .5);
+	background: rgba(0, 0, 0, 0.5);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 `;
 
 export const ListBox = styled.div`
-	border: 3px solid rgba(255, 255, 255, .1);
+	border: 3px solid rgba(255, 255, 255, 0.1);
 	margin: 12px 0 24px 0;
 `;
 
 export const CPBox = styled(FixAltContainer)`
 	z-index: 21;
 
-	h4 { text-align: center; }
+	h4 {
+		text-align: center;
+	}
 	p.warn {
 		font-size: 10px;
 		color: #b44;

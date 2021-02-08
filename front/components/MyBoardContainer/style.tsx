@@ -10,10 +10,11 @@ const open = keyframes`
 	}
 `;
 
-
 export const BarContainer = styled.div`
-	border-bottom: 3px solid rgba(255, 255, 255, .1);
-	&:last-child { border-bottom: none; }
+	border-bottom: 3px solid rgba(255, 255, 255, 0.1);
+	&:last-child {
+		border-bottom: none;
+	}
 `;
 
 export const BoardBar = styled.div`
@@ -22,7 +23,9 @@ export const BoardBar = styled.div`
 	cursor: pointer;
 	font-size: 18px;
 
-	&:hover { background: #111117; }
+	&:hover {
+		background: #111117;
+	}
 
 	& > img {
 		position: absolute;
@@ -30,25 +33,27 @@ export const BoardBar = styled.div`
 		left: 6px;
 		width: 26px;
 		height: 26px;
-		transition: .3s;
+		transition: 0.3s;
 	}
 `;
 
 export const ManageBoard = styled.div`
 	width: 100%;
 	overflow: hidden;
-	border-top: 1px solid rgba(255, 255, 255, .1);
-	animation: ${open} .3s ease-in-out 1;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+	animation: ${open} 0.3s ease-in-out 1;
 
 	& > div {
-		background: rgba(0, 0, 0, .5);
+		background: rgba(0, 0, 0, 0.5);
 
 		&.btn {
 			text-align: center;
 			padding: 12px 6px;
 			cursor: pointer;
-			border-bottom: 2px solid rgba(255, 255, 255, .1);
-			&:hover { background: rgba(0, 0, 0, .3); }
+			border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+			&:hover {
+				background: rgba(0, 0, 0, 0.3);
+			}
 		}
 	}
 `;
@@ -73,9 +78,9 @@ export const MBButton = styled.div`
 	border-radius: 12px;
 
 	&.pw {
-		background: rgba(255, 255, 255, .1);
+		background: rgba(255, 255, 255, 0.1);
 		&:hover {
-			background: rgba(255, 255, 255, .15);
+			background: rgba(255, 255, 255, 0.15);
 		}
 	}
 	&.edit {
@@ -84,7 +89,7 @@ export const MBButton = styled.div`
 			background: #5656bf;
 		}
 	}
-	&.delete{
+	&.delete {
 		background: #bf6767;
 		&:hover {
 			background: #bf5656;
@@ -95,13 +100,13 @@ export const MBButton = styled.div`
 export const RowDiv = styled.div`
 	width: 100%;
 	display: flex;
-	border-bottom: 2px solid rgba(255, 255, 255, .1);
+	border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 
 	& > div {
 		padding: 12px 6px;
 		&.label {
 			width: 120px;
-			border-right: 2px solid rgba(255, 255, 255, .1);
+			border-right: 2px solid rgba(255, 255, 255, 0.1);
 
 			p {
 				font-size: 10px;

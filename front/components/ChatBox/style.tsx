@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import {keyframes} from '@emotion/react';
+import { keyframes } from '@emotion/react';
 
 const padeLeftToRight = keyframes`
 	from {
@@ -10,7 +10,7 @@ const padeLeftToRight = keyframes`
 		opacity: 1;
 		transform: translateX(0%);
 	}
-`
+`;
 
 const padeRightToLeft = keyframes`
 	from {
@@ -21,8 +21,7 @@ const padeRightToLeft = keyframes`
 		opacity: 1;
 		transform: translateX(0%);
 	}
-`
-
+`;
 
 export const ChatRoom = styled.div`
 	height: calc(80% - 98px);
@@ -36,7 +35,7 @@ export const ChatForm = styled.form`
 
 	& > input {
 		width: 100%;
-		padding: .5rem;
+		padding: 0.5rem;
 		font-size: 14px;
 		border-radius: 5px;
 	}
@@ -46,23 +45,23 @@ export const Chat = styled.li`
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	margin-bottom: .5rem;
+	margin-bottom: 0.5rem;
 	margin-left: 1rem;
-	animation: ${padeLeftToRight} .3s ease-in-out 1;
+	animation: ${padeLeftToRight} 0.3s ease-in-out 1;
 
-	& > div{
+	& > div {
 		display: flex;
 		align-items: flex-end;
 
 		div {
 			background: #fafafa;
-			padding: .5rem;
+			padding: 0.5rem;
 			border-radius: 5px;
 			color: #111;
 			position: relative;
 
 			&::before {
-				content: "";
+				content: '';
 				transform: skewX(30deg);
 				width: 15px;
 				left: 0;
@@ -86,7 +85,7 @@ export const Chat = styled.li`
 		align-items: flex-end;
 		margin-right: 1rem;
 		margin-left: 0;
-		animation: ${padeRightToLeft} .3s ease-in-out 1;
+		animation: ${padeRightToLeft} 0.3s ease-in-out 1;
 
 		& > div {
 			flex-direction: row-reverse;
@@ -99,7 +98,7 @@ export const Chat = styled.li`
 				}
 
 				&::after {
-					content: "";
+					content: '';
 					transform: skewX(-30deg);
 					width: 15px;
 					right: 0;

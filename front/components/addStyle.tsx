@@ -2,55 +2,50 @@ import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
 
 export type offset = {
-	width: number,
-	height: number,
-	x: number,
-	y: number
+	width: number;
+	height: number;
+	x: number;
+	y: number;
 };
 
 export interface boxProps {
-	x: number,
-	y: number,
-	width: number,
-	height: number,
-	offset: offset,
-	board: string,
-	initStates: () => void,
-	toast: any,
-	BMID: number,
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	offset: offset;
+	board: string;
+	initStates: () => void;
+	toast: any;
+	BMID: number;
 }
 
 export interface SwitchProps {
-	width: number,
-	height: number,
-	category: number,
-	offset: offset
+	width: number;
+	height: number;
+	category: number;
+	offset: offset;
 }
 
 type Container = {
-	width: number,
-	height: number,
-	x: number,
-	y: number,
-}
-
-type Box = {
-	width: number,
-	height: number,
-}
+	width: number;
+	height: number;
+	x: number;
+	y: number;
+};
 
 type RectSize = {
-	size: number
-}
+	size: number;
+};
 
 type ButtonBox = {
-	size: number,
-	right: number,
-}
+	size: number;
+	right: number;
+};
 
 type ImageProps = {
-	src: string | null,
-}
+	src: string | null;
+};
 
 const enlarge = keyframes`
 	0% {
@@ -65,7 +60,7 @@ const enlarge = keyframes`
 		width: 100%;
 		height: 100%;
 	}
-`
+`;
 
 export const AddContainer = styled('div')<Container>`
 	position: absolute;
@@ -73,10 +68,10 @@ export const AddContainer = styled('div')<Container>`
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	top: ${props => props.y + 5};
-	left: ${props => props.x + 5};
-	width: ${props => props.width - 10};
-	height: ${props => props.height - 10};
+	top: ${(props) => props.y + 5};
+	left: ${(props) => props.x + 5};
+	width: ${(props) => props.width - 10};
+	height: ${(props) => props.height - 10};
 	z-index: 6;
 `;
 
@@ -87,10 +82,10 @@ export const AddBox = styled.div`
 	justify-content: center;
 	border-radius: 5px;
 	background: #fff;
-	box-shadow: 0 0 4px 1px rgba(255, 255, 255, .5);
+	box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.5);
 	color: #000;
 	width: 100%;
-	animation: ${enlarge} .3s ease-in-out 1;
+	animation: ${enlarge} 0.3s ease-in-out 1;
 	height: 100%;
 
 	&.note {
@@ -110,15 +105,15 @@ export const SubmitButton = styled('div')<ButtonBox>`
 	align-items: center;
 	justify-content: center;
 	top: 0;
-	right: ${props => props.right};
+	right: ${(props) => props.right};
 	transform: translateX(100%);
-	width: ${props => props.size - 10};
-	height: ${props => props.size - 10};
-	transform: translateX(${props => props.right === -5 ? '100%' : '0'});
+	width: ${(props) => props.size - 10};
+	height: ${(props) => props.size - 10};
+	transform: translateX(${(props) => (props.right === -5 ? '100%' : '0')});
 	border-radius: 5px;
 	background: #01babc;
 	color: #fff;
-	box-shadow: 0 0 4px 1px rgba(1, 186, 188, .7);
+	box-shadow: 0 0 4px 1px rgba(1, 186, 188, 0.7);
 	cursor: pointer;
 	padding: 2px;
 
@@ -137,15 +132,15 @@ export const ImageInputButton = styled('div')<ButtonBox>`
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	right: ${props => props.right};
-	top: ${props => props.size };
-	transform: translateX(${props => props.right === -5 ? '100%' : '0'});
-	width: ${props => props.size - 10};
-	height: ${props => props.size - 10};
+	right: ${(props) => props.right};
+	top: ${(props) => props.size};
+	transform: translateX(${(props) => (props.right === -5 ? '100%' : '0')});
+	width: ${(props) => props.size - 10};
+	height: ${(props) => props.size - 10};
 	border-radius: 5px;
 	cursor: pointer;
-	background: #34568B;
-	box-shadow: 0 0 4px 1px rgba(52, 86, 139, .7);
+	background: #34568b;
+	box-shadow: 0 0 4px 1px rgba(52, 86, 139, 0.7);
 	padding: 2px;
 
 	& > svg {
@@ -198,13 +193,13 @@ export const NoteAddBox = styled('div')<ImageProps>`
 	align-items: center;
 	justify-content: center;
 	flex-direction: column;
-	background: ${props => props.src ? 'url(\''+props.src+'\') no-repeat center' : '#fff'};
+	background: ${(props) => (props.src ? "url('" + props.src + "') no-repeat center" : '#fff')};
 	background-size: cover;
 	overflow: hidden;
-	animation: ${enlarge} .3s ease-in-out 1;
+	animation: ${enlarge} 0.3s ease-in-out 1;
 	padding: 5px;
 	border-radius: 5px;
-	color: ${props => props.src ? '#fff' : '000'} !important;
+	color: ${(props) => (props.src ? '#fff' : '000')} !important;
 
 	& > div {
 		background: transparent;
@@ -215,9 +210,10 @@ export const NoteAddBox = styled('div')<ImageProps>`
 		font-size: 12px;
 	}
 
-	input[type="text"], textarea {
-		color: ${props => props.src ? '#fff' : '#000'} !important;
-		text-shadow: ${props => props.src ? '0 3px 10px #000' : 'none'};
+	input[type='text'],
+	textarea {
+		color: ${(props) => (props.src ? '#fff' : '#000')} !important;
+		text-shadow: ${(props) => (props.src ? '0 3px 10px #000' : 'none')};
 	}
 
 	@media screen and (max-width: 800px) {
@@ -242,7 +238,7 @@ export const NoteAddBox = styled('div')<ImageProps>`
 
 export const InputBox = styled('div')<RectSize>`
 	width: 100%;
-	height: ${props => props.size};
+	height: ${(props) => props.size};
 	overflow: hidden;
 	& > textarea {
 		background: none;
@@ -261,7 +257,7 @@ export const InputArea = styled.input`
 export const WarnBox = styled.div`
 	width: 100%;
 	height: 100%;
-	background: rgba(0, 0, 0, .8);
+	background: rgba(0, 0, 0, 0.8);
 	color: red;
 	font-size: 12px;
 	display: flex;

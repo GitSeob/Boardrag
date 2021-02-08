@@ -5,7 +5,7 @@ export const Container = styled.div`
 	display: flex;
 	flex-direction: column;
 	padding-bottom: 12px;
-	border-bottom: 2px solid rgba(255, 255, 255, .1);
+	border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 
 	& > div {
 		padding: 12px;
@@ -32,7 +32,9 @@ export const SubmitBtn = styled.div`
 	cursor: pointer;
 	background: #444;
 
-	&:hover { background: #555; }
+	&:hover {
+		background: #555;
+	}
 
 	&.exit {
 		margin-top: 12px;

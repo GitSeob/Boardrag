@@ -4,11 +4,16 @@
         "browser": true,
         "node": true
     },
-    "extends": ["eslint:recommended", "plugin:prettier/recommended", "plugin:react-hooks/recommended"],
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "plugin:prettier/recommended",
+        "plugin:react-hooks/recommended"
+    ],
     "plugins": ["@typescript-eslint"],
     "rules": {
         "no-undef": "off",
-        "indent": ["tab"],
+        "indent": ["error", "tab"],
         "react-hooks/rules-of-hooks": "error", // Checks rules of Hooks
         "react-hooks/exhaustive-deps": "warn" // Checks effect dependencies
     },

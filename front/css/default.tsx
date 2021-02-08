@@ -14,6 +14,6 @@ export const FixedCenter = styled(AbsoluteCenter)`
 export const FixAltContainer = styled(FixedCenter)`
 	padding: 24px;
 	border-radius: 24px;
-	background: rgba(0, 0, 0, .7);
-	box-shadow: 0 0 6px 1px rgba(255, 255, 255, .7);
+	background: rgba(0, 0, 0, 0.7);
+	box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.7);
 `;

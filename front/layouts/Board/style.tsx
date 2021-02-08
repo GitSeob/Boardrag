@@ -8,7 +8,7 @@ const padeIn = keyframes`
 	to {
 		opacity: 1;
 	}
-`
+`;
 
 export const UserMenu = styled.div`
 	position: fixed;
@@ -16,7 +16,7 @@ export const UserMenu = styled.div`
 	width: 300px;
 	right: 0;
 	background: #000;
-	transition: .3s;
+	transition: 0.3s;
 	z-index: 11;
 `;
 
@@ -80,15 +80,14 @@ export const UserList = styled.div`
 			position: relative;
 			padding-left: 1rem;
 			&:before {
-
 				position: absolute;
-				content: "";
+				content: '';
 				top: 50%;
 				left: 0;
 				width: 5px;
 				height: 5px;
 				border-radius: 5px;
-				background: #66DD66;
+				background: #66dd66;
 				transform: translateY(-50%);
 			}
 		}
@@ -102,8 +101,8 @@ export const DetailBackground = styled('div')`
 	position: fixed;
 	top: 0;
 	left: 0;
-	background: rgba(0, 0, 0, .4);
-	animation: ${padeIn} .5s ease-in-out 1;
+	background: rgba(0, 0, 0, 0.4);
+	animation: ${padeIn} 0.5s ease-in-out 1;
 `;
 
 export const BoardHeader = styled.div`
@@ -114,7 +113,8 @@ export const BoardHeader = styled.div`
 	background: #0e0e0e;
 	box-shadow: 0 0 4px 1px #55555e;
 
-	& > div, a {
+	& > div,
+	a {
 		top: 0;
 		height: 100%;
 		display: flex;
@@ -128,8 +128,12 @@ export const BoardHeader = styled.div`
 				font-size: 16px;
 				font-weight: 400;
 			}
-			img { height: 24px; }
-			&:visited { color: inherit; }
+			img {
+				height: 24px;
+			}
+			&:visited {
+				color: inherit;
+			}
 		}
 	}
 
@@ -142,7 +146,7 @@ export const BoardHeader = styled.div`
 		cursor: pointer;
 
 		&:hover {
-			background: rgba(255, 255, 255, .1);
+			background: rgba(255, 255, 255, 0.1);
 		}
 	}
 `;

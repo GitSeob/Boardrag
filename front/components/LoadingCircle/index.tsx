@@ -1,7 +1,7 @@
-import React, {FC} from 'react';
-import {LoadingCircleContainer, LoadingCircleBox, LoadingCircleCore} from './style';
+import React, { FC } from 'react';
+import { LoadingCircleContainer, LoadingCircleBox, LoadingCircleCore } from './style';
 
-const LoadingCircle:FC = () => {
+const LoadingCircle: FC = () => {
 	return (
 		<LoadingCircleContainer>
 			<LoadingCircleBox>
@@ -9,6 +9,6 @@ const LoadingCircle:FC = () => {
 			</LoadingCircleBox>
 		</LoadingCircleContainer>
 	);
-}
+};
 
 export default LoadingCircle;

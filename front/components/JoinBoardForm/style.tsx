@@ -23,9 +23,9 @@ export const Box = styled.div`
 	border-radius: 10px;
 	background: #000;
 	box-shadow: 0 0 6px 1px #afafaf;
-	animation: ${appearUp} .3s ease-in-out 1;
+	animation: ${appearUp} 0.3s ease-in-out 1;
 	overflow: hidden;
-	transition: .5s;
+	transition: 0.5s;
 
 	& > div {
 		position: relative;
@@ -37,17 +37,17 @@ export const Box = styled.div`
 		}
 
 		.description {
-			margin-top: .2rem;
+			margin-top: 0.2rem;
 			border-left: 2px solid #777;
 			overflow: auto;
-			padding: .5rem;
+			padding: 0.5rem;
 			font-size: 11px;
 			color: #ddd;
 			max-height: 300px;
 		}
 
 		div {
-			margin-bottom: .5rem;
+			margin-bottom: 0.5rem;
 		}
 	}
 `;
@@ -61,10 +61,10 @@ export const FLEXDIV = styled.div`
 export const PageButton = styled.button`
 	width: 100%;
 	border-radius: 5px;
-	padding: .5rem;
+	padding: 0.5rem;
 	margin-top: 1rem;
 	border: 1px solid #444;
-	transition: .3s;
+	transition: 0.3s;
 	background: #111;
 	color: #fff;
 
@@ -74,11 +74,11 @@ export const PageButton = styled.button`
 `;
 
 export const Input = styled.input`
-	padding: .5rem;
+	padding: 0.5rem;
 	width: 100%;
 	border-radius: 1rem;
 	font-size: 12px;
-	margin: .5rem auto;
+	margin: 0.5rem auto;
 	text-align: center;
 
 	&.nickname {

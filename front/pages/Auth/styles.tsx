@@ -13,14 +13,14 @@ const appearUp = keyframes`
 `;
 
 export const LoginContainer = styled.div`
-	background: rgba(0, 0, 0, .3);
+	background: rgba(0, 0, 0, 0.3);
 	padding: 1rem;
 	width: fit-content;
 	position: absolute;
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	animation: ${appearUp} .5s ease-in-out 1;
+	animation: ${appearUp} 0.5s ease-in-out 1;
 	color: #fff;
 
 	& > h1 {
@@ -31,7 +31,7 @@ export const LoginContainer = styled.div`
 	& > p {
 		color: #ff7777;
 		font-size: 10px;
-		margin-top: .5rem;
+		margin-top: 0.5rem;
 		text-align: center;
 	}
 `;
@@ -45,4 +45,4 @@ export const LoginButton = styled.a`
 	img {
 		height: 40px;
 	}
-`
+`;

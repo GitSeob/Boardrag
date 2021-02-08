@@ -37,7 +37,8 @@ export const FormBox = styled.div`
 	background: #000;
 	box-shadow: 0 0 6px 1px #afafaf;
 
-	input, h2 {
+	input,
+	h2 {
 		width: 100%;
 		margin-bottom: 1rem;
 	}
@@ -45,23 +46,22 @@ export const FormBox = styled.div`
 	p.info {
 		font-size: 10px;
 		color: #aaa;
-
 	}
 
 	input {
-		padding: .5rem;
+		padding: 0.5rem;
 		background: #fafafa;
 		border-radius: 5px;
-		margin-top: .5rem;
+		margin-top: 0.5rem;
 	}
 
-	input[type="checkbox"] {
+	input[type='checkbox'] {
 		width: fit-content;
 		margin: 0;
-		margin-right: .5rem;
+		margin-right: 0.5rem;
 	}
 
-	input[type="password"]:disabled {
+	input[type='password']:disabled {
 		background: #bababa;
 		color: #444;
 	}
@@ -70,12 +70,12 @@ export const FormBox = styled.div`
 		display: none;
 
 		&.next {
-			animation: ${appearUp} .6s ease-in-out 1;
+			animation: ${appearUp} 0.6s ease-in-out 1;
 			display: block;
 		}
 
 		&.before {
-			animation: ${appearDown} .6s ease-in-out 1;
+			animation: ${appearDown} 0.6s ease-in-out 1;
 			display: block;
 		}
 
@@ -94,10 +94,9 @@ export const FormBox = styled.div`
 	}
 `;
 
-
 export const ProfileImageBox = styled.div`
 	width: 100%;
-	margin: .5rem 0;
+	margin: 0.5rem 0;
 
 	& > div {
 		position: relative;
@@ -150,11 +149,11 @@ export const ProfileImageBox = styled.div`
 
 export const BackgroundImageBox = styled.div`
 	width: 100%;
-	margin: .5rem 0;
+	margin: 0.5rem 0;
 
 	& > div {
 		position: relative;
-		margin: .5rem auto;
+		margin: 0.5rem auto;
 		width: 100%;
 		height: calc((400px - 2rem) * 5 / 8);
 		border-radius: 10px;
@@ -191,7 +190,7 @@ export const BackgroundImageBox = styled.div`
 			height: 36px;
 			border-radius: 18px;
 			padding: 8px;
-			background: rgba(0, 0, 0, .6);
+			background: rgba(0, 0, 0, 0.6);
 			cursor: pointer;
 
 			img {
@@ -207,12 +206,12 @@ export const PageButtonBox = styled.div`
 	display: flex !important;
 	align-items: center;
 	width: 100%;
-	padding: .5rem 0;
+	padding: 0.5rem 0;
 	min-height: 2rem;
 
 	& > div {
 		cursor: pointer;
-		transition: .3s;
+		transition: 0.3s;
 		display: flex;
 		align-items: center;
 
@@ -222,7 +221,7 @@ export const PageButtonBox = styled.div`
 		}
 
 		img {
-			transition: .3s;
+			transition: 0.3s;
 			width: 0;
 			height: 1rem;
 		}

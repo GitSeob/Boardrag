@@ -18,15 +18,15 @@ export const InitNameBox = styled.div`
 	left: 50%;
 	z-index: 21;
 	padding: 24px;
-	background: rgba(0, 0, 0, .5);
+	background: rgba(0, 0, 0, 0.5);
 	border-radius: 24px;
-	box-shadow: 0 0 6px 1px rgba(255, 255, 255, .7);
+	box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.7);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	transform: translate(-50%, -50%);
-	animation: ${appear} .5s ease-in-out 1;
+	animation: ${appear} 0.5s ease-in-out 1;
 
 	& > p {
 		font-size: 18px;
@@ -51,7 +51,9 @@ export const InitNameBox = styled.div`
 		padding: 1em;
 		border-radius: 12px;
 
-		&::placeholder { color: #aaa; }
+		&::placeholder {
+			color: #aaa;
+		}
 
 		&:focus {
 			background: #888;
@@ -65,12 +67,12 @@ export const InitNameBox = styled.div`
 		text-align: center;
 		padding: 1em;
 		border-radius: 12px;
-		border: 1px solid rgba(255, 255, 255, .7);
+		border: 1px solid rgba(255, 255, 255, 0.7);
 		cursor: pointer;
 
 		&:hover {
 			background: #222;
-			box-shadow: 0 0 4px 1px rgba(255, 255, 255, .7);
+			box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.7);
 		}
 	}
 `;
