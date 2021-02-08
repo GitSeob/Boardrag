@@ -20,36 +20,36 @@ const {deleteFile, allDeleteFile, renameFileForSave} = require('../file_modules'
 router.get('/auth', async (req, res, next) => {
 	if (!req.user)
 		return res.send(false);
-	const t = await db.sequelize.transaction();
-	try {
-		const access_token_check_url = "https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + req.user.access_token;
-		const access_result = await axios.get(access_token_check_url).then(() => true).catch(() => false);
-		if (!access_result)
-		{
-			const refresh_url = `https://www.googleapis.com/oauth2/v4/token?client_id=${config.google_cid}&client_secret=${config.google_secret}&refresh_token=${req.user.refresh_token}&grant_type=refresh_token`
-			await axios.post(refresh_url, {
-				client_id: config.google_cid,
-				client_secret: config.google_secret,
-				refresh_token: req.user.refresh_token,
-				grant_type: "refresh_token",
-			}).then(async (res) => {
-				await db.User.update({
-					access_token: res.data.access_token
-				}, {
-					where: {id :req.user.id },
-					transaction: t,
-				});
-			}).catch((e) => {
-				next(e);
-			})
-		}
-		await t.commit();
+	//const t = await db.sequelize.transaction();
+	//try {
+	//	const access_token_check_url = "https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + req.user.access_token;
+	//	const access_result = await axios.get(access_token_check_url).then(() => true).catch(() => false);
+	//	if (!access_result)
+	//	{
+	//		const refresh_url = `https://www.googleapis.com/oauth2/v4/token?client_id=${config.google_cid}&client_secret=${config.google_secret}&refresh_token=${req.user.refresh_token}&grant_type=refresh_token`
+	//		await axios.post(refresh_url, {
+	//			client_id: config.google_cid,
+	//			client_secret: config.google_secret,
+	//			refresh_token: req.user.refresh_token,
+	//			grant_type: "refresh_token",
+	//		}).then(async (res) => {
+	//			await db.User.update({
+	//				access_token: res.data.access_token
+	//			}, {
+	//				where: {id :req.user.id },
+	//				transaction: t,
+	//			});
+	//		}).catch((e) => {
+	//			next(e);
+	//		})
+	//	}
+	//	await t.commit();
 		return res.send(req.user);
-	} catch (e) {
-		console.error(e);
-		await t.rollback();
-		next(e);
-	}
+	//} catch (e) {
+	//	console.error(e);
+	//	await t.rollback();
+	//	next(e);
+	//}
 });
 
 router.post('/auth', isNotLoggedIn, async (req, res, next) => {
