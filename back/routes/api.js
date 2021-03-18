@@ -1,9 +1,7 @@
 const passport = require("passport");
 const bcrypt = require("bcrypt");
 const { Op, fn, col } = require('sequelize');
-const axios = require('axios');
 const env = process.env.NODE_ENV || "development";
-const config = require("../config/config")[env];
 const router = require(".");
 const db = require("../models");
 const { isNotLoggedIn, isLoggedIn } = require("./middleware");
@@ -18,38 +16,7 @@ const {
 const {deleteFile, allDeleteFile, renameFileForSave} = require('../file_modules');
 
 router.get('/auth', async (req, res, next) => {
-	if (!req.user)
-		return res.send(false);
-	//const t = await db.sequelize.transaction();
-	//try {
-	//	const access_token_check_url = "https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + req.user.access_token;
-	//	const access_result = await axios.get(access_token_check_url).then(() => true).catch(() => false);
-	//	if (!access_result)
-	//	{
-	//		const refresh_url = `https://www.googleapis.com/oauth2/v4/token?client_id=${config.google_cid}&client_secret=${config.google_secret}&refresh_token=${req.user.refresh_token}&grant_type=refresh_token`
-	//		await axios.post(refresh_url, {
-	//			client_id: config.google_cid,
-	//			client_secret: config.google_secret,
-	//			refresh_token: req.user.refresh_token,
-	//			grant_type: "refresh_token",
-	//		}).then(async (res) => {
-	//			await db.User.update({
-	//				access_token: res.data.access_token
-	//			}, {
-	//				where: {id :req.user.id },
-	//				transaction: t,
-	//			});
-	//		}).catch((e) => {
-	//			next(e);
-	//		})
-	//	}
-	//	await t.commit();
-		return res.send(req.user);
-	//} catch (e) {
-	//	console.error(e);
-	//	await t.rollback();
-	//	next(e);
-	//}
+	return res.send(req.user || false);
 });
 
 router.post('/auth', isNotLoggedIn, async (req, res, next) => {
@@ -89,9 +56,10 @@ router.post('/logout', isLoggedIn, (req, res) => {
 });
 
 router.get(`/checkBoardName/:boardName`, isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	try {
 		const board = await db.Board.findOne({
-			where: { name: req.params.boardName }
+			where: { name: boardName }
 		});
 		if (board)
 			return res.send(false);
@@ -242,11 +210,12 @@ router.get(`/notJoinedBoards`, isLoggedIn, async (req, res, next) => {
 })
 
 router.get(`/board/:boardName`, isLoggedIn, async (req, res, next) => {
-	if (!req.params.boardName)
+	const boardName = decodeURIComponent(req.params.boardName);
+	if (!boardName)
 		next(new Error("Board name is undefined"));
 	try {
 		const boardData = await db.Board.findOne({
-			where: {name: req.params.boardName},
+			where: {name: boardName},
 			attributes: ['id', 'name', 'background', 'AdminId'],
 			include: [{
 				model: db.TextContent,
@@ -294,8 +263,9 @@ router.get(`/board/:boardName`, isLoggedIn, async (req, res, next) => {
 });
 
 router.get(`/board/:boardName/me`, isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	try {
-		const me = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
+		const me = await db.BoardMember.getMyInfo(boardName, req.user);
 		if (me.error)
 			return res.status(me.error).send({ reason: me.reason });
 		return res.send(me);
@@ -313,8 +283,9 @@ router.post('/uploadImage', isLoggedIn, upload.single('image'), (req, res) => {
 	});
 });
 
-router.post('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
+router.post('/board/:boardname/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
 	let query = {};
+	const boardName = decodeURIComponent(req.params.boardName);
 	if (req.params.cid === '1') {
 		query.TextContentId = parseInt(req.params.id);
 	} else if (req.params.cid === '2') {
@@ -347,6 +318,7 @@ router.post('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, n
 
 router.get('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
 	let query = {};
+	const boardName = decodeURIComponent(req.params.boardName);
 	if (req.params.cid === '1') {
 		query.TextContentId = parseInt(req.params.id);
 	} else if (req.params.cid === '2') {
@@ -357,7 +329,7 @@ router.get('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, ne
 		return res.status(401).send({reason: 'category parameter is wrong.'});
 	}
 	try {
-		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		const board = await db.Board.checkBoardWithName(boardName);
 		if (board.error)
 			return res.status(board.error).send({ reason: board.reason });
 		const comments = await db.Comment.findAll({
@@ -375,8 +347,9 @@ router.get('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, ne
 });
 
 router.patch('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	try {
-		const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
+		const member = await db.BoardMember.getMyInfo(boardName, req.user);
 		if (member.error)
 			return res.status(member.error).send({ reason: member.reason });
 		const comment = await db.Comment.findOne({
@@ -395,7 +368,7 @@ router.patch('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next)
 			}
 		});
 		const io = req.app.get("io");
-		io.of(`/board-${req.params.boardName}`).emit('refresh');
+		io.of(`/board-${boardName}`).emit('refresh');
 		res.send('update comment ok');
 	} catch (e) {
 		console.error(e);
@@ -404,6 +377,7 @@ router.patch('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next)
 });
 
 router.delete('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	try {
 		const member = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
 		if (member.error)
@@ -419,7 +393,7 @@ router.delete('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next
 			where: { id: req.params.id }
 		});
 		const io = req.app.get("io");
-		io.of(`/board-${req.params.boardName}`).emit('refresh');
+		io.of(`/board-${boardName}`).emit('refresh');
 		res.send('delete comment ok');
 	} catch (e) {
 		console.error(e);
@@ -429,6 +403,7 @@ router.delete('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next
 
 router.post('/board/:boardName/write/:contentName', isLoggedIn, async (req, res, next) => {
 	let model;
+	const boardName = decodeURIComponent(req.params.boardName);
 	if (req.params.contentName === 'text')
 		model = db.TextContent;
 	else if(req.params.contentName === 'note')
@@ -442,7 +417,7 @@ router.post('/board/:boardName/write/:contentName', isLoggedIn, async (req, res,
 		if (result.error)
 			return res.status(result.error).send({ reason: result.reason });
 		const io = req.app.get("io");
-		io.of(`/board-${req.params.boardName}`).emit('refresh');
+		io.of(`/board-${boardName}`).emit('refresh');
 		return res.send(`${result}`);
 	} catch (e) {
 		console.error(e);
@@ -452,6 +427,7 @@ router.post('/board/:boardName/write/:contentName', isLoggedIn, async (req, res,
 
 router.delete('/board/:boardName/delete/:contentName/:id', isLoggedIn, async (req, res, next) => {
 	let model;
+	const boardName = decodeURIComponent(req.params.boardName);
 	if (req.params.contentName === 'text')
 		model = db.TextContent;
 	else if(req.params.contentName === 'note')
@@ -467,7 +443,7 @@ router.delete('/board/:boardName/delete/:contentName/:id', isLoggedIn, async (re
 		if (content.url || content.background_img)
 			deleteFile(content.url ? content.url : content.background_img);
 		const io = req.app.get("io");
-		io.of(`/board-${req.params.boardName}`).emit('refresh');
+		io.of(`/board-${boardName}`).emit('refresh');
 		return res.send(`delete done`);
 	} catch(e) {
 		console.error(e);
@@ -477,6 +453,7 @@ router.delete('/board/:boardName/delete/:contentName/:id', isLoggedIn, async (re
 
 router.patch('/board/:boardName/:contentName/:id', isLoggedIn, async (req, res, next) => {
 	let model;
+	const boardName = decodeURIComponent(req.params.boardName);
 	if (req.params.contentName === 'text')
 		model = db.TextContent;
 	else if(req.params.contentName === 'note')
@@ -490,7 +467,7 @@ router.patch('/board/:boardName/:contentName/:id', isLoggedIn, async (req, res, 
 		if (result.error)
 			return res.status(result.error).send({ reason: result.reason });
 		const io = req.app.get("io");
-		io.of(`/board-${req.params.boardName}`).emit('refresh');
+		io.of(`/board-${boardName}`).emit('refresh');
 		return res.send(`${result}`);
 	} catch (e) {
 		console.error(e);
@@ -499,8 +476,9 @@ router.patch('/board/:boardName/:contentName/:id', isLoggedIn, async (req, res, 
 });
 
 router.get(`/board/:boardName/chats`, isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	try {
-		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		const board = await db.Board.checkBoardWithName(boardName);
 		if (board.error)
 			return res.status(board.error).send({ reason: board.reason });
 
@@ -519,8 +497,9 @@ router.get(`/board/:boardName/chats`, isLoggedIn, async (req, res, next) => {
 })
 
 router.post(`/board/:boardName/chat`, isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	try {
-		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		const board = await db.Board.checkBoardWithName(boardName);
 		if (board.error)
 			return res.status(board.error).send({ reason: board.reason });
 		const newChat = await db.Chat.create({
@@ -530,7 +509,7 @@ router.post(`/board/:boardName/chat`, isLoggedIn, async (req, res, next) => {
 			BoardId: board.id
 		});
 		const io = req.app.get("io");
-		io.of(`/board-${req.params.boardName}`).emit('newChat', newChat);
+		io.of(`/board-${boardName}`).emit('newChat', newChat);
 		res.send('message emit ok');
 	} catch(e) {
 		console.error(e);
@@ -539,8 +518,9 @@ router.post(`/board/:boardName/chat`, isLoggedIn, async (req, res, next) => {
 })
 
 router.post(`/join/:boardName`, isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	try {
-		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		const board = await db.Board.checkBoardWithName(boardName);
 		if (board.error)
 			return res.status(board.error).send({ reason: board.reason });
 		if (board.is_lock)
@@ -564,17 +544,18 @@ router.post(`/join/:boardName`, isLoggedIn, async (req, res, next) => {
 			UserId: req.user.id,
 			BoardId: board.id
 		})
-		return res.send(`${req.params.boardName}`);
+		return res.send(`${boardName}`);
 	} catch(e) {
 		next(e);
 	}
 });
 
 router.delete(`/deleteBoard/:boardName`, isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	const t = await db.sequelize.transaction();
 	try {
 		const board = await db.Board.findOne({
-			where: {name: req.params.boardName},
+			where: {name: boardName},
 			include: [{
 				model: db.BoardMember,
 				as: "Member"
@@ -640,9 +621,10 @@ router.delete(`/deleteBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 });
 
 router.post(`/BoardMember/edit/:boardName`, isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	const t = await db.sequelize.transaction();
 	try {
-		const me = await db.BoardMember.getMyInfo(req.params.boardName, req.user);
+		const me = await db.BoardMember.getMyInfo(boardName, req.user);
 		if (me.error)
 			return res.status(me.error).send({ reason: me.reason });
 
@@ -668,9 +650,10 @@ router.post(`/BoardMember/edit/:boardName`, isLoggedIn, async (req, res, next) =
 });
 
 router.post(`/editBoard/:boardName`, isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	const t = await db.sequelize.transaction();
 	try {
-		const board = await boardPermissionCheck(req.params.boardName, req.user);
+		const board = await boardPermissionCheck(boardName, req.user);
 		if (board.error)
 			return res.status(board.error).send({ reason: board.reason });
 
@@ -700,9 +683,10 @@ router.post(`/editBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 });
 
 router.delete(`/kick/:boardName`, isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	const t = await db.sequelize.transaction();
 	try {
-		const board = await boardPermissionCheck(req.params.boardName, req.user);
+		const board = await boardPermissionCheck(boardName, req.user);
 		if (board.error)
 			return res.status(board.error).send({ reason: board.reason });
 		const kickUser = await db.BoardMember.findOne({
@@ -734,9 +718,10 @@ router.delete(`/kick/:boardName`, isLoggedIn, async (req, res, next) => {
 })
 
 router.delete(`/quitBoard/:boardName`, isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	const t = await db.sequelize.transaction();
 	try {
-		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		const board = await db.Board.checkBoardWithName(boardName);
 		if (board.error)
 			return res.status(board.error).send({ reason: board.reason });
 		if (req.user.id === board.AdminId)
@@ -778,8 +763,9 @@ router.post(`/nickname`, isLoggedIn, async (req, res, next) => {
 })
 
 router.post(`/passwordCheck/:boardName`, isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	try {
-		const board = await boardPermissionCheck(req.params.boardName, req.user);
+		const board = await boardPermissionCheck(boardName, req.user);
 		if (board.error)
 			return res.status(board.error).send({ reason: board.reason });
 		const compPW = await bcrypt.compare(req.body.password, board.password);
@@ -793,9 +779,10 @@ router.post(`/passwordCheck/:boardName`, isLoggedIn, async (req, res, next) => {
 });
 
 router.post(`/changePassword/:boardName`, isLoggedIn, async (req, res, next) => {
+	const boardName = decodeURIComponent(req.params.boardName);
 	const t = await db.sequelize.transaction();
 	try {
-		const board = await boardPermissionCheck(req.params.boardName, req.user);
+		const board = await boardPermissionCheck(boardName, req.user);
 		if (board.error)
 			return res.status(board.error).send({ reason: board.reason });
 		const password = (req.body.password.length === 0 && !req.body.changeFlg) ? null : await bcrypt.hash(req.body.password, 12);
