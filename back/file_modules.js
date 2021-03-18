@@ -54,7 +54,7 @@ modules.runSchduler = () => {
 		const t = await db.sequelize.transaction();
 		try {
 			console.log("RUN SCHEDULER ... ");
-			const deleteFiles = [];
+			const deleteFiles = []; // 삭제할 파일을 저장할 배열
 
 			await db.TextContent.findAll({
 				where: {
@@ -106,9 +106,9 @@ modules.runSchduler = () => {
 				});
 			});
 
-			await modules.allDeleteFile(deleteFiles);
+			await modules.allDeleteFile(deleteFiles); // 배열에 저장되어 있는 이름의 파일들을 제거한다.
 
-			const availFiles = [];
+			const availFiles = []; // 현재 유효한 컨텐츠에 포함되어있는 파일을 저장할 배열
 
 			await db.Image.findAll({
 				attributes: ["url"],
@@ -132,7 +132,7 @@ modules.runSchduler = () => {
 				modules.allDeleteFile(
 					filelist
 					.filter(elem => !(availFiles.find(file => file.replace(`${delURL}`, "") === elem)))
-				);
+				); // 유효파일배열에 저장되어 있지 않으면 삭제한다.
 			});
 			await fs.readdir("./uploads/profile", (error, filelist) => {
 				if (error)
@@ -140,7 +140,7 @@ modules.runSchduler = () => {
 				filelist.forEach(file => {
 					if (file.indexOf(":::not_save:::"))
 						modules.deleteFile(file);
-				})
+				}); // 임시로 저장되어있는 파일이 남아있으면 삭제한다.
 			});
 			await fs.readdir("./uploads/background", (error, filelist) => {
 				if (error)
@@ -148,7 +148,7 @@ modules.runSchduler = () => {
 				filelist.forEach(file => {
 					if (file.indexOf(":::not_save:::"))
 						modules.deleteFile(file);
-				})
+				}); // 임시로 저장되어있는 파일이 남아있으면 삭제한다.
 			});
 			await t.commit();
 			console.log("END SCHEDULER'S JOB ... ");

@@ -89,6 +89,11 @@ app.get("*", (req, res, next) => {
 const server = app.listen(app.get("PORT"), () => {
 	console.log(`listening on port ${app.get("PORT")}`);
 });
-runSchduler();
+
+// 일정 주기마다 각 콘텐츠들이 만료되었는지 확인하고
+// 만료되었으면 삭제해주며 이미지를 포함하고 있으면
+// 로컬 디렉터리 내의 이미지 파일도 같이 삭제해주는 스케쥴러
+// runSchduler();
+// 기존 데이터들 스케쥴러로 삭제하지 않고 보존하기 위해 일단 주석 처리
 
 webSocket(server, app);
