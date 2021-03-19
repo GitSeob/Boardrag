@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
 import loadable from '@loadable/component';
 import { Redirect, Route, Switch } from 'react-router-dom';
+import ErrorPage from '@layouts/ErrorPage';
 
 const Auth = loadable(() => import('@pages/Auth'));
 const Board = loadable(() => import('@layouts/Board'));
@@ -16,6 +17,7 @@ const App: FC = () => (
 		<Route path="/main" component={Main} />
 		<Route path="/board/:board" component={Board} />
 		<Route path="/manage" component={Manage} />
+		<Route path="*" component={ErrorPage} />
 	</Switch>
 );
 
