@@ -1,6 +1,19 @@
 import styled from '@emotion/styled';
 import { FixAltContainer } from '../../css/default';
 
+export const Container = styled.div`
+	margin-left: 200px;
+	width: calc(100vw - 200px);
+	min-height: 100vh;
+	padding: 24px;
+
+	@media screen and (max-width: 600px) {
+		margin-left: 0;
+		margin-top: 48px;
+		width: 100%;
+	}
+`;
+
 export const LoadingBG = styled.div`
 	position: fixed;
 	width: 100vw;

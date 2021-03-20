@@ -414,25 +414,3 @@ export const StageContainer = styled('div')<SC>`
 export const ContentContainer = styled.div`
 	position: fixed;
 `;
-
-export const BoardFooter = styled.div`
-	width: 100vw;
-	align-items: center;
-	justify-content: center;
-	color: rgba(255, 255, 255, 0.6);
-	font-weight: 400;
-	font-size: 12px;
-	text-align: center;
-	display: flex;
-	padding: 1rem;
-	height: 100%;
-	background: rgba(0, 0, 0, 0.1);
-
-	img {
-		height: 16px;
-		margin-right: 6px;
-	}
-	a {
-		color: inherit;
-	}
-`;

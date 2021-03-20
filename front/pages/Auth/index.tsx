@@ -6,7 +6,7 @@ import { LoginContainer, LoginButton } from '@pages/Auth/styles';
 import { googleOauth } from '@config/config';
 import axios from 'axios';
 import { Redirect } from 'react-router-dom';
-import LoadingCircle from '@components/LoadingCircle';
+import LoadingCircle from '@components/loading/LoadingCircle';
 
 const Auth = () => {
 	const { data: userData, revalidate } = useSWR('/api/auth', fetcher);

@@ -8,7 +8,7 @@ import Dotenv from 'dotenv-webpack';
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 const config: webpack.Configuration = {
-    name: '42Board',
+    name: 'Boardrag',
     mode: isDevelopment ? 'development' : 'production',
     devtool: isDevelopment ? 'hidden-source-map' : 'inline-source-map',
     resolve: {
@@ -16,6 +16,7 @@ const config: webpack.Configuration = {
         alias: {
             '@hooks': path.resolve(__dirname, 'hooks'),
             '@components': path.resolve(__dirname, 'components'),
+            '@containers': path.resolve(__dirname, 'containers'),
             '@layouts': path.resolve(__dirname, 'layouts'),
             '@pages': path.resolve(__dirname, 'pages'),
             '@utils': path.resolve(__dirname, 'utils'),

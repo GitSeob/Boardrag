@@ -7,7 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import { Stage, Layer, Group } from 'react-konva';
 import Konva from 'konva';
-import RectOnCanvas from '@components/RectOnCanvas';
+import RectOnCanvas from '@components/board/RectOnCanvas';
 import { IBoard, IComment, IDetail, IBM } from '@typings/datas';
 
 import {
@@ -24,12 +24,12 @@ import {
 	OnModeAlt,
 	ResizeRemote,
 	StageContainer,
-	BoardFooter,
 } from './style';
-import ImageAdd from '@components/ImageAdd';
-import TextAdd from '@components/TextAdd';
-import NoteAdd from '@components/NoteAdd';
-import ContentContainer from '@components/ContentContainer';
+import ImageAdd from '@components/write/ImageAdd';
+import TextAdd from '@components/write/TextAdd';
+import NoteAdd from '@components/write/NoteAdd';
+import ContentContainer from '@components/board/ContentContainer';
+import PageFooter from '@containers/layout/PageFooter';
 
 type Position = {
 	x: number;
@@ -851,12 +851,7 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 					)}
 				</div>
 			)}
-			<BoardFooter>
-				<img src="/public/github.png" />
-				<a href="https://github.com/gitseob" target="_blank" rel="noreferrer">
-					gitseob
-				</a>
-			</BoardFooter>
+			<PageFooter className="board" />
 			<ToastContainer
 				position="bottom-left"
 				autoClose={5000}

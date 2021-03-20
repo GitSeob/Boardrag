@@ -2,12 +2,12 @@ import React, { FC, useEffect, useCallback, useState } from 'react';
 import { useParams } from 'react-router';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
-import LoadingCircle from '@components/LoadingCircle';
+import LoadingCircle from '@components/loading/LoadingCircle';
 import { Redirect } from 'react-router-dom';
 import axios from 'axios';
 import useSocket from '@hooks/useSocket';
 import { BoardHeader, UserList, LogOutButton, MenuContainer, UserMenu, DetailBackground } from './style';
-import ChatBox from '@components/ChatBox';
+import ChatBox from '@components/board/ChatBox';
 import WorkSpace from '@pages/WorkSpace';
 import { IUser, IBoard, IBM } from '@typings/datas';
 import { toast } from 'react-toastify';
@@ -18,8 +18,9 @@ interface IUserList {
 }
 
 const Board: FC = () => {
-	const params = useParams<{ board?: string }>();
-	const { board } = params;
+	const params = useParams<{ board: string }>();
+	const board = encodeURIComponent(params.board);
+	console.log(board);
 	const [socket, disconnectSocket] = useSocket(board);
 	const { data: userData } = useSWR<IUser | false>('/api/auth', fetcher);
 	const { data: boardData, revalidate: BOARDRevalidate } = useSWR<IBoard | string>(
@@ -83,7 +84,7 @@ const Board: FC = () => {
 	if (!userData) return <Redirect to={`/auth?prev=/board/${board}`} />;
 
 	if (!boardData) return <LoadingCircle />;
-	else if (boardData === 'not assigned') {
+	else if (boardData === 'not assigned' || !board) {
 		alert('참여하지 않은 보드입니다.');
 		return <Redirect to="/main" />;
 	}

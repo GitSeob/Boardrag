@@ -5,15 +5,16 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import LoadingCircle from '@components/LoadingCircle';
+import LoadingCircle from '@components/loading/LoadingCircle';
 import { Redirect } from 'react-router-dom';
 import { IUser, IBL } from '@typings/datas';
-import { Menu, RelBox, Container, Footer } from '../Main/style';
-import { ListBox, LoadingBG } from './style';
-import LoadingBall from '@components/LoadingBall';
-import MyBoardContainer from '@components/MyBoardContainer';
-import JoinedBoardForm from '@components/JoinedBoardForm';
-import ChangePW from '@components/ChangePW';
+import { Container, ListBox, LoadingBG } from './style';
+import LoadingBall from '@components/loading/LoadingBall';
+import MyBoardContainer from '@components/manage/MyBoardContainer';
+import JoinedBoardForm from '@components/manage/JoinedBoardForm';
+import ChangePW from '@components/manage/ChangePW';
+import MainPageHeader from '@containers/layout/MainPageHeader';
+import PageFooter from '@containers/layout/PageFooter';
 
 const Manage = () => {
 	const { data: userData, revalidate: USERRevalidate } = useSWR<IUser | false>('/api/auth', fetcher);
@@ -46,25 +47,7 @@ const Manage = () => {
 
 	return (
 		<div>
-			<Menu>
-				<RelBox>
-					<a className="logo" href="/main">
-						<img src="/public/boardrag.svg" />
-					</a>
-					<div
-						onClick={() => {
-							location.href = '/main';
-						}}
-					>
-						<img src="/public/boards.svg" />
-						<p>MAIN PAGE</p>
-					</div>
-					<div className="logout" onClick={logout}>
-						<img src="/public/exit.svg" />
-						<p>로그아웃</p>
-					</div>
-				</RelBox>
-			</Menu>
+			<MainPageHeader page="manage" USERRevalidate={USERRevalidate} />
 			<Container>
 				<div style={{ width: '100%' }}>
 					<p>내가 만든 보드</p>
@@ -114,6 +97,7 @@ const Manage = () => {
 											setLoading={setLoading}
 											toast={toast}
 											userData={userData}
+											BLRevalidate={BLRevalidate}
 										/>
 									);
 								})}
@@ -121,12 +105,7 @@ const Manage = () => {
 					)}
 				</div>
 			</Container>
-			<Footer>
-				<img src="/public/github.png" />
-				<a href="https://github.com/gitseob" target="_blank" rel="noreferrer">
-					gitseob
-				</a>
-			</Footer>
+			<PageFooter className="manage" />
 			<ToastContainer
 				position="bottom-left"
 				autoClose={5000}
