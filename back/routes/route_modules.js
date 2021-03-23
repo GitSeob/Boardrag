@@ -74,6 +74,8 @@ modules.upload = multer({
 		filename(req, file, done){
 			let ext = path.extname(file.originalname);
 			let savename;
+			console.log(req.query);
+			const boardName = encodeURIComponent(req.query.name);
 
 			if (req.query.type === 'upload')
 			{
@@ -81,9 +83,9 @@ modules.upload = multer({
 				savename = basename + new Date().format("yyyy-MM-dd_hh:mm:ss") + ext;
 			}
 			else if (req.query.type === 'background')
-				savename = req.query.name + "_bg_image:::not_save:::" + ext;
+				savename = boardName + "_bg_image:::not_save:::" + ext;
 			else if (req.query.type === 'profile')
-				savename = req.query.name + "_" + req.user.username + ":::not_save:::" + ext;
+				savename = boardName + "_" + req.user.username + ":::not_save:::" + ext;
 			savename = savename.replace(/\s/g, "_");
 			done(null, savename);
 		}

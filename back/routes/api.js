@@ -283,7 +283,7 @@ router.post('/uploadImage', isLoggedIn, upload.single('image'), (req, res) => {
 	});
 });
 
-router.post('/board/:boardname/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
+router.post('/board/:boardName/comment/:cid/:id', isLoggedIn, async (req, res, next) => {
 	let query = {};
 	const boardName = decodeURIComponent(req.params.boardName);
 	if (req.params.cid === '1') {
@@ -296,7 +296,7 @@ router.post('/board/:boardname/comment/:cid/:id', isLoggedIn, async (req, res, n
 		return res.status(401).send({reason: 'category parameter is wrong.'});
 
 	try {
-		const board = await db.Board.checkBoardWithName(req.params.boardName);
+		const board = await db.Board.checkBoardWithName(boardName);
 		if (board.error)
 			return res.status(board.error).send({ reason: board.reason });
 		await db.Comment.create({
@@ -306,10 +306,7 @@ router.post('/board/:boardname/comment/:cid/:id', isLoggedIn, async (req, res, n
 			content: req.body.content,
 			BoardMemberId: req.body.BoardMemberId,
 			BoardId: board.id
-		})
-		const io = req.app.get("io");
-		io.of(`/board-${req.params.boardName}`).emit('refresh');
-		res.send('write comment ok');
+		});
 	} catch(e) {
 		console.error(e);
 		next(e);
@@ -367,9 +364,6 @@ router.patch('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next)
 				id: req.params.id
 			}
 		});
-		const io = req.app.get("io");
-		io.of(`/board-${boardName}`).emit('refresh');
-		res.send('update comment ok');
 	} catch (e) {
 		console.error(e);
 		next(e);
@@ -392,9 +386,6 @@ router.delete('/board/:boardName/comment/:id', isLoggedIn, async (req, res, next
 		await db.Comment.destroy({
 			where: { id: req.params.id }
 		});
-		const io = req.app.get("io");
-		io.of(`/board-${boardName}`).emit('refresh');
-		res.send('delete comment ok');
 	} catch (e) {
 		console.error(e);
 		next(e);
@@ -417,7 +408,7 @@ router.post('/board/:boardName/write/:contentName', isLoggedIn, async (req, res,
 		if (result.error)
 			return res.status(result.error).send({ reason: result.reason });
 		const io = req.app.get("io");
-		io.of(`/board-${boardName}`).emit('refresh');
+		io.of(`/board-${encodeURIComponent(boardName)}`).emit('refresh');
 		return res.send(`${result}`);
 	} catch (e) {
 		console.error(e);
@@ -443,7 +434,7 @@ router.delete('/board/:boardName/delete/:contentName/:id', isLoggedIn, async (re
 		if (content.url || content.background_img)
 			deleteFile(content.url ? content.url : content.background_img);
 		const io = req.app.get("io");
-		io.of(`/board-${boardName}`).emit('refresh');
+		io.of(`/board-${encodeURIComponent(boardName)}`).emit('refresh');
 		return res.send(`delete done`);
 	} catch(e) {
 		console.error(e);
@@ -467,7 +458,7 @@ router.patch('/board/:boardName/:contentName/:id', isLoggedIn, async (req, res, 
 		if (result.error)
 			return res.status(result.error).send({ reason: result.reason });
 		const io = req.app.get("io");
-		io.of(`/board-${boardName}`).emit('refresh');
+		io.of(`/board-${encodeURIComponent(boardName)}`).emit('refresh');
 		return res.send(`${result}`);
 	} catch (e) {
 		console.error(e);
@@ -509,7 +500,7 @@ router.post(`/board/:boardName/chat`, isLoggedIn, async (req, res, next) => {
 			BoardId: board.id
 		});
 		const io = req.app.get("io");
-		io.of(`/board-${boardName}`).emit('newChat', newChat);
+		io.of(`/board-${encodeURIComponent(boardName)}`).emit('newChat', newChat);
 		res.send('message emit ok');
 	} catch(e) {
 		console.error(e);
@@ -640,6 +631,7 @@ router.post(`/BoardMember/edit/:boardName`, isLoggedIn, async (req, res, next) =
 		}, {
 			transaction: t
 		});
+		console.log(profile_img_url);
 		await t.commit();
 		return res.send(`${profile_img_url}`);
 	} catch(e) {

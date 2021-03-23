@@ -42,6 +42,7 @@ modules.renameFileForSave = async (filename) => {
 		return "";
 	const retName = filename.replace("uploads/", "").replace(":::not_save:::", "");
 	const newFileName = filename.replace(":::not_save:::", "").replace(delURL, "./uploads/");
+	console.log({ filename, retName, newFileName});
 	await fs.rename(filename.replace(delURL, "./uploads/"), newFileName, err => {
 		if (err) throw err;
 	});
