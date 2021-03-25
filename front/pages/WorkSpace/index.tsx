@@ -1,72 +1,23 @@
 import React, { FC, useEffect, useCallback, useState } from 'react';
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
-dayjs.extend(localizedFormat);
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import { Stage, Layer, Group } from 'react-konva';
 import Konva from 'konva';
 import RectOnCanvas from '@components/board/RectOnCanvas';
-import { IBoard, IComment, IDetail, IBM } from '@typings/datas';
-
-import {
-	DetailBackground,
-	KonvaContainer,
-	WarnMessage,
-	MenuBox,
-	MenuAttr,
-	ComponentBox,
-	AltBox,
-	TextComponent,
-	ImageComponent,
-	NoteComponent,
-	OnModeAlt,
-	ResizeRemote,
-	StageContainer,
-} from './style';
-import ImageAdd from '@components/write/ImageAdd';
-import TextAdd from '@components/write/TextAdd';
-import NoteAdd from '@components/write/NoteAdd';
-import ContentContainer from '@components/board/ContentContainer';
+import { IComment, IDetail } from '@typings/datas';
+import { checkAllBox, isAvailPos } from './checkMethods';
+import { DetailBackground, KonvaContainer, WarnMessage, StageContainer } from './style';
+import ContentDetails from '@containers/board/ContentDetails';
 import PageFooter from '@containers/layout/PageFooter';
+import { IBoardProps, DraggedRect, Position, MenuPosition, Offset, RectSize } from '@typings/workSpaceTypes';
+import AddContent from '@components/write/AddContent';
+import ContentBlock from '@components/board/ContentBlock';
+import ChangeBlockStatus from '@containers/board/ChangeBlockStatus';
 
-type Position = {
-	x: number;
-	y: number;
-};
-
-type MenuPosition = {
-	x: number;
-	y: number;
-	flg: boolean;
-	disp: boolean;
-};
-
-type DraggedRect = {
-	x: number;
-	y: number;
-	dragged: boolean;
-};
-
-type RectSize = {
-	width: number;
-	height: number;
-};
-
-type offset = {
-	width: number;
-	height: number;
-	x: number;
-	y: number;
-};
-
-interface IBoardProps {
-	boardData: IBoard | undefined;
-	userData: IBM;
-	dataReval: () => void;
-	board: string;
-}
+dayjs.extend(localizedFormat);
 
 const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: IBoardProps) => {
 	const layerRef = React.useRef() as React.MutableRefObject<Konva.Layer>;
@@ -75,30 +26,27 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 		y: 0,
 		dragged: false,
 	});
-
 	const [mPos, setMPos] = useState<Position>({
 		x: 0,
 		y: 0,
 	});
-
 	const [rPos, setRPos] = useState<Position>({
 		x: 0,
 		y: 0,
 	});
-
 	const [menuState, setMenu] = useState<MenuPosition>({
 		x: 0,
 		y: 0,
 		flg: false,
 		disp: false,
 	});
-	const [offset, setOffset] = useState<offset>({
+	const [offset, setOffset] = useState<Offset>({
 		x: 0,
 		y: 0,
 		width: 0,
 		height: 0,
 	});
-	const [addState, setAdd] = useState<number>(0);
+	const [addState, setAddState] = useState<number>(0);
 	const [openDetail, setOpenDetail] = useState<IDetail>({
 		category: 0,
 		id: 0,
@@ -116,7 +64,6 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 	const [height, setHeight] = useState(defaultRectSize * 20);
 	const [comments, setComments] = useState<IComment[]>();
 	const [canMove, setCanMove] = useState(false);
-	const [isEditSize, setIsEditSize] = useState(false);
 
 	const bg = boardData?.background ? boardData.background : '';
 
@@ -152,7 +99,7 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 					width: rectSize.width / defaultRectSize,
 					height: rectSize.height / defaultRectSize,
 				});
-				setAdd(number);
+				setAddState(number);
 			}
 		},
 		[rectSize, defaultRectSize, rPos],
@@ -201,169 +148,13 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 		}
 	}, [mPos, isDragged, rPos, defaultRectSize, canMove]);
 
-	const checkVertexInRect = useCallback((v: number, left: number, right: number) => {
-		if (v > left && v < right) return true;
-		return false;
-	}, []);
-
-	const checkAllBox = useCallback(() => {
-		if (
-			boardData?.TextContents &&
-			boardData.TextContents.filter((elem) => !(openDetail.category === 1 && elem.id === openDetail.id)).find(
-				(e) =>
-					((checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width) ||
-						checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width)) &&
-						(checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height) ||
-							checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height))) ||
-					((checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width) ||
-						checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width)) &&
-						(checkVertexInRect(rPos.y, e.y * defaultRectSize, (e.y + e.height) * defaultRectSize) ||
-							checkVertexInRect(
-								rPos.y + rectSize.height,
-								e.y * defaultRectSize,
-								(e.y + e.height) * defaultRectSize,
-							))) ||
-					((checkVertexInRect(rPos.x, e.x * defaultRectSize, (e.x + e.width) * defaultRectSize) ||
-						checkVertexInRect(
-							rPos.x + rectSize.width,
-							e.x * defaultRectSize,
-							(e.x + e.width) * defaultRectSize,
-						)) &&
-						(checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height) ||
-							checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height))),
-			)
-		)
-			return false;
-		if (
-			boardData?.Images &&
-			boardData.Images.filter((elem) => !(openDetail.category === 3 && elem.id === openDetail.id)).find(
-				(e) =>
-					((checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width) ||
-						checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width)) &&
-						(checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height) ||
-							checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height))) ||
-					((checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width) ||
-						checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width)) &&
-						(checkVertexInRect(rPos.y, e.y * defaultRectSize, (e.y + e.height) * defaultRectSize) ||
-							checkVertexInRect(
-								rPos.y + rectSize.height,
-								e.y * defaultRectSize,
-								(e.y + e.height) * defaultRectSize,
-							))) ||
-					((checkVertexInRect(rPos.x, e.x * defaultRectSize, (e.x + e.width) * defaultRectSize) ||
-						checkVertexInRect(
-							rPos.x + rectSize.width,
-							e.x * defaultRectSize,
-							(e.x + e.width) * defaultRectSize,
-						)) &&
-						(checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height) ||
-							checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height))),
-			)
-		)
-			return false;
-		if (
-			boardData?.Notes &&
-			boardData.Notes.filter((elem) => !(openDetail.category === 2 && elem.id === openDetail.id)).find(
-				(e) =>
-					((checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width) ||
-						checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width)) &&
-						(checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height) ||
-							checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height))) ||
-					((checkVertexInRect(e.x * defaultRectSize, rPos.x, rPos.x + rectSize.width) ||
-						checkVertexInRect((e.x + e.width) * defaultRectSize, rPos.x, rPos.x + rectSize.width)) &&
-						(checkVertexInRect(rPos.y, e.y * defaultRectSize, (e.y + e.height) * defaultRectSize) ||
-							checkVertexInRect(
-								rPos.y + rectSize.height,
-								e.y * defaultRectSize,
-								(e.y + e.height) * defaultRectSize,
-							))) ||
-					((checkVertexInRect(rPos.x, e.x * defaultRectSize, (e.x + e.width) * defaultRectSize) ||
-						checkVertexInRect(
-							rPos.x + rectSize.width,
-							e.x * defaultRectSize,
-							(e.x + e.width) * defaultRectSize,
-						)) &&
-						(checkVertexInRect(e.y * defaultRectSize, rPos.y, rPos.y + rectSize.height) ||
-							checkVertexInRect((e.y + e.height) * defaultRectSize, rPos.y, rPos.y + rectSize.height))),
-			)
-		)
-			return false;
-		return true;
-	}, [boardData, rPos, defaultRectSize, rectSize, openDetail, checkVertexInRect]);
-
-	const checkRectArea = (
-		x: number,
-		y: number,
-		w: number,
-		h: number,
-		rx: number,
-		ry: number,
-		rw: number,
-		rh: number,
-	) => {
-		if (rx >= x && ry >= y && rx + rw <= x + w && ry + rh <= y + h) return false;
-		return true;
-	};
-
-	const isAvailPos = useCallback(() => {
-		if (!checkAllBox()) return false;
-		if (
-			boardData?.TextContents?.filter((elem) => !(openDetail.category === 1 && elem.id === openDetail.id)).find(
-				(e) =>
-					!checkRectArea(
-						e.x * defaultRectSize,
-						e.y * defaultRectSize,
-						e.width * defaultRectSize,
-						e.height * defaultRectSize,
-						rPos.x,
-						rPos.y,
-						rectSize.width,
-						rectSize.height,
-					),
-			)
-		)
-			return false;
-		if (
-			boardData?.Images?.filter((elem) => !(openDetail.category === 3 && elem.id === openDetail.id)).find(
-				(e) =>
-					!checkRectArea(
-						e.x * defaultRectSize,
-						e.y * defaultRectSize,
-						e.width * defaultRectSize,
-						e.height * defaultRectSize,
-						rPos.x,
-						rPos.y,
-						rectSize.width,
-						rectSize.height,
-					),
-			)
-		)
-			return false;
-		if (
-			boardData?.Notes?.filter((elem) => !(openDetail.category === 2 && elem.id === openDetail.id)).find(
-				(e) =>
-					!checkRectArea(
-						e.x * defaultRectSize,
-						e.y * defaultRectSize,
-						e.width * defaultRectSize,
-						e.height * defaultRectSize,
-						rPos.x,
-						rPos.y,
-						rectSize.width,
-						rectSize.height,
-					),
-			)
-		)
-			return false;
-		return true;
-	}, [boardData, rPos, rectSize, defaultRectSize, openDetail, checkAllBox]);
-
 	const openAddComponent = useCallback(
 		(number: number) => {
-			if (!checkAllBox()) setWarning('겹치는 영역이 존재합니다.');
+			if (!checkAllBox(boardData, openDetail, rPos, rectSize, defaultRectSize))
+				setWarning('겹치는 영역이 존재합니다.');
 			else viewAddComponent(number);
 		},
-		[checkAllBox, viewAddComponent],
+		[viewAddComponent],
 	);
 
 	const initStates = useCallback(() => {
@@ -379,7 +170,7 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 			...menuState,
 			flg: false,
 		});
-		setAdd(0);
+		setAddState(0);
 		setWarning('');
 	}, [defaultRectSize, isDragged, menuState]);
 
@@ -494,18 +285,6 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 		}
 	}, [openDetail, defaultRectSize, menuState]);
 
-	useEffect(() => {
-		if (addState == 0 && !canMove) {
-			if (isDragged.dragged) getRectSize();
-			else {
-				setRPos({
-					x: mPos.x - (mPos.x % defaultRectSize),
-					y: mPos.y - (mPos.y % defaultRectSize),
-				});
-			}
-		}
-	}, [mPos, isDragged, addState, defaultRectSize, canMove]);
-
 	const mouseMove = (e: any) => {
 		if (!menuState.flg) {
 			const transform = layerRef.current.getAbsoluteTransform().copy();
@@ -550,8 +329,18 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 		});
 	};
 
-	const UpdatePosition = async () => {
-		if (!isAvailPos()) return setWarning('이동할 수 없는 위치입니다.');
+	const cancelChangeBlockStatus = () => {
+		setCanMove(false);
+		initStates();
+	};
+
+	const updatePosition = async () => {
+		if (!isAvailPos(boardData, openDetail, rPos, rectSize, defaultRectSize)) {
+			setWarning('이동할 수 없는 위치입니다.');
+			return setTimeout(() => {
+				setWarning('');
+			}, 2000);
+		}
 		let requestURL = '';
 		const selectWidth = rectSize.width / defaultRectSize;
 		const selectHeight = rectSize.height / defaultRectSize;
@@ -607,6 +396,18 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 	};
 
 	useEffect(() => {
+		if (addState == 0 && !canMove) {
+			if (isDragged.dragged) getRectSize();
+			else {
+				setRPos({
+					x: mPos.x - (mPos.x % defaultRectSize),
+					y: mPos.y - (mPos.y % defaultRectSize),
+				});
+			}
+		}
+	}, [mPos, isDragged, addState, defaultRectSize, canMove]);
+
+	useEffect(() => {
 		if (addState !== 0)
 			setMenu({
 				...menuState,
@@ -630,7 +431,7 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 		<KonvaContainer>
 			{warning !== '' && <WarnMessage>{warning}</WarnMessage>}
 			{openDetail.flg && <DetailBackground onClick={onInitContent} />}
-			<ContentContainer
+			<ContentDetails
 				openDetail={openDetail}
 				userData={userData}
 				board={board}
@@ -641,113 +442,19 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 				setOpenDetail={setOpenDetail}
 				comments={comments}
 			/>
-			<MenuBox clicked={menuState.flg} x={menuState.x} y={menuState.y} disp={menuState.disp}>
-				<MenuAttr onClick={() => openAddComponent(1)}>Text</MenuAttr>
-				<MenuAttr onClick={() => openAddComponent(2)}>Note</MenuAttr>
-				<MenuAttr onClick={() => openAddComponent(3)}>Image</MenuAttr>
-			</MenuBox>
-			{addState === 1 && (
-				<TextAdd
-					toast={toast}
-					width={rectSize.width}
-					height={rectSize.height}
-					x={rPos.x}
-					y={rPos.y}
-					offset={offset}
-					initStates={initStates}
-					board={board}
-					BMID={userData.id}
-				/>
-			)}
-			{addState === 2 && (
-				<NoteAdd
-					toast={toast}
-					width={rectSize.width}
-					height={rectSize.height}
-					x={rPos.x}
-					y={rPos.y}
-					offset={offset}
-					initStates={initStates}
-					board={board}
-					BMID={userData.id}
-				/>
-			)}
-			{addState === 3 && (
-				<ImageAdd
-					toast={toast}
-					width={rectSize.width}
-					height={rectSize.height}
-					x={rPos.x}
-					y={rPos.y}
-					offset={offset}
-					initStates={initStates}
-					board={board}
-					BMID={userData.id}
-				/>
-			)}
-			{boardData?.TextContents &&
-				boardData?.TextContents.map((c, i) => {
-					return (
-						<ComponentBox
-							key={i}
-							width={defaultRectSize * c.width}
-							height={defaultRectSize * c.height}
-							x={defaultRectSize * c.x}
-							y={defaultRectSize * c.y}
-						>
-							<TextComponent onClick={() => openDetailWindow(1, c.id, c)}>
-								{c.content}
-								<AltBox className="alt">
-									{c.BoardMember ? c.BoardMember.username : 'unknown user'}
-								</AltBox>
-							</TextComponent>
-						</ComponentBox>
-					);
-				})}
-			{boardData?.Images &&
-				boardData?.Images.map((c, i) => {
-					return (
-						<ComponentBox
-							key={i}
-							width={defaultRectSize * c.width}
-							height={defaultRectSize * c.height}
-							x={defaultRectSize * c.x}
-							y={defaultRectSize * c.y}
-						>
-							<ImageComponent onClick={() => openDetailWindow(3, c.id, c)}>
-								<AltBox className="alt">
-									{c.BoardMember ? c.BoardMember.username : 'unknown user'}
-								</AltBox>
-								<img src={c.url} />
-							</ImageComponent>
-						</ComponentBox>
-					);
-				})}
-			{boardData?.Notes &&
-				boardData?.Notes.map((c, i) => {
-					return (
-						<ComponentBox
-							key={i}
-							width={defaultRectSize * c.width}
-							height={defaultRectSize * c.height}
-							x={defaultRectSize * c.x}
-							y={defaultRectSize * c.y}
-						>
-							<NoteComponent
-								onClick={() => openDetailWindow(2, c.id, c)}
-								src={c.background_img ? c.background_img : ''}
-							>
-								<AltBox className="alt">
-									{c.BoardMember ? c.BoardMember.username : 'unknown user'}
-								</AltBox>
-								<h3 className="head">{c.head}</h3>
-								<pre className="para" style={{ height: defaultRectSize * c.height - 10 }}>
-									<p>{c.paragraph}</p>
-								</pre>
-							</NoteComponent>
-						</ComponentBox>
-					);
-				})}
+			<AddContent
+				board={board}
+				BMID={userData.id}
+				addState={addState}
+				menuState={menuState}
+				rectSize={rectSize}
+				rPos={rPos}
+				offset={offset}
+				initStates={initStates}
+				openAddComponent={openAddComponent}
+				toast={toast}
+			/>
+			<ContentBlock boardData={boardData} defaultRectSize={defaultRectSize} openDetailWindow={openDetailWindow} />
 			<StageContainer
 				url={bg}
 				op={canMove ? 0.1 : 0.8}
@@ -782,74 +489,13 @@ const WorkSpace: FC<IBoardProps> = ({ board, boardData, dataReval, userData }: I
 				</Stage>
 			</StageContainer>
 			{canMove && (
-				<div
-					style={{
-						position: 'absolute',
-						top: '10px',
-						left: '10px',
-					}}
-				>
-					<OnModeAlt
-						onClick={() => {
-							setCanMove(false);
-							initStates();
-						}}
-					>
-						<span>돌아가기</span>
-						<img src="/public/close.svg" />
-					</OnModeAlt>
-					<OnModeAlt onClick={UpdatePosition}>
-						<span>수정하기</span>
-						<img src="/public/check.svg" />
-					</OnModeAlt>
-					{!isEditSize ? (
-						<OnModeAlt onClick={() => setIsEditSize(true)}>
-							<span>크기 변경하기</span>
-							<img src="/public/resize.svg" />
-						</OnModeAlt>
-					) : (
-						<OnModeAlt className="resize" style={{ cursor: 'none' }}>
-							<ResizeRemote>
-								<span>WIDTH -</span>
-								<button
-									className="decrease"
-									onClick={() =>
-										setRectSize({ ...rectSize, width: rectSize.width - defaultRectSize })
-									}
-								>
-									<img src="/public/arrow.svg" />
-								</button>
-								<div>{rectSize.width / defaultRectSize}</div>
-								<button
-									onClick={() =>
-										setRectSize({ ...rectSize, width: rectSize.width + defaultRectSize })
-									}
-								>
-									<img src="/public/arrow.svg" />
-								</button>
-							</ResizeRemote>
-							<ResizeRemote>
-								<span>HEIGHT -</span>
-								<button
-									className="decrease"
-									onClick={() =>
-										setRectSize({ ...rectSize, height: rectSize.height - defaultRectSize })
-									}
-								>
-									<img src="/public/arrow.svg" />
-								</button>
-								<div>{rectSize.height / defaultRectSize}</div>
-								<button
-									onClick={() =>
-										setRectSize({ ...rectSize, height: rectSize.height + defaultRectSize })
-									}
-								>
-									<img src="/public/arrow.svg" />
-								</button>
-							</ResizeRemote>
-						</OnModeAlt>
-					)}
-				</div>
+				<ChangeBlockStatus
+					rectSize={rectSize}
+					defaultRectSize={defaultRectSize}
+					cancelChangeBlockStatus={cancelChangeBlockStatus}
+					updatePosition={updatePosition}
+					setRectSize={setRectSize}
+				/>
 			)}
 			<PageFooter className="board" />
 			<ToastContainer

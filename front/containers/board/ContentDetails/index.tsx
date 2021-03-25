@@ -18,55 +18,9 @@ import {
 	NoImageProfile,
 } from './style';
 import { IDetail, IBM, IComment } from '@typings/datas';
-import TextC from '@components/board/DisplayContents/TextC';
-import NoteC from '@components/board/DisplayContents/NoteC';
-import ImageC from '@components/board/DisplayContents/ImageC';
+import ContentDetail from '../../../components/board/ContentDetail';
 
-interface ISC {
-	openDetail: IDetail;
-	isEdit: boolean;
-	setEdit(flg: boolean): void;
-	onSubmitEdit: (text: string, head: string, url: string) => void;
-	board: string;
-}
-
-const SwitchContent: FC<ISC> = ({ openDetail, isEdit, setEdit, onSubmitEdit, board }) => {
-	if (openDetail.content === undefined) return <></>;
-	if (openDetail.category == 1) {
-		return (
-			<TextC
-				isEdit={isEdit}
-				setEdit={setEdit}
-				onSubmitEdit={onSubmitEdit}
-				content={openDetail.content?.content}
-			/>
-		);
-	} else if (openDetail.category == 2) {
-		return (
-			<NoteC
-				isEdit={isEdit}
-				setEdit={setEdit}
-				onSubmitEdit={onSubmitEdit}
-				content={openDetail.content?.paragraph}
-				head={openDetail.content?.head}
-				url={openDetail.content?.background_img}
-				board={board}
-			/>
-		);
-	} else if (openDetail.category == 3) {
-		return (
-			<ImageC
-				isEdit={isEdit}
-				setEdit={setEdit}
-				onSubmitEdit={onSubmitEdit}
-				url={openDetail.content?.url}
-				board={board}
-			/>
-		);
-	} else return <></>;
-};
-
-interface ICContainer {
+interface IContentDetails {
 	openDetail: IDetail;
 	userData: IBM;
 	board: string;
@@ -78,7 +32,7 @@ interface ICContainer {
 	moveMode: () => void;
 }
 
-const ContentContainer: FC<ICContainer> = ({
+const ContentDetails: FC<IContentDetails> = ({
 	openDetail,
 	userData,
 	board,
@@ -88,7 +42,7 @@ const ContentContainer: FC<ICContainer> = ({
 	setOpenDetail,
 	comments,
 	moveMode,
-}: ICContainer) => {
+}) => {
 	const [editCommnetIdx, setEditCommentIdx] = useState(-1);
 	const [commentMenuIdx, setCMI] = useState(-1);
 	const [contentMenu, setContentMenu] = useState(false);
@@ -222,7 +176,7 @@ const ContentContainer: FC<ICContainer> = ({
 					<p>{dayjs(openDetail.content?.createdAt).format('YYYY년 MM월 DD일')}</p>
 				</div>
 				{openDetail && (
-					<SwitchContent
+					<ContentDetail
 						openDetail={openDetail}
 						isEdit={isEdit}
 						setEdit={setEdit}
@@ -350,4 +304,4 @@ const ContentContainer: FC<ICContainer> = ({
 	);
 };
 
-export default ContentContainer;
+export default ContentDetails;

@@ -160,3 +160,8 @@ export interface IBL {
 	AdminId: number;
 	Member: IBM[];
 }
+
+export interface IUserList {
+	id: number;
+	username: string;
+}

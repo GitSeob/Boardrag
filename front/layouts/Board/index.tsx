@@ -1,26 +1,20 @@
 import React, { FC, useEffect, useCallback, useState } from 'react';
-import { useParams } from 'react-router';
+import { RouteComponentProps, useParams } from 'react-router';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import LoadingCircle from '@components/loading/LoadingCircle';
 import { Redirect } from 'react-router-dom';
 import axios from 'axios';
 import useSocket from '@hooks/useSocket';
-import { BoardHeader, UserList, LogOutButton, MenuContainer, UserMenu, DetailBackground } from './style';
-import ChatBox from '@components/board/ChatBox';
+import { BoardHeader, DetailBackground } from './style';
 import WorkSpace from '@pages/WorkSpace';
-import { IUser, IBoard, IBM } from '@typings/datas';
+import { IUser, IBoard, IBM, IUserList } from '@typings/datas';
 import { toast } from 'react-toastify';
+import SideUserContainer from '@containers/board/SideUserContainer';
 
-interface IUserList {
-	id: number;
-	username: string;
-}
-
-const Board: FC = () => {
+const Board: FC<RouteComponentProps> = ({ history }) => {
 	const params = useParams<{ board: string }>();
 	const board = encodeURIComponent(params.board);
-	console.log(board);
 	const [socket, disconnectSocket] = useSocket(board);
 	const { data: userData } = useSWR<IUser | false>('/api/auth', fetcher);
 	const { data: boardData, revalidate: BOARDRevalidate } = useSWR<IBoard | string>(
@@ -65,22 +59,6 @@ const Board: FC = () => {
 		};
 	}, [socket, BOARDRevalidate]);
 
-	const quit = useCallback(() => {
-		if (typeof boardData !== 'string' && userData && boardData?.AdminId === userData.id) {
-			alert('현재 관리자는 보드에서 나갈 수 없습니다.');
-			return;
-		}
-		axios
-			.delete(`/api/quitBoard/${board}`)
-			.then(() => {
-				toast.dark(`${board} 보드에서 나갔습니다.`);
-				location.href = '/main';
-			})
-			.catch((e) => {
-				toast.error(e.response.data);
-			});
-	}, [boardData, userData, board]);
-
 	if (!userData) return <Redirect to={`/auth?prev=/board/${board}`} />;
 
 	if (!boardData) return <LoadingCircle />;
@@ -93,24 +71,15 @@ const Board: FC = () => {
 	return (
 		<>
 			{menuFlg && <DetailBackground style={{ zIndex: 8 }} onClick={() => setMFlg(false)} />}
-			<UserMenu style={{ transform: `translateX(${menuFlg ? '0' : '100%'})` }}>
-				<MenuContainer>
-					<UserList>
-						<p>User List</p>
-						<ul>
-							{userList?.map((c, i) => {
-								return (
-									<li key={i}>
-										{c.username === myDataInBoard?.username ? `${c.username} (me)` : c.username}
-									</li>
-								);
-							})}
-						</ul>
-					</UserList>
-					{board && myDataInBoard && boardData && <ChatBox userData={myDataInBoard} board={board} />}
-					<LogOutButton onClick={quit}>보드에서 나가기</LogOutButton>
-				</MenuContainer>
-			</UserMenu>
+			<SideUserContainer
+				menuFlg={menuFlg}
+				board={board}
+				boardData={boardData}
+				myDataInBoard={myDataInBoard}
+				userList={userList}
+				history={history}
+				toast={toast}
+			/>
 			{typeof boardData !== 'string' && (
 				<div style={{ display: 'flex', flexDirection: 'column' }}>
 					<BoardHeader>
