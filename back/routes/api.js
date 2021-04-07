@@ -73,6 +73,10 @@ router.post(`/createBoard`, isLoggedIn, async (req, res, next) => {
 	if (req.body.title.length < 4 || req.body.nickName.length < 2 || !req.body.des)
 		return next(new Error("data error"));
 
+	const regExp = /[\{\}\[\]\/?.,;:|\)*~`!^\-+<>@\#$%&\\\=\(\'\"]/gi;
+
+	if (regExp.test(req.body.title) || regExp.test(req.body.nickName))
+		next(new Error(`닉네임과 이름에 특수문자가 포함되어 있습니다.`));
 	const t = await db.sequelize.transaction();
 	try {
 		const query = {
@@ -255,6 +259,8 @@ router.get(`/board/:boardName`, isLoggedIn, async (req, res, next) => {
 				order: [["createdAt", "DESC"]],
 			}]
 		});
+		if (!boardData)
+			return res.send(`404`);
 		return res.send(boardData);
 	} catch (e) {
 		console.error(e);
@@ -613,6 +619,9 @@ router.delete(`/deleteBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 
 router.post(`/BoardMember/edit/:boardName`, isLoggedIn, async (req, res, next) => {
 	const boardName = decodeURIComponent(req.params.boardName);
+	const regExp = /[\{\}\[\]\/?.,;:|\)*~`!^\-+<>@\#$%&\\\=\(\'\"]/gi;
+	if (regExp.test(req.body.username))
+		next(new Error(`닉네임에 특수문자가 포함되어 있습니다.`));
 	const t = await db.sequelize.transaction();
 	try {
 		const me = await db.BoardMember.getMyInfo(boardName, req.user);
@@ -643,6 +652,9 @@ router.post(`/BoardMember/edit/:boardName`, isLoggedIn, async (req, res, next) =
 
 router.post(`/editBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 	const boardName = decodeURIComponent(req.params.boardName);
+	const regExp = /[\{\}\[\]\/?.,;:|\)*~`!^\-+<>@\#$%&\\\=\(\'\"]/gi;
+	if (regExp.test(boardName))
+		next(new Error(`이름에 특수문자가 포함되어 있습니다.`));
 	const t = await db.sequelize.transaction();
 	try {
 		const board = await boardPermissionCheck(boardName, req.user);
@@ -736,6 +748,8 @@ router.delete(`/quitBoard/:boardName`, isLoggedIn, async (req, res, next) => {
 });
 
 router.post(`/nickname`, isLoggedIn, async (req, res, next) => {
+	if (/[\{\}\[\]\/?.,;:|\)*~`!^\-+<>@\#$%&\\\=\(\'\"]/gi.test(req.body.username))
+		next(new Error(`닉네임에 특수문자가 포함되어 있습니다.`));
 	try {
 		const notAvailble = await db.User.findOne({
 			where: { username: req.body.nickname }
