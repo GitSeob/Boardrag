@@ -27,18 +27,6 @@ const Manage = () => {
 		is_lock: true,
 	});
 
-	const logout = useCallback(() => {
-		axios
-			.post(`/api/logout`)
-			.then(() => {
-				USERRevalidate();
-				window.location.reload(false);
-			})
-			.catch((e) => {
-				console.error(e);
-			});
-	}, [USERRevalidate]);
-
 	if (!userData) return <Redirect to="/auth?prev=/manage" />;
 
 	if (!userData.username) return <Redirect to="/main" />;
