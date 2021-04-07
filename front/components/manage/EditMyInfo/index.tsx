@@ -22,13 +22,11 @@ const EditMyInfo: FC<IEMI> = ({ myData, boardData, toast, setOpen, setLoading, B
 		now: Date.now(),
 	});
 	const [isUpdated, setUpdated] = useState(false);
-
 	const imageInput = React.useRef() as React.MutableRefObject<HTMLInputElement>;
 
 	const onClickImageUpload = useCallback(() => {
 		imageInput.current.click();
 	}, []);
-
 	const onChangeProfileImg = useCallback(
 		async (e) => {
 			const imageFormData = new FormData();
@@ -87,7 +85,7 @@ const EditMyInfo: FC<IEMI> = ({ myData, boardData, toast, setOpen, setLoading, B
 			if (confirm(`정말 ${boardData.name} 보드에서 나가겠습니까?`)) {
 				setLoading(true);
 				axios
-					.delete(`/api/quitBoard/${boardData.name}`)
+					.delete(`/api/quitBoard/${encodeURIComponent(boardData.name)}`)
 					.then(() => {
 						toast.dark(`${boardData.name} 보드에서 나갔습니다.`);
 						BLRevalidate();

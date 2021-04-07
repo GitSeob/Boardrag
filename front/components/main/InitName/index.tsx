@@ -19,10 +19,10 @@ const InitName: FC<IIN> = ({ flgNickname }: IIN) => {
 	});
 
 	const submitNickName = React.useCallback(async () => {
-		if (nickname.length > 30 || nickname.length < 3) {
-			setStatus({ ...status, error: '닉네임 글자 수를 확인해주세요' });
-			return;
-		}
+		if (nickname.length > 30 || nickname.length < 3)
+			return setStatus({ ...status, error: '닉네임 글자 수를 확인해주세요' });
+		else if (/[\{\}\[\]\/?.,;:|\)*~`!^\-+<>@\#$%&\\\=\(\'\"]/gi.test(nickname))
+			return setStatus({ ...status, error: '닉네임에는 특수문자를 포함할 수 없습니다.' });
 		await setStatus({ ...status, loading: true });
 		await axios
 			.post(`/api/nickname`, {

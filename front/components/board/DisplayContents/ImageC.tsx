@@ -1,7 +1,7 @@
 import React, { FC, useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { EditImageBox, EditButtonBox, ImageBox } from './style';
-import ImageEditButton from '@components/ImageEditButton';
+import ImageEditButton from '@components/write/ImageEditButton';
 
 interface ITF {
 	isEdit: boolean;

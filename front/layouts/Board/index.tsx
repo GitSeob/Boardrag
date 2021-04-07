@@ -1,10 +1,9 @@
-import React, { FC, useEffect, useCallback, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { RouteComponentProps, useParams } from 'react-router';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import LoadingCircle from '@components/loading/LoadingCircle';
 import { Redirect } from 'react-router-dom';
-import axios from 'axios';
 import useSocket from '@hooks/useSocket';
 import { BoardHeader, DetailBackground } from './style';
 import WorkSpace from '@pages/WorkSpace';
@@ -27,6 +26,8 @@ const Board: FC<RouteComponentProps> = ({ history }) => {
 	);
 	const [menuFlg, setMFlg] = useState<boolean>(false);
 	const [userList, setUserList] = useState<IUserList[] | null | undefined>();
+
+	if (boardData == '404') history.push('/404');
 
 	useEffect(() => {
 		return () => {

@@ -1,16 +1,15 @@
 import React, { FC, useState, useCallback } from 'react';
 import axios from 'axios';
-
 import useInput from '@hooks/useInput';
 import LoadingBall from '@components/loading/LoadingBall';
 import { FormBox, BackgroundImageBox, ProfileImageBox, PageButtonBox } from './style';
 
-interface ICBF {
+interface ICreateBoardForm {
 	BLRevalidate: () => void;
 	username: string;
 }
 
-const CreateBoardForm: FC<ICBF> = ({ BLRevalidate, username }: ICBF) => {
+const CreateBoardForm: FC<ICreateBoardForm> = ({ BLRevalidate, username }) => {
 	const [title, OCTitle] = useInput('');
 	const [des, OCDes] = useInput('');
 	const [defaultBlocks, OCDB] = useInput(30);
@@ -105,9 +104,12 @@ const CreateBoardForm: FC<ICBF> = ({ BLRevalidate, username }: ICBF) => {
 	);
 
 	const NextPage = () => {
-		if (pageState === 0 && (title.trim() === '' || des.trim() === ''))
-			return setWarn('작성되지 않은 항목이 있습니다.');
-		else if (pageState === 0 && title.length < 4) return setWarn('Board 이름은 최소 4자 이상으로 설정해야합니다.');
+		const regExp = /[\{\}\[\]\/?.,;:|\)*~`!^\-+<>@\#$%&\\\=\(\'\"]/gi;
+		if (pageState === 0) {
+			if (title.trim() === '' || des.trim() === '') return setWarn('작성되지 않은 항목이 있습니다.');
+			if (regExp.test(title)) return setWarn('제목에 특수문자를 포함할 수 없습니다.');
+		} else if (pageState === 0 && title.length < 4)
+			return setWarn('Board 이름은 최소 4자 이상으로 설정해야합니다.');
 		else if (pageState === 0) {
 			return axios
 				.get(`/api/checkBoardName/${title}`)
@@ -127,8 +129,9 @@ const CreateBoardForm: FC<ICBF> = ({ BLRevalidate, username }: ICBF) => {
 			} else if (pw !== repw) {
 				return setWarn('비밀번호를 확인해주세요.');
 			}
-		} else if (pageState === 4 && (!nickName || nickName.length < 2)) {
-			setWarn('닉네임은 2자이상으로 설정해야합니다.');
+		} else if (pageState === 4) {
+			if (!nickName || nickName.length < 2) return setWarn('닉네임은 2자이상으로 설정해야합니다.');
+			else if (regExp.test(nickName)) return setWarn('닉네임에 특수문자를 포함할 수 없습니다.');
 		}
 		setWarn('');
 		setAniCN('next');

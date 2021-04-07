@@ -8,7 +8,7 @@ import { IUser, IBL } from '@typings/datas';
 import CreateBoardForm from '@components/main/CreateBoardForm';
 import JoinBoardForm from '@components/main/JoinBoardForm';
 import InitName from '@components/main/InitName';
-import TopComponentContainer from '@components/TopComponentContainer';
+import TopComponentContainer from '@components/main/TopComponentContainer';
 import MainPageHeader from '@containers/layout/MainPageHeader';
 import PageFooter from '@containers/layout/PageFooter';
 import MainPageContents from '@containers/main/MainPageContents';

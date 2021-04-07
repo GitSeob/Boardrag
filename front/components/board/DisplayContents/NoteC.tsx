@@ -2,7 +2,7 @@ import React, { FC, useState, useRef, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import useInput from '@hooks/useInput';
 import { ImageBox, HeadBox, TextBox, EditArea, EditButtonBox, EditHead, EditImageBox } from './style';
-import ImageEditButton from '@components/ImageEditButton';
+import ImageEditButton from '@components/write/ImageEditButton';
 
 interface ITF {
 	isEdit: boolean;

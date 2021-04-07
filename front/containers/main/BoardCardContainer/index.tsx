@@ -60,8 +60,6 @@ const BoardCardContainer = ({ boards, type, onClickNewBoard }: IBCC) => {
 		}
 	}, [boards, nextBtn, boxWidth, boxIndex]);
 
-	const linkBoard = () => {};
-
 	return (
 		<>
 			<Container

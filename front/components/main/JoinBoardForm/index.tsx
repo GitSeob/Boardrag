@@ -3,21 +3,20 @@ import axios from 'axios';
 import { Redirect } from 'react-router-dom';
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
-dayjs.extend(localizedFormat);
-
 import { IBL, IUser } from '@typings/datas';
 import { Box, FLEXDIV, PageButton, Input } from './style';
 import { PersonCount } from '@containers/main/BoardCardContainer/style';
 import { ProfileImageBox } from '@components/main/CreateBoardForm/style';
 import useInput from '@hooks/useInput';
-
 import LoadingBall from '@components/loading/LoadingBall';
-interface IJBF {
+dayjs.extend(localizedFormat);
+
+interface IJoinBoradForm {
 	board: IBL | null;
 	userData: IUser;
 }
 
-const JoinBoardForm: FC<IJBF> = ({ board, userData }) => {
+const JoinBoardForm: FC<IJoinBoradForm> = ({ board, userData }) => {
 	const [pw, OCPW] = useInput('');
 	const [nickname, OCNN] = useInput(userData.username);
 	const [page, setPage] = useState(0);
@@ -194,12 +193,14 @@ const JoinBoardForm: FC<IJBF> = ({ board, userData }) => {
 							className="nickname"
 							value={nickname}
 							onChange={OCNN}
-							placeholder="Board에서 사용할 닉네임을 입력해주세요."
+							placeholder="Board에서 사용할 닉네임을 입력해주세요. (특수문자 제외)"
 						/>
 						{warn && <p style={{ color: '#ff4444', textAlign: 'center' }}>{warn}</p>}
 						<PageButton
 							onClick={() => {
 								if (nickname.trim().length < 2) return setWarn('닉네임은 2자 이상으로 설정해야합니다.');
+								else if (/[\{\}\[\]\/?.,;:|\)*~`!^\-+<>@\#$%&\\\=\(\'\"]/gi.test(nickname))
+									return setWarn('닉네임에 특수문자를 포함할 수 없습니다.');
 								if (board.is_lock) setPage(2);
 								else {
 									setPage(3);
@@ -269,7 +270,7 @@ const JoinBoardForm: FC<IJBF> = ({ board, userData }) => {
 					<p style={{ textAlign: 'center' }}>보드에 참여되었습니다.</p>
 					<PageButton
 						onClick={() => {
-							location.href = `/board/${result.boardName}`;
+							location.href = `/board/${encodeURIComponent(result.boardName)}`;
 						}}
 					>
 						<b>{result.boardName}</b> 보드로 이동하기
